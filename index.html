@@ -7,11 +7,12 @@
     <meta name="description" content="برینگ آنلاین — تامین سریع بلبرینگ، گاید خطی، کوپلینگ و گیربکس از برندهای SKF، FAG، NSK، NTN با مشاوره مهندسی و ضمانت اصالت.">
     <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
     <meta name="theme-color" content="#05173d">
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Vendored dependencies: no external CDN needed (see assets/vendor/README.md) -->
+    <script src="assets/vendor/tailwindcss/browser.js"></script>
+    <link rel="stylesheet" href="assets/vendor/fonts/vazirmatn.css">
+    <link rel="stylesheet" href="assets/vendor/fonts/inter.css">
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all.min.css">
+    <script src="assets/vendor/three/three.min.js"></script>
     <link rel="stylesheet" href="assets/css/01-base.css">
     <link rel="stylesheet" href="assets/css/02-bearing-3d.css">
     <link rel="stylesheet" href="assets/css/03-about.css">
@@ -19,7 +20,6 @@
     <link rel="stylesheet" href="assets/css/05-brand-carousel.css">
     <link rel="stylesheet" href="assets/css/06-hero-3d.css">
     <link rel="stylesheet" href="assets/css/07-mobile.css">
-</head>
 </head>
 <body class="min-h-screen">
 
@@ -146,8 +146,8 @@
                 <a href="#" onclick="showPage('home')" class="flex items-center gap-3 nav-logo transition-transform" aria-label="برینگ آنلاین | Bearing Online">
                     <div class="brand-lockup">
                         <h1 class="sr-only" data-en="Bearing Online" data-fa="برینگ آنلاین">برینگ آنلاین</h1>
-                        <img src="https://bearingonline.ir/images/thumbs/001/0015751_300x300.webp" alt="برینگ آنلاین | Bearing Online" class="brand-logo-img" onerror="this.style.display='none';var vector=document.getElementById('headerVectorLogo');if(vector){vector.style.display='block';}">
-                        <svg id="headerVectorLogo" class="brand-logo" viewBox="0 0 360 116" role="img" aria-label="برینگ آنلاین | Bearing Online" style="display:none;direction:ltr">
+                        <img src="https://bearingonline.ir/images/thumbs/001/0015751_300x300.webp" alt="" class="brand-logo-img" style="display:none" loading="lazy" onload="this.style.display='';var vector=document.getElementById('headerVectorLogo');if(vector){vector.style.display='none';}">
+                        <svg id="headerVectorLogo" class="brand-logo" viewBox="0 0 360 116" role="img" aria-label="برینگ آنلاین | Bearing Online" style="direction:ltr">
                             <use href="#boLogoLockup"></use>
                         </svg>
                     </div>
@@ -1128,8 +1128,8 @@
                     <div class="flex items-center gap-3 mb-6">
                         <div class="brand-lockup">
                             <span class="sr-only" data-en="Bearing Online" data-fa="برینگ آنلاین">برینگ آنلاین</span>
-                            <img src="https://bearingonline.ir/images/thumbs/001/0015751_300x300.webp" alt="برینگ آنلاین | Bearing Online" class="brand-logo-img" onerror="this.style.display='none';var vector=document.getElementById('footerVectorLogo');if(vector){vector.style.display='block';}">
-                            <svg id="footerVectorLogo" class="brand-logo" viewBox="0 0 360 116" role="img" aria-label="برینگ آنلاین | Bearing Online" style="display:none;direction:ltr">
+                            <img src="https://bearingonline.ir/images/thumbs/001/0015751_300x300.webp" alt="" class="brand-logo-img" style="display:none" loading="lazy" onload="this.style.display='';var vector=document.getElementById('footerVectorLogo');if(vector){vector.style.display='none';}">
+                            <svg id="footerVectorLogo" class="brand-logo" viewBox="0 0 360 116" role="img" aria-label="برینگ آنلاین | Bearing Online" style="direction:ltr">
                                 <use href="#boLogoLockup"></use>
                             </svg>
                         </div>
