@@ -1,0 +1,145 @@
+/* ===== 01-base.css — پالت برند، بدنه، هیرو، افکت شیشه‌ای ===== */
+:root {
+    /* ===== BEARING ONLINE BRAND PALETTE (from the new logo) ===== */
+    /* Deep bearing navy */
+    --navy-900: #05173d;
+    --navy-800: #0a2358;
+    --navy-700: #10307c;
+    --navy-600: #17409f;
+    /* Royal bearing blue */
+    --brand-blue: #1348c8;
+    --accent-blue: #1348c8;
+    --brand-blue-light: #4a82ff;
+    /* Premium bearing gold */
+    --brand-gold: #e8a81d;
+    --brand-gold-deep: #9d6506;
+    --brand-gold-light: #ffd166;
+    /* Industrial action orange (buttons only; gold stays in the logo) */
+    --brand-action: #ff5d0d;
+    --brand-action-deep: #b84300;
+    --brand-action-light: #ff9a4d;
+    --brand-red: #e8a81d;
+    --accent-orange: #e8a81d;
+    --accent-orange-light: #ffd166;
+    /* Steel neutrals */
+    --grey-100: #f3f5fb;
+    --grey-200: #e3e8f3;
+    --grey-300: #c6cfdf;
+    --grey-600: #4b5b76;
+    --grey-800: #1b2745;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--grey-100);
+}
+
+html[dir="rtl"] body {
+    font-family: 'Vazirmatn', 'Inter', sans-serif;
+}
+
+.gradient-navy {
+    background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-700) 100%);
+}
+
+.gradient-hero {
+    background-color: var(--navy-900);
+    background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(135deg, var(--navy-900) 0%, var(--navy-800) 50%, var(--navy-700) 100%);
+    background-size: 50px 50px, 50px 50px, cover;
+    background-repeat: repeat, repeat, no-repeat;
+}
+
+/* High-contrast stats panel inside the hero */
+.hero-stats {
+    background: rgba(4, 12, 24, 0.55);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 20px;
+    padding: 22px 18px;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+    backdrop-filter: blur(8px);
+}
+.hero-stats .stat-num {
+    color: #ffffff;
+    text-shadow: 0 2px 14px rgba(0,0,0,0.6);
+}
+.hero-stats .stat-label {
+    color: rgba(255,255,255,0.82);
+    font-weight: 600;
+}
+.hero-stats .stat-sub {
+    color: rgba(255,255,255,0.55);
+}
+
+/* Bright premium homepage hero (light, high-legibility) */
+.hero-bright {
+    background-color: #f4f7ff;
+    background-image:
+        radial-gradient(900px 430px at 86% -12%, rgba(232,168,29,0.20), transparent 62%),
+        radial-gradient(1050px 540px at 8% -6%, rgba(30,99,242,0.18), transparent 64%),
+        linear-gradient(rgba(11,37,96,0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(11,37,96,0.055) 1px, transparent 1px),
+        linear-gradient(180deg, #ffffff 0%, #edf3fd 55%, #f8fafc 100%);
+    background-size: auto, auto, 52px 52px, 52px 52px, cover;
+    background-repeat: no-repeat, no-repeat, repeat, repeat, no-repeat;
+}
+.hero-bright .orb { opacity: 0.22; }
+.hero-bright .hero-kicker {
+    color: #0b2560;
+    background: #ffffff;
+    border: 1px solid rgba(19,72,200,0.18);
+    box-shadow: 0 12px 30px rgba(11,37,96,0.12), inset 0 1px 0 #ffffff;
+}
+.hero-bright .hero-title-clear {
+    color: #0b2560;
+    text-shadow: none;
+}
+.hero-bright .hero-title-clear .accent-word {
+    color: #0b2560;
+    isolation: isolate;
+}
+.hero-bright .hero-title-clear .accent-word::after {
+    background: linear-gradient(90deg, #ffd166, #e8a81d);
+    opacity: 0.9;
+}
+.hero-bright .hero-subtitle-clear {
+    color: #31415f;
+    text-shadow: none;
+}
+.hero-bright .hero-proof-chip {
+    background: #ffffff;
+    border: 1px solid rgba(19,72,200,0.16);
+    color: #0b2560;
+    box-shadow: 0 10px 24px rgba(11,37,96,0.10);
+}
+.hero-bright .glass-effect {
+    background: #ffffff;
+    border: 1px solid rgba(19,72,200,0.12);
+    box-shadow: 0 34px 80px rgba(11,37,96,0.16);
+}
+.hero-bright .hero-stats {
+    background: #ffffff;
+    border: 1px solid rgba(19,72,200,0.12);
+    box-shadow: 0 24px 60px rgba(11,37,96,0.12);
+    backdrop-filter: none;
+}
+.hero-bright .hero-stats .stat-num {
+    color: #0b2560;
+    text-shadow: none;
+}
+.hero-bright .hero-stats .stat-label {
+    color: #31415f;
+    font-weight: 700;
+}
+.hero-bright .hero-stats .stat-sub {
+    color: #6b7a96;
+}
+
+.glass-effect {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+}

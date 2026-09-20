@@ -1,0 +1,316 @@
+/* ===== 07-mobile.css — واکنش‌گرایی موبایل (compact + ultra-compact) ===== */
+/* ===== MOBILE COMPACT PASS: smaller, lighter, easier ===== */
+@media (max-width: 768px) {
+    /* Hide crowded top bar on phones (contact lives in drawer) */
+    header .max-w-7xl > div:first-child { display: none !important; }
+    header nav { padding-block: 6px !important; gap: 6px !important; }
+    header .nav-logo img { height: 34px !important; }
+    header .brand-logo { width: 128px !important; max-width: 40vw !important; }
+    header .brand-lockup { padding: 3px 7px !important; border-radius: 12px !important; }
+    header nav .flex.items-center.gap-4 { gap: 6px !important; }
+    header nav .flex.items-center.gap-4 button { min-width: 36px !important; min-height: 36px !important; }
+    header nav .flex.items-center.gap-4 button i { font-size: 16px !important; }
+    header nav .flex.items-center.gap-4 button span { width: 16px !important; height: 16px !important; font-size: 10px !important; top: -4px !important; right: -4px !important; }
+
+    /* Give room for the bottom pill bar so it never covers CTA */
+    #main-content { padding-bottom: 72px; }
+
+    /* Hero: much tighter */
+    .hero-bright { padding-top: 22px !important; padding-bottom: 26px !important; }
+    .hero-bright h2 { font-size: 21px !important; line-height: 2 !important; margin-bottom: 10px !important; }
+    .hero-bright p { font-size: 13px !important; line-height: 2 !important; }
+    .hero-kicker { font-size: 11px !important; padding: 6px 10px !important; margin-bottom: 12px !important; }
+    .hero-proof-row { gap: 6px !important; margin-top: 12px !important; }
+    .hero-proof-chip { font-size: 11px !important; padding: 6px 10px !important; }
+
+    /* Stats: small cards */
+    .hero-stats { padding: 12px 8px !important; gap: 10px !important; margin-top: 22px !important; border-radius: 16px !important; }
+    .hero-stats .stat-num { font-size: 1.2rem !important; margin-bottom: 2px !important; }
+    .hero-stats .stat-label { font-size: 11px !important; }
+    .hero-stats .stat-sub { font-size: 10px !important; }
+
+    /* Search box: compact */
+    .glass-effect { padding: 12px !important; border-radius: 16px !important; }
+    .glass-effect .search-tab { padding: 8px 6px !important; font-size: 12px !important; }
+    .search-panel-title strong { font-size: 13px !important; }
+    .search-panel-title span { font-size: 11px !important; }
+    #search-input { padding: 12px !important; font-size: 14px !important; border-radius: 12px !important; }
+    #search-part .relative > button { padding: 12px !important; font-size: 14px !important; border-radius: 12px !important; }
+    .search-scope-grid { gap: 6px !important; }
+    .scope-chip { font-size: 10px !important; padding: 5px 7px !important; gap: 4px !important; }
+    #search-type .magnetic { padding: 14px 8px !important; border-radius: 14px !important; }
+    #search-type .magnetic i { font-size: 22px !important; margin-bottom: 6px !important; }
+    #search-type .magnetic p { font-size: 12px !important; }
+
+    /* Sections: half the whitespace */
+    main section .py-20, main section .py-16 { padding-top: 34px !important; padding-bottom: 34px !important; }
+    main h3.text-3xl { font-size: 19px !important; margin-bottom: 8px !important; }
+    .heading-line { width: 44px !important; height: 3px !important; }
+
+    /* Home category cards: 2 compact columns */
+    #page-home .stagger.reveal { grid-template-columns: repeat(2, minmax(0,1fr)) !important; gap: 10px !important; }
+    #page-home .stagger.reveal > div { padding: 14px 10px !important; border-radius: 16px !important; }
+    #page-home .stagger.reveal .w-20 { width: 46px !important; height: 46px !important; margin-bottom: 10px !important; border-radius: 14px !important; }
+    #page-home .stagger.reveal .w-20 i { font-size: 20px !important; }
+    #page-home .stagger.reveal h4 { font-size: 13px !important; margin-bottom: 4px !important; }
+    #page-home .stagger.reveal p { font-size: 11px !important; }
+
+    /* Brands row: tighter */
+    #home-brands-grid { gap: 10px !important; }
+    #home-brands-grid > * { height: 62px !important; padding: 8px !important; font-size: 15px !important; border-radius: 12px !important; }
+    .marquee-track { font-size: 0.95rem !important; }
+
+    /* Why-choose cards: compact */
+    #page-home .grid.grid-cols-1.md\:grid-cols-3 .card-hover { padding: 16px 12px !important; }
+    #page-home .grid.grid-cols-1.md\:grid-cols-3 h4 { font-size: 14px !important; }
+    #page-home .grid.grid-cols-1.md\:grid-cols-3 p { font-size: 12px !important; line-height: 2 !important; }
+    #page-home .grid.grid-cols-1.md\:grid-cols-3 .w-16 { width: 46px !important; height: 46px !important; margin-bottom: 10px !important; }
+
+    /* Results: 2 compact product columns */
+    #results-container { grid-template-columns: repeat(2, minmax(0,1fr)) !important; gap: 10px !important; }
+    #results-container > div { border-radius: 14px !important; }
+    #results-container .product-image-bg { padding: 12px !important; }
+    #results-container .product-image-bg i { font-size: 2rem !important; }
+    #results-container .product-image-bg button { width: 30px !important; height: 30px !important; top: 8px !important; right: 8px !important; }
+    #results-container .p-6 { padding: 10px !important; }
+    #results-container h4 { font-size: 12.5px !important; margin-bottom: 4px !important; }
+    #results-container .text-sm.text-gray-500.mb-3, #results-container .text-sm.text-gray-500.mb-4 { font-size: 10.5px !important; margin-bottom: 6px !important; }
+    #results-container .text-2xl { font-size: 15px !important; }
+    #results-container .btn-primary, #results-container .btn-accent { padding: 8px 10px !important; font-size: 12px !important; border-radius: 10px !important; }
+    #results-container .stock-badge { font-size: 10px !important; padding: 4px 7px !important; }
+
+    /* Filter panel: slimmer */
+    .filter-shell { padding: 14px !important; border-radius: 16px !important; }
+    .filter-group { padding-top: 12px !important; margin-top: 12px !important; }
+    .filter-row { padding: 7px 8px !important; font-size: 13px !important; }
+    .quick-filter-chip { font-size: 11px !important; padding: 6px 9px !important; }
+    #mobile-filter-btn { padding: 11px !important; font-size: 13px !important; top: 58px !important; }
+
+    /* Product detail: tighter */
+    #page-product .product-image-bg { padding: 18px !important; }
+    #page-product .text-4xl { font-size: 1.35rem !important; }
+    #page-product .p-8, #page-product .p-6 { padding: 16px !important; }
+    #page-product button { padding-top: 12px !important; padding-bottom: 12px !important; font-size: 14px !important; }
+
+    /* Cart / checkout: compact rows */
+    .cart-line { grid-template-columns: 56px 1fr !important; gap: 10px !important; padding: 12px !important; }
+    .cart-line .w-20 { width: 56px !important; height: 56px !important; }
+    .checkout-step-card { padding: 14px !important; }
+    .compact-input { padding: 9px 10px !important; border-radius: 10px !important; }
+
+    /* Bottom pill + back-to-top: smaller */
+    .quick-action-panel { padding: 6px 8px !important; gap: 6px !important; }
+    .quick-action-btn { width: 40px !important; height: 40px !important; }
+    .quick-action-btn i { font-size: 15px !important; }
+    #back-to-top { width: 38px !important; height: 38px !important; bottom: 80px !important; }
+
+    /* Footer + modals */
+    footer.gradient-navy { padding: 32px 0 !important; }
+    footer h4 { font-size: 14px !important; margin-bottom: 10px !important; }
+    footer ul { font-size: 12.5px !important; }
+    #lead-modal form { padding: 16px !important; }
+    #admin-modal .max-w-5xl { padding: 16px !important; }
+}
+
+@media (max-width: 768px) {
+    body { overflow-x: hidden; }
+    img, svg { max-width: 100%; }
+    input, select, textarea { font-size: 16px !important; }
+
+    /* Header: compact, no crowding */
+    header .max-w-7xl { padding-left: 12px; padding-right: 12px; }
+    header nav { padding-block: 8px; gap: 8px; }
+    header .nav-logo img { height: 40px; width: auto; max-width: 44vw; }
+    header .brand-logo { width: 148px; max-width: 44vw; }
+    header .brand-lockup { padding: 4px 8px; border-radius: 14px; }
+    header nav .flex.items-center.gap-4 button { min-width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+    .nav-icon-compare, .nav-icon-account { display: none !important; }
+
+    /* Mobile nav drawer */
+    #mobile-menu-overlay { display: block; position: fixed; inset: 0; background: rgba(5,15,40,.55); backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 90; }
+    #mobile-menu-overlay.open { opacity: 1; pointer-events: auto; }
+    #mobile-menu { position: fixed; top: 0; bottom: 0; right: 0; width: min(320px, 84vw); background: #fff; z-index: 95; transform: translateX(105%); transition: transform .32s cubic-bezier(.16,1,.3,1); display: flex; flex-direction: column; border-radius: 20px 0 0 20px; overflow: hidden; box-shadow: -20px 0 60px rgba(5,15,40,.25); }
+    #mobile-menu.open { transform: none; }
+    #mobile-menu a.mnav { display: flex; align-items: center; gap: 12px; padding: 14px 18px; font-weight: 700; color: #0b2560; border-bottom: 1px solid #eef2f7; font-size: 15px; }
+
+    /* Hide the floating bar while any modal is open so it never covers modal buttons */
+    body:has(.modal-overlay:not(.hidden)) .quick-action-panel,
+    body:has(#mobile-menu.open) .quick-action-panel { display: none !important; }
+
+    /* Quick actions become a bottom pill bar, never covering text */
+    .quick-action-panel {
+        top: auto !important;
+        bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        flex-direction: row !important;
+        gap: 8px !important;
+        background: rgba(255,255,255,.94);
+        border: 1px solid rgba(19,72,200,.14);
+        border-radius: 999px;
+        padding: 8px 10px;
+        box-shadow: 0 14px 34px rgba(7,20,38,.25);
+        backdrop-filter: blur(10px);
+    }
+    html[dir="rtl"] .quick-action-panel { left: 50% !important; right: auto !important; transform: translateX(-50%) !important; }
+    .quick-action-btn { width: 44px; height: 44px; border-radius: 999px; box-shadow: none; }
+    .quick-action-btn:hover { transform: scale(1.06); }
+    .quick-action-btn i { font-size: 16px !important; }
+    .quick-action-label { display: none !important; }
+    #back-to-top {
+        width: 42px;
+        height: 42px;
+        bottom: 86px !important;
+        left: 12px !important;
+        right: auto !important;
+    }
+    html[dir="rtl"] #back-to-top { left: 12px !important; right: auto !important; }
+
+    /* Hero */
+    .gradient-hero { padding-top: 36px; padding-bottom: 48px; }
+    .gradient-hero h2 { font-size: 32px; line-height: 1.25; }
+    .gradient-hero p { font-size: 15px; }
+    .hero-bright { padding-top: 36px; padding-bottom: 48px; }
+    .hero-bright h2 { font-size: 27px; line-height: 1.7; }
+    .hero-bright p { font-size: 15px; }
+    .hero-kicker { font-size: 12px; padding: 7px 12px; }
+    .hero-proof-chip { font-size: 12px; }
+    .hero-stats { padding: 16px 12px; gap: 14px; }
+    .hero-stats .stat-num { font-size: 1.55rem !important; }
+    .glass-effect { padding: 16px !important; border-radius: 18px; }
+    .glass-effect > div:first-child { display: flex; overflow-x: auto; gap: 8px !important; scrollbar-width: none; }
+    .glass-effect > div:first-child::-webkit-scrollbar { display: none; }
+    .glass-effect .search-tab { white-space: nowrap; flex-shrink: 0; padding: 10px 8px; font-size: 13px; }
+    .search-panel-title { flex-direction: column; align-items: flex-start; gap: 4px; }
+    #search-input { padding: 14px !important; }
+    #search-part .relative > button { position: static !important; transform: none !important; width: 100% !important; margin-top: 10px; padding: 14px !important; }
+    #autocomplete-dropdown { max-height: 260px; overflow-y: auto; }
+    .search-scope-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .scope-chip { font-size: 11px; padding: 6px 8px; }
+    .marquee-track { font-size: 1.05rem !important; gap: 1.25rem !important; }
+
+    /* Categories & product cards */
+    .product-image-bg { padding: 20px !important; }
+
+    /* Results page: collapsible filters */
+    #mobile-filter-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #fff; border: 1px solid rgba(19,72,200,.16); border-radius: 14px; padding: 13px; font-weight: 800; color: #0b2560; margin-bottom: 12px; position: sticky; top: 66px; z-index: 30; box-shadow: 0 8px 20px rgba(11,37,96,.08); }
+    #mobile-filter-chevron { transition: transform .25s; margin-inline-start: auto; }
+    #mobile-filter-btn.expanded #mobile-filter-chevron { transform: rotate(180deg); }
+    #page-search aside.filters-collapsed .filter-shell > *:not(:first-child) { display: none; }
+    #results-table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    #results-table-container table { min-width: 720px; }
+    #results-table-container th, #results-table-container td { padding: 10px 8px !important; font-size: 13px; }
+
+    /* Product detail */
+    #page-product .product-image-bg { padding: 24px !important; min-height: 0 !important; }
+    #page-product .product-image-bg i { font-size: 4rem !important; }
+    #page-product #product-detail-content .p-8 { padding: 20px !important; }
+    #page-product .text-4xl { font-size: 1.6rem !important; line-height: 1.5; }
+
+    /* Cart & checkout */
+    .filter-shell { max-height: none; position: relative; }
+    .checkout-summary {
+        position: sticky;
+        bottom: 0;
+        z-index: 35;
+        border-radius: 18px 18px 0 0 !important;
+        box-shadow: 0 -12px 35px rgba(15,23,42,0.12) !important;
+    }
+    .checkout-summary .desktop-only { display: none; }
+    .checkout-step-card { padding: 16px !important; border-radius: 16px; }
+    .cart-line {
+        display: grid !important;
+        grid-template-columns: 64px 1fr;
+        gap: 12px !important;
+        align-items: start !important;
+    }
+    .cart-line-controls {
+        grid-column: 2 / -1;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    /* Compare: sticky first column */
+    #page-compare .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+    #page-compare th:first-child, #page-compare td:first-child { position: sticky; right: 0; background: #fff; z-index: 2; box-shadow: -4px 0 8px rgba(0,0,0,.05); }
+
+    /* Modals become bottom sheets */
+    #lead-modal > div, #admin-modal > div, #product-modal > div { align-items: flex-end !important; padding: 0 !important; }
+    #lead-modal .shadow-2xl, #admin-modal .shadow-2xl, #product-modal .shadow-2xl { width: 100% !important; max-width: 100% !important; margin: 0 !important; border-radius: 22px 22px 0 0 !important; max-height: 92dvh; overflow-y: auto; }
+    #lead-modal form { padding: 20px !important; }
+    #lead-modal .lead-card { padding: 24px 20px !important; border-radius: 0 !important; }
+
+    /* Footer */
+    footer.gradient-navy { padding: 44px 0 !important; }
+    footer .grid { gap: 26px !important; }
+
+    /* Notifications fit small screens */
+    #notification-container { left: 12px; right: 12px; }
+    #notification-container > div { width: 100%; }
+}
+
+/* ===== MOBILE ULTRA-COMPACT PASS: everything smaller, requests first ===== */
+@media (max-width: 768px) {
+    .max-w-7xl { padding-left: 10px !important; padding-right: 10px !important; }
+    main section .py-8, main section .py-16, main section .py-20 { padding-top: 18px !important; padding-bottom: 18px !important; }
+    main .grid.gap-8, main .grid.gap-6, main .grid.gap-4 { gap: 10px !important; }
+    main h2 { font-size: 20px !important; line-height: 1.8 !important; margin-bottom: 8px !important; }
+    main h3 { font-size: 16px !important; line-height: 1.8 !important; }
+    main p { font-size: 12.5px !important; line-height: 1.9 !important; }
+    main .text-xl { font-size: 14px !important; }
+    main .text-2xl { font-size: 17px !important; }
+    main .text-3xl { font-size: 20px !important; }
+    main .text-4xl { font-size: 22px !important; }
+    .btn-primary, .btn-accent { padding: 10px 12px !important; font-size: 13px !important; border-radius: 11px !important; }
+    .card-hover, .rounded-2xl { border-radius: 14px !important; }
+    .p-8 { padding: 14px !important; }
+    .p-6 { padding: 12px !important; }
+    .p-5 { padding: 10px !important; }
+    .p-4 { padding: 9px !important; }
+
+    #lead-modal .max-w-3xl { border-radius: 18px 18px 0 0 !important; }
+    #lead-modal .lead-card { padding: 14px 12px !important; }
+    #lead-modal-kicker { font-size: 10px !important; letter-spacing: 0 !important; margin-bottom: 6px !important; }
+    #lead-modal-title { font-size: 17px !important; line-height: 1.9 !important; margin-bottom: 6px !important; }
+    #lead-modal-subtitle { font-size: 12px !important; line-height: 2 !important; }
+    #lead-modal form { padding: 12px !important; }
+    #lead-modal form.space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 10px !important; }
+    #lead-modal .grid { gap: 8px !important; }
+    #lead-modal label { font-size: 11.5px !important; margin-bottom: 4px !important; }
+    #lead-modal input, #lead-modal textarea, #lead-modal select { padding: 9px 10px !important; border-radius: 10px !important; }
+    #lead-modal textarea { min-height: 76px !important; }
+    #lead-modal .step-dot { width: 20px !important; height: 20px !important; font-size: 10px !important; }
+    #lead-modal .bg-gray-50.rounded-xl { padding: 8px !important; font-size: 11.5px !important; }
+
+    #admin-modal .max-w-5xl { padding: 12px !important; border-radius: 18px 18px 0 0 !important; }
+    #admin-modal h3 { font-size: 17px !important; }
+    #admin-modal .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 10px !important; }
+    #admin-modal .ops-panel section, #admin-modal section { border-radius: 12px !important; }
+    #ops-stock-list > div, #ops-rfq-list > div, #ops-orders-list > div, #admin-lead-list > div, #ops-activity-list > div { padding: 9px !important; border-radius: 12px !important; gap: 8px !important; }
+    #ops-stock-list, #ops-rfq-list, #ops-orders-list, #admin-lead-list, #ops-activity-list { max-height: 58dvh !important; }
+    #admin-modal table th, #admin-modal table td { padding: 7px !important; font-size: 12px !important; }
+    #admin-modal input, #admin-modal select { padding: 8px 9px !important; font-size: 13px !important; }
+
+    #account-content .grid.gap-4, #account-content .grid.gap-6 { gap: 8px !important; margin-bottom: 14px !important; }
+    #account-content h3 { font-size: 15px !important; margin-bottom: 4px !important; }
+    #account-content b.text-3xl { font-size: 22px !important; }
+    #account-content .bg-white.rounded-2xl { padding: 10px !important; }
+    #account-content button { padding: 8px 10px !important; font-size: 12px !important; }
+
+    #checkout-content table th, #checkout-content table td { padding: 7px !important; font-size: 12px !important; }
+    #checkout-content .checkout-step-card { padding: 10px !important; }
+    #checkout-content h3 { font-size: 14px !important; }
+    #checkout-content .step-dot { width: 22px !important; height: 22px !important; font-size: 11px !important; }
+    #page-cart .divide-y > div, .cart-line { padding: 10px !important; }
+    #page-cart h4 { font-size: 13px !important; }
+    #page-cart .w-32 { width: 88px !important; }
+
+    #page-services .bg-white.rounded-2xl, #page-brands .bg-white.rounded-2xl, #page-contact .bg-white.rounded-2xl, #page-about .bg-gray-50.rounded-xl { padding: 12px !important; }
+    #page-services .w-16, #page-contact .w-12 { width: 40px !important; height: 40px !important; margin-bottom: 8px !important; }
+    #page-services .w-16 i, #page-contact .w-12 i { font-size: 18px !important; }
+    #page-contact form.space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 10px !important; }
+    #page-product #product-detail-content .grid { gap: 10px !important; }
+    #page-product table td { padding-top: 4px !important; padding-bottom: 4px !important; font-size: 12px !important; }
+    #page-wishlist .bg-white.rounded-2xl, #page-compare .bg-white.rounded-2xl { padding: 10px !important; }
+}

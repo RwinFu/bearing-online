@@ -1,0 +1,31 @@
+/* ===== 06-hero-3d.css — حرکت سه‌بعدی متن هیرو ===== */
+/* ===== HERO 3D MOTION (homepage copy) ===== */
+#page-home .hero-bright .text-center { perspective: 1000px; }
+.hero-3d {
+    transform-style: preserve-3d;
+    will-change: transform;
+    animation: heroFloat3d 7s ease-in-out infinite;
+    text-shadow:
+        0 1px 0 rgba(255,255,255,.9),
+        0 2px 0 rgba(11,37,96,.06),
+        0 14px 34px rgba(11,37,96,.16);
+}
+.hero-3d-sub {
+    transform-style: preserve-3d;
+    will-change: transform;
+    animation: heroFloat3d 9s ease-in-out infinite reverse;
+}
+.hero-chip-3d {
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: transform .25s ease;
+}
+.hero-chip-3d:hover { transform: translateZ(26px) scale(1.06) !important; }
+@keyframes heroFloat3d {
+    0%, 100% { transform: rotateX(0deg) rotateY(0deg) translateZ(0); }
+    30% { transform: rotateX(5deg) rotateY(-6deg) translateZ(30px); }
+    60% { transform: rotateX(-4deg) rotateY(5deg) translateZ(16px); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .hero-3d, .hero-3d-sub { animation: none; }
+}
