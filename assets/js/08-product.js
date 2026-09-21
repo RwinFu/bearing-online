@@ -45,8 +45,13 @@ function productDatasheetUrl(product) {
 function openProductDatasheet(productId) {
     const product = ProductDatabase.find(p => p.id === productId);
     if (!product) return;
-    const ds = product.datasheet_url || productDatasheetUrl(product);
-    window.open(ds.url, '_blank', 'noopener');
+    // product.datasheet_url is stored as a plain URL string (see 01-state-data.js)
+    // while productDatasheetUrl() returns { url, brand }. Reading `.url` off the
+    // string used to open about:blank — accept both shapes and always open a URL.
+    const ds = product.datasheet_url;
+    const url = (typeof ds === 'string' && ds) || (ds && ds.url) || productDatasheetUrl(product).url;
+    if (!url) return;
+    window.open(url, '_blank', 'noopener');
 }
 
 function showProductDetail(productId) {
@@ -130,45 +135,6 @@ function showProductDetail(productId) {
                             <span data-en="Datasheet" data-fa="دیتاشیت">Datasheet</span>
                             <i class="fas fa-external-link-alt text-xs"></i>
                         </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Specifications -->
-            <div class="border-t border-gray-100 p-8">
-                <h3 class="text-xl font-bold text-gray-800 mb-6" data-en="Technical Specifications" data-fa="مشخصات فنی">Technical Specifications</h3>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="bg-gray-50 rounded-xl p-4">
-                        <h4 class="text-sm font-medium text-gray-500 mb-2" data-en="Dimensions" data-fa="ابعاد">Dimensions</h4>
-                        <table class="w-full text-sm">
-                            <tr><td class="py-1 text-gray-600">d (Inner Ø)</td><td class="py-1 font-medium text-right">${product.d} mm</td></tr>
-                            <tr><td class="py-1 text-gray-600">D (Outer Ø)</td><td class="py-1 font-medium text-right">${product.D} mm</td></tr>
-                            <tr><td class="py-1 text-gray-600">B (Width)</td><td class="py-1 font-medium text-right">${product.B} mm</td></tr>
-                        </table>
-                    </div>
-                    <div class="bg-gray-50 rounded-xl p-4">
-                        <h4 class="text-sm font-medium text-gray-500 mb-2" data-en="Performance" data-fa="عملکرد">Performance</h4>
-                        <table class="w-full text-sm">
-                            <tr><td class="py-1 text-gray-600" data-en="Speed Rating" data-fa="سرعت مجاز">Speed Rating</td><td class="py-1 font-medium text-right">${formatNumber(product.speedRating)} rpm</td></tr>
-                            <tr><td class="py-1 text-gray-600" data-en="Load Rating" data-fa="ظرفیت بار">Load Rating</td><td class="py-1 font-medium text-right">${formatNumber(product.loadRating)} N</td></tr>
-                            <tr><td class="py-1 text-gray-600" data-en="Weight" data-fa="وزن">Weight</td><td class="py-1 font-medium text-right">${product.weight} kg</td></tr>
-                        </table>
-                    </div>
-                    <div class="bg-gray-50 rounded-xl p-4">
-                        <h4 class="text-sm font-medium text-gray-500 mb-2" data-en="Details" data-fa="جزئیات">Details</h4>
-                        <table class="w-full text-sm">
-                            <tr><td class="py-1 text-gray-600" data-en="Seal Type" data-fa="نوع آب‌بند">Seal Type</td><td class="py-1 font-medium text-right">${product.seal}</td></tr>
-                            <tr><td class="py-1 text-gray-600" data-en="Clearance" data-fa="لقی">Clearance</td><td class="py-1 font-medium text-right">${product.clearance}</td></tr>
-                            <tr><td class="py-1 text-gray-600" data-en="Origin" data-fa="کشور سازنده">Origin</td><td class="py-1 font-medium text-right">${faOrigin(product.origin)}</td></tr>
-                        </table>
-                    </div>
-                    <div class="bg-blue-50/60 rounded-xl p-4">
-                        <h4 class="text-sm font-medium text-gray-500 mb-2" data-en="Datasheet" data-fa="دیتاشیت">Datasheet</h4>
-                        <button onclick="openProductDatasheet('${product.id}')" class="text-sm text-blue-700 font-bold hover:underline break-all text-right" dir="ltr">
-                            <i class="fas fa-file-pdf ml-1"></i>${productDatasheetUrl(product).brand} · ${product.code}
-                        </button>
-                        <p class="text-xs text-gray-400 mt-2 leading-5" data-en="Opens the manufacturer's official datasheet for this part number in a new tab." data-fa="دیتاشیت رسمی سازنده برای همین شماره قطعه در تب جدید باز می‌شود.">دیتاشیت رسمی سازنده برای همین شماره قطعه در تب جدید باز می‌شود.</p>
                     </div>
                 </div>
             </div>

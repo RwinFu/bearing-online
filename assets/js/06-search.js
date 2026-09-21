@@ -29,7 +29,9 @@ function normalizePartCodeDisplay(code) {
     return normalizeLoose(code).replace(/\s+/g, '').toUpperCase();
 }
 
-function getStockBadge(product) {
+// The supplier source chip is an internal signal: pass withSource=false in the
+// customer's cart/checkout flow so shoppers never see who supplies the part.
+function getStockBadge(product, withSource = true) {
     const map = {
         'in-stock': { icon: 'fa-check-circle', cls: 'in-stock', fa: `موجود تهران (${product.stock})`, en: `Tehran stock (${product.stock})` },
         'on-order': { icon: 'fa-clock', cls: 'on-order', fa: product.leadTimeFa || 'در راه', en: 'On order' },
@@ -37,7 +39,7 @@ function getStockBadge(product) {
     };
     const item = map[product.stockStatus] || map.inquiry;
     const suppliers = productSupplierNames(product);
-    const source = suppliers && suppliers.indexOf('انبار خودمان') === -1
+    const source = withSource && suppliers && suppliers.indexOf('انبار خودمان') === -1
         ? `<span class="stock-source-chip"><i class="fas fa-store"></i>${suppliers.join('، ')}</span>`
         : '';
     return `<span class="stock-badge ${item.cls}"><i class="fas ${item.icon}"></i>${AppState.language === 'fa' ? item.fa : item.en}</span>${source}`;

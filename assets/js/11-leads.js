@@ -68,8 +68,11 @@ function submitLead(event) {
     closeLeadModal();
     document.querySelector('#lead-modal form').reset();
     document.getElementById('lead-qty').value = 1;
-    showNotification(AppState.language === 'en' ? 'Request saved. Engineering will contact you fast.' : 'درخواست ثبت شد. تیم مهندسی سریع با شما تماس می‌گیرد.', 'success');
+    showNotification(AppState.language === 'en'
+        ? 'Request saved. Track the answer under My requests on the Orders page.'
+        : 'درخواست ثبت شد. پاسخ در بخش سفارش‌ها ← «درخواست‌های من» نمایش داده می‌شود.', 'success');
     renderAdminLeads();
+    renderAccountRequests();
 }
 
 function setLeadNote(leadId, value) {
@@ -79,7 +82,8 @@ function setLeadNote(leadId, value) {
     lead.techNote = value.trim();
     opsLog('lead.note', `${lead.part}`);
     persistState();
-    showNotification('یادداشت فنی ذخیره شد.', 'success');
+    showNotification('پاسخ ذخیره شد و در «درخواست‌های من» مشتری نمایش داده می‌شود.', 'success');
+    renderAccountRequests();
 }
 
 function deleteLead(leadId) {
@@ -127,7 +131,7 @@ function renderAdminLeads() {
             ${lead.dimensions && (lead.dimensions.d || lead.dimensions.D || lead.dimensions.B) ? `<div class="text-xs text-gray-500">ابعاد: d=${escapeHTML(lead.dimensions.d) || '-'} D=${escapeHTML(lead.dimensions.D) || '-'} B=${escapeHTML(lead.dimensions.B) || '-'}</div>` : ''}
             ${lead.notes ? `<div class="text-xs text-gray-500 mt-1">یادداشت مشتری: ${escapeHTML(lead.notes)}</div>` : ''}
             ${lead.fileName ? `<div class="text-xs text-blue-600">File: ${escapeHTML(lead.fileName)}</div>` : ''}
-            <label class="block text-xs text-gray-500 mt-2">یادداشت فنی / نتیجه بررسی
+            <label class="block text-xs text-gray-500 mt-2">پاسخ برای مشتری (یادداشت فنی / نتیجه بررسی)
                 <textarea ${editable ? '' : 'disabled'} onchange="setLeadNote('${lead.id}',this.value)" rows="2" class="compact-input mt-1 text-xs ${editable ? '' : 'ops-locked'}" placeholder="معادل پیشنهادی، قیمت، زمان تحویل...">${escapeHTML(lead.techNote || '')}</textarea>
             </label>
             <div class="flex flex-wrap items-center gap-2 mt-2">

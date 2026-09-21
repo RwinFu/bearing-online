@@ -587,6 +587,7 @@ function setLeadStatus(leadId, status) {
     opsLog('lead.status', `${lead.part}: ${status}`);
     persistState();
     renderAdminLeads();
+    renderAccountRequests();
 }
 
 const RFQ_STATUS_FA = { waiting_sales: 'در انتظار فروش', quoted: 'قیمت اعلام شد', approved: 'تایید شد', rejected: 'رد شد' };
@@ -607,6 +608,7 @@ function setRFQNote(rfqNumber, value) {
     opsLog('rfq.note', rfqNumber);
     persistState();
     showNotification('یادداشت استعلام ذخیره شد.', 'success');
+    renderAccountRequests();
 }
 
 function deleteRFQ(rfqNumber) {
@@ -641,10 +643,10 @@ function renderOpsRFQ() {
             </div>
             <div class="text-xs text-gray-600 bg-gray-50 rounded-lg p-2 mt-2">اقلام: ${escapeHTML(rfqItemsText(rfq)) || '-'}</div>
             <div class="grid md:grid-cols-2 gap-3 mt-3">
-                <label class="text-xs text-gray-500">قیمت تاییدشده (تومان)<input ${editable ? '' : 'disabled'} value="${escapeHTML(rfq.quotedPrice || '')}" oninput="setRFQField('${rfq.rfqNumber}','quotedPrice',this.value)" class="compact-input mt-1 ${editable ? '' : 'ops-locked'}" placeholder="مثلاً ۲٬۵۰۰٬۰۰۰"></label>
-                <label class="text-xs text-gray-500">زمان تحویل<input ${editable ? '' : 'disabled'} value="${escapeHTML(rfq.leadTime || '')}" oninput="setRFQField('${rfq.rfqNumber}','leadTime',this.value)" class="compact-input mt-1 ${editable ? '' : 'ops-locked'}" placeholder="مثلاً ۲ تا ۳ هفته"></label>
+                <label class="text-xs text-gray-500">قیمت تاییدشده (تومان) — نمایش به مشتری<input ${editable ? '' : 'disabled'} value="${escapeHTML(rfq.quotedPrice || '')}" oninput="setRFQField('${rfq.rfqNumber}','quotedPrice',this.value)" class="compact-input mt-1 ${editable ? '' : 'ops-locked'}" placeholder="مثلاً ۲٬۵۰۰٬۰۰۰"></label>
+                <label class="text-xs text-gray-500">زمان تحویل — نمایش به مشتری<input ${editable ? '' : 'disabled'} value="${escapeHTML(rfq.leadTime || '')}" oninput="setRFQField('${rfq.rfqNumber}','leadTime',this.value)" class="compact-input mt-1 ${editable ? '' : 'ops-locked'}" placeholder="مثلاً ۲ تا ۳ هفته"></label>
             </div>
-            <label class="block text-xs text-gray-500 mt-2">یادداشت داخلی<textarea ${editable ? '' : 'disabled'} onchange="setRFQNote('${rfq.rfqNumber}',this.value)" rows="2" class="compact-input mt-1 text-xs ${editable ? '' : 'ops-locked'}" placeholder="منبع تامین، مذاکره با مشتری...">${escapeHTML(rfq.opsNote || '')}</textarea></label>
+            <label class="block text-xs text-gray-500 mt-2">یادداشت داخلی (فقط داخلی)<textarea ${editable ? '' : 'disabled'} onchange="setRFQNote('${rfq.rfqNumber}',this.value)" rows="2" class="compact-input mt-1 text-xs ${editable ? '' : 'ops-locked'}" placeholder="منبع تامین، مذاکره با مشتری...">${escapeHTML(rfq.opsNote || '')}</textarea></label>
             ${editable ? '' : '<div class="text-xs text-gray-400 mt-1">فقط مدیر/مشاور استعلام</div>'}
         </div>
     `).join('') || '<p class="text-sm text-gray-400">RFQ ثبت نشده است.</p>';
@@ -663,6 +665,7 @@ function setRFQStatus(rfqNumber, status) {
     opsLog('rfq.status', `${rfqNumber}: ${status}`);
     persistState();
     renderOpsRFQ();
+    renderAccountRequests();
 }
 
 function setRFQField(rfqNumber, field, value) {
@@ -671,6 +674,7 @@ function setRFQField(rfqNumber, field, value) {
     if (!rfq) return;
     rfq[field] = value;
     persistState();
+    renderAccountRequests();
 }
 
 const opsOpenOrders = new Set();
