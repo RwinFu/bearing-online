@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initParallax();
     initSpotlight();
     initHeadingLine();
+    initVectorWordmarks();
+    initEngineeringPanels();
     initHero3D();
     animateCounters();
 

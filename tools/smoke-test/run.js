@@ -154,6 +154,16 @@ async function waitFor(fn, ms = 2000) {
         assert(G('AppState').searchResults.length === 33, 'searchResults not initialized');
         return $('#brandRing').children.length + ' brand slots';
     });
+    check('Hero copy + vector wordmark fallbacks are present', () => {
+        const title = $('[data-vector-title] h2');
+        assert(title, 'vector hero title missing');
+        assert(title.getAttribute('data-fa') === 'بلبرینگ صنعتی خود را سریع پیدا کنید', 'Persian hero copy is wrong');
+        assert(title.getAttribute('data-en') === 'Find your industrial bearing fast', 'English hero copy is wrong');
+        const marks = $$('[data-vector-wordmark]');
+        assert(marks.length === 2, 'expected header and footer wordmarks, got ' + marks.length);
+        assert(marks.every(mark => mark.querySelector('.vector-wordmark-fallback')), 'wordmark fallback missing');
+        return marks.length + ' progressive wordmarks';
+    });
     check('Footer year is dynamic (fix #10)', () => {
         assert(txt('#footer-year') === String(new Date().getFullYear()), 'footer year: ' + txt('#footer-year'));
         return txt('#footer-year');
@@ -311,10 +321,28 @@ async function waitFor(fn, ms = 2000) {
         window.toggleCompare('SKF-6206');
         return 'compare + wishlist ok';
     });
-    check('Brands page renders 9 brands', () => {
+    check('Engineering stats panel has clear, localized metrics', () => {
+        const panel = $('[data-engineering-panel]');
+        assert(panel, 'engineering stats panel missing');
+        const cards = $$('.stat-vector-card');
+        assert(cards.length === 4, 'stats cards: ' + cards.length);
+        assert(cards.every(card => card.querySelector('.stat-label[data-fa]') && card.querySelector('.stat-sub[data-en]')), 'metric copy is not bilingual');
+        assert($('#indexed-product-counter').getAttribute('data-count') === '33', 'indexed product counter target is stale');
+        return cards.length + ' localized metrics';
+    });
+    check('Premium brands directory renders, localizes and filters 9 brands', () => {
         window.renderBrandsPage();
-        assert($('#brands-grid').children.length === 9, 'brands grid: ' + $('#brands-grid').children.length);
-        return '9 brands';
+        const cards = $$('#brands-grid [data-brand-card]');
+        assert(cards.length === 9, 'brands grid: ' + cards.length);
+        assert(cards.filter(card => card.querySelector('.brand-card-logo img')).length >= 8, 'local brand logos missing');
+        assert(cards.every(card => card.querySelector('.brand-card-description[data-fa]')), 'localized descriptions missing');
+        window.filterBrandCards('سوئد');
+        assert(cards.filter(card => !card.classList.contains('hidden')).length === 1, 'Persian country filter failed');
+        window.filterBrandCards('not-a-brand');
+        assert(!$('#brands-empty').classList.contains('hidden'), 'empty state not shown');
+        window.filterBrandCards('');
+        assert(cards.every(card => !card.classList.contains('hidden')), 'brand filter did not reset');
+        return cards.length + ' premium brands';
     });
     check('Brand ring uses local logos (fix #8)', () => {
         const imgs = $$('#brandRing img.rc-logo-img, #brandRing img');
