@@ -51,6 +51,7 @@ function toInchFraction(mm) {
 }
 
 function formatDimensions(product) {
+    if (product.type === 'grease') return product.dimensionsLabel || 'NLGI · cartridge';
     const dInch = toInchFraction(product.d);
     const dText = dInch ? `d: ${product.d}mm (≈${dInch})` : `d: ${product.d}mm`;
     return `${dText} | D: ${product.D}mm | B: ${product.B}mm`;
@@ -438,12 +439,12 @@ function executeAutocomplete(value) {
     dropdown.innerHTML = matches.map((p, index) => `
         <div id="search-option-${index}" role="option" aria-selected="false" class="autocomplete-item px-4 py-3 cursor-pointer border-b border-gray-100 flex items-center justify-between hover:bg-blue-50 transition" onclick="closeAutocomplete(); showProductDetail('${p.id}')">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-${p.type === 'bearing' ? 'circle-notch' : p.type === 'linear' ? 'grip-lines' : p.type === 'coupling' ? 'link' : 'cogs'} text-gray-400"></i>
+                <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
+                    ${hasProductImage(p) ? `<img src="${p.image}" alt="" class="w-full h-full object-contain">` : `<i class="fas fa-${productTypeIcon(p.type)} text-gray-400"></i>`}
                 </div>
                 <div>
                     <div class="font-medium text-gray-800" dir="ltr">${p.brand} ${p.code} ${p.searchMeta?.equivalent ? `<span class="mr-2 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs">${AppState.language === 'fa' ? 'معادل' : 'Equivalent'}</span>` : ''}</div>
-                    <div class="text-sm text-gray-500" dir="ltr">${p.d}×${p.D}×${p.B} mm | ${getIdentifierLabel('mpn')}: ${getProductIdentifiers(p).mpn}</div>
+                    <div class="text-sm text-gray-500" dir="ltr">${p.type === 'grease' ? (p.dimensionsLabel || '') : `${p.d}×${p.D}×${p.B} mm`} | ${getIdentifierLabel('mpn')}: ${getProductIdentifiers(p).mpn}</div>
                 </div>
             </div>
             <div class="text-right">
@@ -848,8 +849,8 @@ function renderSearchResults() {
         tableContainer.classList.add('hidden');
         container.innerHTML = AppState.searchResults.map(p => `
             <div tabindex="0" role="link" aria-label="${p.brand} ${p.code}" onkeydown="if(event.target === this && event.key === 'Enter') showProductDetail('${p.id}')" class="bg-white rounded-2xl shadow-sm overflow-hidden card-hover tilt-card animate-fade-in cursor-pointer" onclick="showProductDetail('${p.id}')">
-                <div class="product-image-bg p-8 flex items-center justify-center relative">
-                    <i class="fas fa-${p.type === 'bearing' ? 'circle-notch' : p.type === 'linear' ? 'grip-lines' : p.type === 'coupling' ? 'link' : 'cogs'} text-6xl text-gray-300"></i>
+                <div class="product-image-bg p-6 sm:p-8 flex items-center justify-center relative">
+                    ${hasProductImage(p) ? `<img src="${p.image}" alt="${p.brand} ${p.code}" class="product-photo max-h-44 w-auto max-w-full object-contain rounded-lg" loading="lazy">` : `<i class="fas fa-${productTypeIcon(p.type)} text-6xl text-gray-300"></i>`}
                     <button onclick="event.stopPropagation(); toggleCompare('${p.id}')" aria-label="${AppState.language === 'fa' ? 'مقایسه' : 'Compare'}" class="absolute top-4 right-4 w-10 h-10 rounded-full ${AppState.compareList.includes(p.id) ? 'bg-blue-500 text-white' : 'bg-white text-gray-400 hover:text-blue-500'} shadow flex items-center justify-center transition">
                         <i class="fas fa-balance-scale"></i>
                     </button>

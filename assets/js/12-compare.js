@@ -82,7 +82,7 @@ function renderCompare() {
                         ${products.map(p => `
                             <th class="p-6 text-center min-w-48">
                                 <div class="w-20 h-20 mx-auto bg-gray-100 rounded-xl flex items-center justify-center mb-4">
-                                    <i class="fas fa-${p.type === 'bearing' ? 'circle-notch' : p.type === 'linear' ? 'grip-lines' : p.type === 'coupling' ? 'link' : 'cogs'} text-2xl text-gray-300"></i>
+                                    ${hasProductImage(p) ? `<img src="${p.image}" alt="" class="w-full h-full object-contain">` : `<i class="fas fa-${productTypeIcon(p.type)} text-2xl text-gray-300"></i>`}
                                 </div>
                                 <div class="font-bold text-gray-800">${p.brand} ${p.code}</div>
                                 <button onclick="toggleCompare('${p.id}'); renderCompare();" class="text-red-500 text-sm mt-2 hover:underline" data-en="Remove" data-fa="حذف">Remove</button>
@@ -97,23 +97,23 @@ function renderCompare() {
                     </tr>
                     <tr class="border-b border-gray-50 bg-gray-50">
                         <td class="p-4 text-gray-600" data-en="Inner Diameter (d)" data-fa="قطر داخلی (d)">Inner Diameter (d)</td>
-                        ${products.map(p => `<td class="p-4 text-center">${p.d} mm</td>`).join('')}
+                        ${products.map(p => `<td class="p-4 text-center">${p.type === 'grease' ? '—' : `${p.d} mm`}</td>`).join('')}
                     </tr>
                     <tr class="border-b border-gray-50">
                         <td class="p-4 text-gray-600" data-en="Outer Diameter (D)" data-fa="قطر خارجی (D)">Outer Diameter (D)</td>
-                        ${products.map(p => `<td class="p-4 text-center">${p.D} mm</td>`).join('')}
+                        ${products.map(p => `<td class="p-4 text-center">${p.type === 'grease' ? '—' : `${p.D} mm`}</td>`).join('')}
                     </tr>
                     <tr class="border-b border-gray-50 bg-gray-50">
                         <td class="p-4 text-gray-600" data-en="Width (B)" data-fa="عرض (B)">Width (B)</td>
-                        ${products.map(p => `<td class="p-4 text-center">${p.B} mm</td>`).join('')}
+                        ${products.map(p => `<td class="p-4 text-center">${p.type === 'grease' ? '—' : `${p.B} mm`}</td>`).join('')}
                     </tr>
                     <tr class="border-b border-gray-50">
                         <td class="p-4 text-gray-600" data-en="Speed Rating" data-fa="سرعت مجاز">Speed Rating</td>
-                        ${products.map(p => `<td class="p-4 text-center">${formatNumber(p.speedRating)} rpm</td>`).join('')}
+                        ${products.map(p => `<td class="p-4 text-center">${p.type === 'grease' ? '—' : `${formatNumber(p.speedRating)} rpm`}</td>`).join('')}
                     </tr>
                     <tr class="border-b border-gray-50 bg-gray-50">
                         <td class="p-4 text-gray-600" data-en="Load Rating" data-fa="ظرفیت بار">Load Rating</td>
-                        ${products.map(p => `<td class="p-4 text-center">${formatNumber(p.loadRating)} N</td>`).join('')}
+                        ${products.map(p => `<td class="p-4 text-center">${p.type === 'grease' ? '—' : `${formatNumber(p.loadRating)} N`}</td>`).join('')}
                     </tr>
                     <tr class="border-b border-gray-50">
                         <td class="p-4 text-gray-600" data-en="Weight" data-fa="وزن">Weight</td>

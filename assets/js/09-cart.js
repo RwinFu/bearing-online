@@ -80,11 +80,11 @@ function renderCart() {
                         ${cartItems.map(item => `
                             <div class="p-6 flex items-center gap-6 cart-line">
                                 <div class="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                                    <i class="fas fa-${item.type === 'bearing' ? 'circle-notch' : item.type === 'linear' ? 'grip-lines' : item.type === 'coupling' ? 'link' : 'cogs'} text-2xl text-gray-300"></i>
+                                    ${hasProductImage(item) ? `<img src="${item.image}" alt="" class="w-full h-full object-contain">` : `<i class="fas fa-${productTypeIcon(item.type)} text-2xl text-gray-300"></i>`}
                                 </div>
                                 <div class="flex-1">
                                     <h4 class="font-bold text-gray-800">${item.brand} ${item.code}</h4>
-                                    <p class="text-sm text-gray-500">${item.d}×${item.D}×${item.B} mm</p>
+                                    <p class="text-sm text-gray-500" dir="ltr">${item.type === 'grease' ? (item.dimensionsLabel || '') : `${item.d}×${item.D}×${item.B} mm`}</p>
                                 </div>
                                 <div class="flex items-center gap-3 cart-line-controls">
                                     <button onclick="updateCartQuantity('${item.id}', -1)" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">

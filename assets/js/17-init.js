@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initSpotlight();
     initHeadingLine();
     initVectorWordmarks();
+    initPageVectorLayer();
     initEngineeringPanels();
     initHero3D();
     animateCounters();
