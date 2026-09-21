@@ -587,9 +587,11 @@ function setLeadStatus(leadId, status) {
     opsLog('lead.status', `${lead.part}: ${status}`);
     persistState();
     renderAdminLeads();
+    renderAccountLeads();
 }
 
-const RFQ_STATUS_FA = { waiting_sales: 'در انتظار فروش', quoted: 'قیمت اعلام شد', approved: 'تایید شد', rejected: 'رد شد' };
+// RFQ_STATUS_FA lives in 10-checkout-mock.js (loaded first) because the
+// customer's Orders page and the ops panel both read the same labels.
 
 function rfqItemsText(rfq) {
     return (rfq.items || []).map(it => `${it.brand || ''} ${it.code || it.id || ''} × ${it.quantity || 1}`).join('، ');
@@ -618,6 +620,7 @@ function deleteRFQ(rfqNumber) {
     opsLog('rfq.delete', rfqNumber);
     persistState();
     renderOpsRFQ();
+    renderAccountRFQs();
     renderOpsOverview();
     updateOpsBadges();
     showNotification('استعلام حذف شد.', 'success');
@@ -663,6 +666,7 @@ function setRFQStatus(rfqNumber, status) {
     opsLog('rfq.status', `${rfqNumber}: ${status}`);
     persistState();
     renderOpsRFQ();
+    renderAccountRFQs();
 }
 
 function setRFQField(rfqNumber, field, value) {
@@ -671,6 +675,8 @@ function setRFQField(rfqNumber, field, value) {
     if (!rfq) return;
     rfq[field] = value;
     persistState();
+    // The buyer follows the announced price/lead time on the Orders page.
+    renderAccountRFQs();
 }
 
 const opsOpenOrders = new Set();

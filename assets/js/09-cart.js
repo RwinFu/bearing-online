@@ -116,12 +116,10 @@ function renderCart() {
                     </div>
                     <div class="divide-y divide-gray-100">
                         ${cartItems.map(item => {
-                            const src = productSupplierNames(item) || [];
-                            const ext = src.filter(name => name !== 'انبار خودمان');
-                            const supplierSelect = ext.length > 0 ? `
-                                <select onchange="setCartSupplier('${item.id}', this.value)" class="compact-input mt-1 text-xs" aria-label="تامین‌کننده">
-                                    ${src.map(name => `<option value="${name}" ${(item.supplier || 'انبار خودمان') === name ? 'selected' : ''}>${name}</option>`).join('')}
-                                </select>` : '';
+                            // Which supplier fulfils the line is internal data: the
+                            // buyer only sees the part, size, stock state and price.
+                            // The choice stays on the line (data-supplier) so the
+                            // order snapshot and the ops panel keep working.
                             return `
                             <div class="p-6 flex items-center gap-6 cart-line" data-supplier="${escapeHTML(item.supplier || 'انبار خودمان')}">
                                 <div class="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -130,7 +128,7 @@ function renderCart() {
                                 <div class="flex-1">
                                     <h4 class="font-bold text-gray-800">${item.brand} ${item.code}</h4>
                                     <p class="text-sm text-gray-500" dir="ltr">${productSizeLabel(item)}</p>
-                                    <div class="text-xs text-gray-500 mt-1">تامین‌کننده: <b class="text-gray-700">${escapeHTML(item.supplier || 'انبار خودمان')}</b>${supplierSelect}</div>
+                                    <div class="text-xs mt-1">${getStockBadge(item, true)}</div>
                                 </div>
                                 <div class="flex items-center gap-3 cart-line-controls">
                                     <button onclick="updateCartLine('${item.id}', -1, this)" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">

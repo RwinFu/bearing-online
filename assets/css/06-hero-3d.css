@@ -282,23 +282,8 @@ html[dir="ltr"] .stat-vector-card:last-child { border-inline-end: 0; }
     .vector-engineering-panel::before, .stats-panel-live i, .signal-pulse { animation: none; }
 }
 
-/* ===== FULL-PAGE VECTOR MOTION (first page) =====
-   Extends the hero wordmark motion to every [data-vector-page] text block.
-   A viewport-sized canvas pinned to the top of the page re-draws each block
-   in the same blueprint language: soft body, gold dotted contour, a radial
-   glow that follows the pointer (or an ambient sweep when idle) and drifting
-   vector handles on the active block. The DOM text stays in the tree (works
-   without JS); it is only faded out while the layer is live. */
-#page-vector-canvas {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 30;
-    pointer-events: none;
-    display: block;
-}
-#page-home.vector-page-live [data-vector-page] { color: transparent !important; }
-@media (prefers-reduced-motion: reduce) {
-    #page-vector-canvas { display: none; }
-}
+/* The full-page vector motion layer was removed for performance: a viewport
+   canvas re-drew every [data-vector-page] heading on the home page and followed
+   the pointer with a highlight glow. The hero title
+   ("بلبرینگ صنعتی خود را سریع پیدا کنید") keeps the same effect on its own
+   scoped canvas via .vector-hero-title — see 06-hero-3d.css above. */

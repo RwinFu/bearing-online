@@ -259,7 +259,7 @@ async function waitFor(fn, ms = 2000) {
         assert(faCart && faCart.textContent.trim() === 'اقلام سبد', 'cart stays English in fa mode: ' + (faCart && faCart.textContent));
         return 'fa ok';
     });
-    check('Cart records supplier choice for multi-supplier products', () => {
+    check('Cart keeps the supplier internally but hides it from the customer', () => {
         const AS = G('AppState');
         const DB = G('MockDB');
         const prod = G('ProductDatabase').find(p => p.id === 'SKF-6205');
@@ -277,11 +277,19 @@ async function waitFor(fn, ms = 2000) {
         window.setCartSupplier('SKF-6205', 'آقای اسکوئی');
         assert(AS.cart.find(i => i.id === 'SKF-6205').supplier === 'آقای اسکوئی', 'setCartSupplier failed');
         window.renderCart();
-        assert(txt('#cart-content').includes('آقای اسکوئی'), 'cart line does not show chosen supplier');
-        assert($('#cart-content select'), 'no supplier picker for multi-supplier item');
+        // The buyer must never see where the line is sourced from; the choice stays
+        // on the cart line (data-supplier) for the order snapshot and the ops panel.
+        assert(!txt('#cart-content').includes('آقای اسکوئی'), 'customer cart leaks the supplier name');
+        assert(!txt('#cart-content').includes('تامین‌کننده'), 'customer cart shows a supplier label');
+        assert(!$('#cart-content select'), 'customer cart still renders a supplier picker');
+        assert(/data-supplier="آقای اسکوئی"/.test($('#cart-content').innerHTML), 'supplier not kept on the cart line');
+        assert(txt('#cart-content').includes('موجود'), 'cart line lost the stock badge');
+        window.showCheckout();
+        window.renderCheckout();
+        assert(!txt('#checkout-content').includes('آقای اسکوئی'), 'checkout leaks the supplier name');
         DB.suppliers = DB.suppliers.filter(s => s.id !== second.id);
         window.replaceProductSuppliers(prod.id);
-        return 'supplier cart ok';
+        return 'supplier hidden from customer';
     });
     check('Checkout: quotes → order → proforma', () => {
         window.showCheckout();
@@ -332,6 +340,83 @@ async function waitFor(fn, ms = 2000) {
         window.closeLeadModal();
         window.renderAdminLeads();
         return G('AppState').leads.length + ' leads';
+    });
+    check('Home page keeps the hero title effect only (no page-wide hover glow)', () => {
+        assert(!$('#page-vector-canvas'), 'full-page vector canvas is still in the markup');
+        assert($$('[data-vector-page]').length === 0, 'data-vector-page blocks left: ' + $$('[data-vector-page]').length);
+        let stillDefined = true;
+        try { window.eval('initPageVectorLayer'); } catch (e) { stillDefined = false; }
+        assert(!stillDefined, 'initPageVectorLayer still exists');
+        assert($('#page-home [data-vector-title] h2'), 'hero title vector effect was removed too');
+        return 'hero-only vector effect';
+    });
+    check('Datasheet: one control, real link (never a blank site)', () => {
+        window.showProductDetail('SKF-6205');
+        const pick = () => $$('#product-detail-content a[target="_blank"]')
+            .filter(a => /دیتاشیت|Datasheet/i.test(a.textContent));
+        let ds = pick();
+        assert(ds.length === 1, 'expected exactly one datasheet control, got ' + ds.length);
+        assert(ds[0].getAttribute('href').startsWith('https://www.skf.com/group/search-results?q=6205'),
+            'SKF datasheet link: ' + ds[0].getAttribute('href'));
+        // the second datasheet card inside "مشخصات فنی" must be gone
+        assert(!/bg-blue-50\/60/.test($('#product-detail-content').innerHTML), 'second datasheet card still in the specs grid');
+        window.showProductDetail('FAG-6205');
+        ds = pick();
+        assert(ds.length === 1, 'expected one datasheet control for FAG, got ' + ds.length);
+        assert(ds[0].href.startsWith('https://www.google.com/search?q='), 'fallback datasheet link: ' + ds[0].href);
+        assert(decodeURIComponent(ds[0].href).includes('"6205" FAG datasheet'), 'fallback query: ' + ds[0].href);
+        const html = $('#product-detail-content').innerHTML;
+        assert(!/bearingdata\.com|nsk\.com\/services|bearingfinder|medias\.schaeffler/.test(html), 'dead datasheet endpoint still referenced');
+        return 'datasheet ok';
+    });
+    check('Requests: tracking code, answer channels and My requests list', () => {
+        const AS = G('AppState');
+        AS.leads = [];
+        window.openLeadModal('consultation', 'SKF 6205');
+        assert(visible('#lead-form') && !visible('#lead-success'), 'modal must open on the form');
+        assert(txt('#lead-modal').includes('پاسخ این درخواست کجا به دست شما می‌رسد؟'), 'modal does not explain where the answer goes');
+        $('#lead-name').value = 'تست کاربر';
+        $('#lead-phone').value = '09120000000';
+        $('#lead-part').value = 'SKF 6205';
+        window.submitLead({ preventDefault() {} });
+        const lead = AS.leads[0];
+        assert(lead && /^REQ-\d{4}-\d{6}/.test(lead.id), 'tracking code: ' + (lead && lead.id));
+        assert(visible('#lead-success') && !visible('#lead-form'), 'success card not shown after submit');
+        assert(txt('#lead-success-code') === lead.id, 'success card shows the wrong code: ' + txt('#lead-success-code'));
+        assert(txt('#lead-success-channels').includes('09120000000'), 'success card does not name the answer channel');
+        window.showMyRequests();
+        assert($('#lead-modal').classList.contains('hidden'), 'modal stayed open after showMyRequests');
+        assert($('#account-requests'), 'My requests list missing on the Orders page');
+        assert(txt('#account-requests').includes(lead.id), 'request not listed for the customer');
+        assert(txt('#account-requests').includes('مشاوره مهندسی'), 'request type missing');
+        assert(txt('#account-content').includes('درخواست‌های من'), 'requests section heading missing');
+        // the engineering answer + status written in the ops panel must reach the buyer
+        window.setLeadNote(lead.id, 'معادل پیشنهادی: 6205-2RSH، قیمت ۲٬۴۰۰٬۰۰۰ تومان');
+        window.setLeadStatus(lead.id, 'done');
+        const text = txt('#account-requests');
+        assert(text.includes('پاسخ تیم مهندسی'), 'customer cannot see the engineering answer');
+        assert(text.includes('پاسخ داده شد'), 'customer cannot see the answered status');
+        assert(text.includes('6205-2RSH'), 'engineering answer text missing');
+        window.openLeadModal('quick-order', 'UCP205');
+        assert(visible('#lead-form') && !visible('#lead-success'), 'modal must reset to the form on reopen');
+        window.closeLeadModal();
+        return lead.id;
+    });
+    check('RFQ customer view shows status and price, never the supplier', () => {
+        const DB = G('MockDB');
+        const keep = DB.rfqs;
+        DB.rfqs = [{ rfqNumber: 'RFQ-TEST-1', status: 'quoted', quotedPrice: '۲٬۵۰۰٬۰۰۰', leadTime: '۲ تا ۳ هفته',
+            opsNote: 'منبع تامین: آقای اسکوئی', createdAt: 'now',
+            items: [{ brand: 'FAG', code: '22220E1', quantity: 2, supplier: 'آقای اسکوئی' }] }];
+        window.showAccount();
+        const text = txt('#account-rfqs');
+        assert(text.includes('RFQ-TEST-1') && text.includes('قیمت اعلام شد'), 'RFQ status missing: ' + text.slice(0, 120));
+        assert(text.includes('۲٬۵۰۰٬۰۰۰') && text.includes('۲ تا ۳ هفته'), 'announced price/lead time missing');
+        assert(!text.includes('آقای اسکوئی'), 'RFQ view leaks the supplier');
+        assert(!text.includes('منبع تامین'), 'RFQ view leaks the internal note');
+        DB.rfqs = keep;
+        window.renderAccountRFQs();
+        return 'rfq customer view ok';
     });
     check('Compare + wishlist', () => {
         window.toggleCompare('SKF-6205');

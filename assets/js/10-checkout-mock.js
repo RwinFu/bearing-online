@@ -232,7 +232,7 @@ function renderCheckout() {
                 <div class="checkout-step-card overflow-hidden">
                     <div class="p-5 border-b border-gray-100 flex items-center gap-3"><span class="step-dot">۱</span><h3 class="font-extrabold">سبد خرید</h3></div>
                     <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50"><tr><th class="p-3 text-right">کالا</th><th class="p-3">موجودی</th><th class="p-3">تعداد</th><th class="p-3">جمع</th></tr></thead><tbody>
-                        ${getCartProducts().map(item => `<tr class="border-t"><td class="p-3"><b>${item.brand} ${item.code}</b><div class="text-gray-400">${item.sell_mode === 'instant' ? 'خرید آنلاین' : 'نیازمند استعلام'}${item.supplier ? ' · ' + escapeHTML(item.supplier) : ''}</div></td><td class="p-3">${getStockBadge(item)}</td><td class="p-3">${item.quantity}</td><td class="p-3 font-bold">${item.sell_mode === 'instant' ? formatToman(moneyTomanFromUSD(item.priceUSD) * item.quantity) + ' تومان' : 'RFQ'}</td></tr>`).join('')}
+                        ${getCartProducts().map(item => `<tr class="border-t"><td class="p-3"><b>${item.brand} ${item.code}</b><div class="text-gray-400">${item.sell_mode === 'instant' ? 'خرید آنلاین' : 'نیازمند استعلام'}</div></td><td class="p-3">${getStockBadge(item, true)}</td><td class="p-3">${item.quantity}</td><td class="p-3 font-bold">${item.sell_mode === 'instant' ? formatToman(moneyTomanFromUSD(item.priceUSD) * item.quantity) + ' تومان' : 'RFQ'}</td></tr>`).join('')}
                     </tbody></table></div>
                 </div>
                 ${quote.length ? `<div class="bg-orange-50 border border-orange-100 rounded-2xl p-5"><b>RFQ جداگانه</b><p class="text-sm text-orange-800 mt-2">${quote.length} قلم استعلامی از پرداخت فوری جدا شد و به پیش‌فاکتور/تأیید فروش متصل می‌شود. برای این اقلام قیمت حدس زده نمی‌شود.</p><button onclick="createRFQFromQuoteItems()" class="mt-4 btn-accent text-white px-5 py-3 rounded-xl font-bold">ثبت RFQ اقلام استعلامی</button></div>` : ''}
@@ -289,6 +289,10 @@ function selectShippingQuote(q) {
     showNotification('روش ارسال انتخاب شد.', 'success');
 }
 
+// Status labels shared by the ops panel (14-admin.js) and the customer's
+// Orders page; declared here because this module loads first.
+const RFQ_STATUS_FA = { waiting_sales: 'در انتظار فروش', quoted: 'قیمت اعلام شد', approved: 'تایید شد', rejected: 'رد شد' };
+
 function createRFQFromQuoteItems() {
     const { quote } = splitCartBySellMode();
     if (!quote.length) return;
@@ -298,7 +302,7 @@ function createRFQFromQuoteItems() {
     persistState();
     updateCartCount();
     renderCheckout();
-    showNotification('RFQ اقلام استعلامی ثبت شد.', 'success');
+    showNotification('استعلام این اقلام ثبت شد؛ وضعیت و قیمت در «سفارش‌ها ← استعلام قیمت اقلام» اعلام می‌شود.', 'success');
 }
 
 function createOrderAndPay() {
@@ -394,6 +398,35 @@ function renderCheckoutSuccess(order) {
     showPage('checkout');
 }
 
+// Customer view of every RFQ raised from the cart/checkout: real status from
+// the ops panel, announced price and lead time, plus the channels the answer
+// comes back through. Internal notes and the sourcing supplier stay hidden.
+function renderAccountRFQs() {
+    const container = document.getElementById('account-rfqs');
+    if (!container) return;
+    container.innerHTML = MockDB.rfqs.map(rfq => {
+        const status = RFQ_STATUS_FA[rfq.status] || RFQ_STATUS_FA.waiting_sales;
+        const badge = rfq.status === 'approved' ? 'in-stock' : rfq.status === 'rejected' ? 'rejected' : rfq.status === 'quoted' ? 'on-order' : 'inquiry';
+        const waText = encodeURIComponent(`پیگیری استعلام ${rfq.rfqNumber}`);
+        return `<div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+            <div class="flex flex-col md:flex-row md:items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-2"><b dir="ltr">${escapeHTML(rfq.rfqNumber)}</b><span class="stock-badge ${badge}">${escapeHTML(status)}</span>${rfq.linkedOrder ? `<span class="text-xs text-gray-400">سفارش <b dir="ltr">${escapeHTML(rfq.linkedOrder)}</b></span>` : ''}</div>
+                    <p class="text-sm text-gray-600 mt-2">اقلام: ${escapeHTML(rfqItemsText(rfq)) || '-'}</p>
+                    <p class="text-xs text-gray-400 mt-1">ثبت: ${escapeHTML(rfq.createdAt || '-')}${rfq.quotedPrice ? ` | قیمت اعلام‌شده: <b class="text-gray-700">${escapeHTML(rfq.quotedPrice)} تومان</b>` : ''}${rfq.leadTime ? ` | زمان تحویل: <b class="text-gray-700">${escapeHTML(rfq.leadTime)}</b>` : ''}</p>
+                    <p class="text-xs text-gray-500 mt-2">${rfq.status === 'quoted' || rfq.status === 'approved'
+                        ? 'قیمت و زمان تحویل اعلام شد؛ برای نهایی کردن خرید با کارشناس فروش تماس بگیرید یا همان استعلام را در واتس‌اپ پیگیری کنید.'
+                        : 'به‌محض اعلام قیمت، وضعیت همین‌جا به «قیمت اعلام شد» تغییر می‌کند و کارشناس فروش با شما تماس می‌گیرد / در واتس‌اپ پیام می‌دهد.'}</p>
+                </div>
+                <div class="flex md:flex-col gap-2 shrink-0">
+                    <a href="https://wa.me/989123224260?text=${waText}" target="_blank" rel="noopener" class="px-4 py-2 rounded-xl bg-green-50 border border-green-100 text-green-700 text-xs font-bold whitespace-nowrap"><i class="fab fa-whatsapp ml-1"></i>پیگیری در واتس‌اپ</a>
+                    <a href="tel:+982188709158" class="px-4 py-2 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold whitespace-nowrap"><i class="fas fa-phone ml-1"></i>تماس با کارشناس فروش</a>
+                </div>
+            </div>
+        </div>`;
+    }).join('') || '<div class="bg-white rounded-2xl p-8 text-center text-gray-500">استعلامی ثبت نشده است.</div>';
+}
+
 function showAccount(highlightOrder = '') {
     const container = document.getElementById('account-content');
     const orderCards = MockDB.orders.map(order => {
@@ -419,19 +452,27 @@ function showAccount(highlightOrder = '') {
         </div>`;
     }).join('');
 
-    const rfqCards = MockDB.rfqs.map(rfq => `<div class="bg-orange-50 border border-orange-100 rounded-2xl p-5">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3"><div><b>${rfq.rfqNumber}</b><p class="text-sm text-orange-800 mt-1">${rfq.items.length} قلم استعلامی | وضعیت: در انتظار تایید فروش</p></div><button onclick="showNotification('در نسخه واقعی، این درخواست به کارتابل فروش وصل می‌شود.', 'info')" class="px-4 py-2 rounded-xl bg-white border border-orange-200 text-orange-700 font-bold">درخواست تمدید/پیگیری</button></div>
-    </div>`).join('');
-
     container.innerHTML = `
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="bg-white rounded-2xl p-5 shadow-sm"><p class="text-gray-400 text-sm">سفارش‌ها</p><b class="text-3xl text-gray-900">${MockDB.orders.length}</b></div>
             <div class="bg-white rounded-2xl p-5 shadow-sm"><p class="text-gray-400 text-sm">پیش‌فاکتورها</p><b class="text-3xl text-gray-900">${MockDB.proformas.length}</b></div>
-            <div class="bg-white rounded-2xl p-5 shadow-sm"><p class="text-gray-400 text-sm">RFQ ها</p><b class="text-3xl text-gray-900">${MockDB.rfqs.length}</b></div>
+            <div class="bg-white rounded-2xl p-5 shadow-sm"><p class="text-gray-400 text-sm">استعلام‌ها (RFQ)</p><b class="text-3xl text-gray-900">${MockDB.rfqs.length}</b></div>
+            <div class="bg-white rounded-2xl p-5 shadow-sm"><p class="text-gray-400 text-sm">درخواست‌های من</p><b class="text-3xl text-gray-900">${AppState.leads.length}</b></div>
         </div>
         <div class="grid gap-4 mb-8"><h3 class="font-extrabold text-xl">پیگیری سفارش‌ها</h3>${orderCards || '<div class="bg-white rounded-2xl p-8 text-center text-gray-500">سفارشی ثبت نشده است.</div>'}</div>
-        <div class="grid gap-4"><h3 class="font-extrabold text-xl">پیش‌فاکتورهای استعلامی</h3>${rfqCards || '<div class="bg-white rounded-2xl p-8 text-center text-gray-500">RFQ ثبت نشده است.</div>'}</div>
+        <div class="grid gap-4 mb-8">
+            <h3 class="font-extrabold text-xl">استعلام قیمت اقلام (RFQ)</h3>
+            <p class="text-sm text-gray-500 -mt-2">وضعیت و قیمت اعلام‌شدهٔ هر استعلام همین‌جا به‌روز می‌شود؛ هم‌زمان کارشناس فروش تماس می‌گیرد یا در واتس‌اپ پیام می‌دهد.</p>
+            <div id="account-rfqs" class="grid gap-3"></div>
+        </div>
+        <div class="grid gap-4 mb-8">
+            <h3 class="font-extrabold text-xl">درخواست‌های من <span class="text-sm font-medium text-gray-400">(درخواست قیمت، مشاوره مهندسی، ثبت سریع قطعه)</span></h3>
+            <p class="text-sm text-gray-500 -mt-2">پاسخ هر درخواست به‌صورت تماس و واتس‌اپ با شماره‌ای که ثبت کرده‌اید اعلام می‌شود و وضعیت و پاسخ کتبی کارشناس در همین فهرست قرار می‌گیرد.</p>
+            <div id="account-requests" class="grid gap-3"></div>
+        </div>
     `;
+    renderAccountRFQs();
+    renderAccountLeads();
     renderAccountComplaints();
     if (highlightOrder) {
         setTimeout(() => {
