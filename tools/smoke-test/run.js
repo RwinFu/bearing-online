@@ -237,6 +237,20 @@ async function waitFor(fn, ms = 2000) {
         assert(langEls[0].textContent.trim() === langEls[0].getAttribute('data-fa'), 'applyLanguage not run after render');
         return langEls.length + ' localized nodes';
     });
+    check('Product page: one datasheet button opening a real URL; specs block removed', () => {
+        window.showProductDetail('SKF-6205');
+        const c = $('#product-detail-content');
+        assert(!c.textContent.includes('مشخصات فنی'), 'Technical Specifications block must be removed');
+        const dsButtons = [...c.querySelectorAll('button')].filter(b => (b.getAttribute('onclick') || '').includes('openProductDatasheet'));
+        assert(dsButtons.length === 1, 'expected exactly 1 datasheet button, got ' + dsButtons.length);
+        let opened = '';
+        const origOpen = window.open;
+        window.open = (url) => { opened = String(url); return origOpen(); };
+        try { window.openProductDatasheet('SKF-6205'); } finally { window.open = origOpen; }
+        assert(/^https?:\/\//.test(opened), 'datasheet did not open a real URL: ' + opened);
+        assert(!/undefined|about:blank/.test(opened), 'datasheet opened a blank page: ' + opened);
+        return opened.slice(0, 70);
+    });
     check('Cart: add / quantity / totals', () => {
         const AS = G('AppState');
         AS.cart = [];
@@ -259,7 +273,7 @@ async function waitFor(fn, ms = 2000) {
         assert(faCart && faCart.textContent.trim() === 'اقلام سبد', 'cart stays English in fa mode: ' + (faCart && faCart.textContent));
         return 'fa ok';
     });
-    check('Cart records supplier choice for multi-supplier products', () => {
+    check('Cart keeps the supplier internal — never shown to the customer', () => {
         const AS = G('AppState');
         const DB = G('MockDB');
         const prod = G('ProductDatabase').find(p => p.id === 'SKF-6205');
@@ -277,11 +291,15 @@ async function waitFor(fn, ms = 2000) {
         window.setCartSupplier('SKF-6205', 'آقای اسکوئی');
         assert(AS.cart.find(i => i.id === 'SKF-6205').supplier === 'آقای اسکوئی', 'setCartSupplier failed');
         window.renderCart();
-        assert(txt('#cart-content').includes('آقای اسکوئی'), 'cart line does not show chosen supplier');
-        assert($('#cart-content select'), 'no supplier picker for multi-supplier item');
+        const cartTxt = txt('#cart-content');
+        assert(!cartTxt.includes('آقای اسکوئی'), 'supplier name leaked into the cart UI');
+        assert(!cartTxt.includes('تامین‌کننده'), 'supplier label leaked into the cart UI');
+        assert(!$('#cart-content select'), 'supplier picker must be hidden from the customer');
+        const line = $('#cart-content .cart-line');
+        assert(line && line.dataset.supplier === 'آقای اسکوئی', 'internal supplier not kept on the cart line');
         DB.suppliers = DB.suppliers.filter(s => s.id !== second.id);
         window.replaceProductSuppliers(prod.id);
-        return 'supplier cart ok';
+        return 'supplier hidden ok';
     });
     check('Checkout: quotes → order → proforma', () => {
         window.showCheckout();
@@ -332,6 +350,29 @@ async function waitFor(fn, ms = 2000) {
         window.closeLeadModal();
         window.renderAdminLeads();
         return G('AppState').leads.length + ' leads';
+    });
+    check('My requests: price/consultation/quick-part answers visible to the customer', () => {
+        window.setStaffRole('manager');
+        window.openLeadModal('product-quote', 'SKF 6205');
+        $('#lead-name').value = 'مشتری تست';
+        $('#lead-phone').value = '09120000002';
+        $('#lead-part').value = 'SKF 6205';
+        window.submitLead({ preventDefault() {} });
+        const lead = G('AppState').leads[0];
+        assert(lead && lead.source === 'product-quote', 'price request not stored');
+        window.setLeadNote(lead.id, 'قیمت ۲٬۵۰۰٬۰۰۰ تومان — تحویل ۲ هفته');
+        G('MockDB').rfqs.unshift({ rfqNumber: 'RFQ-TEST-1', status: 'quoted', items: [{ brand: 'SKF', code: '6205', quantity: 2 }], createdAt: 'امروز', quotedPrice: '۳٬۰۰۰٬۰۰۰', leadTime: '۱۰ روز' });
+        window.showAccount();
+        const acc = txt('#account-content');
+        assert(acc.includes('درخواست‌های من'), 'my-requests section missing on the account page');
+        assert(acc.includes('درخواست قیمت'), 'price-request source label missing');
+        assert(acc.includes('قیمت ۲٬۵۰۰٬۰۰۰ تومان — تحویل ۲ هفته'), 'lead answer not visible to the customer');
+        assert(acc.includes('RFQ-TEST-1'), 'RFQ card missing from my requests');
+        assert(acc.includes('قیمت اعلام شد'), 'RFQ status not visible to the customer');
+        assert(acc.includes('۳٬۰۰۰٬۰۰۰') && acc.includes('۱۰ روز'), 'RFQ answer (price / lead time) not visible');
+        G('MockDB').rfqs = G('MockDB').rfqs.filter(r => r.rfqNumber !== 'RFQ-TEST-1');
+        window.renderAccountRequests();
+        return 'answers visible';
     });
     check('Compare + wishlist', () => {
         window.toggleCompare('SKF-6205');
