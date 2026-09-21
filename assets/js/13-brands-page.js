@@ -32,8 +32,12 @@ function renderBrandsPage() {
         const countryFa = BRAND_COUNTRY_FA[info.country] || info.country;
         const descriptionFa = BRAND_DESCRIPTION_FA[name] || 'برند معتبر قابل تأمین با تضمین اصالت و پشتیبانی فنی.';
         const searchable = `${name} ${info.country} ${countryFa} ${descriptionFa}`.toLocaleLowerCase();
+        const catalogUrl = (typeof BRAND_CATALOGS !== 'undefined' && BRAND_CATALOGS[name]) || '';
+        const catalogBtn = catalogUrl
+            ? `<a class="brand-catalog-btn" href="${catalogUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" aria-label="${name} catalog"><i class="fas fa-book-open"></i><span data-en="Catalog" data-fa="کاتالوگ">کاتالوگ</span></a>`
+            : '';
         return `
-        <article class="brand-page-card" tabindex="0" role="link" data-brand-card data-search="${searchable}" onclick="filterByBrand('${name}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filterByBrand('${name}')}" aria-label="${name}">
+        <article class="brand-page-card" tabindex="0" role="link" data-brand-card data-search="${searchable}" onclick="filterByBrand('${name}')" onkeydown="if(event.target.closest('a'))return;if(event.key==='Enter'||event.key===' '){event.preventDefault();filterByBrand('${name}')}" aria-label="${name}">
             <div class="brand-card-top">
                 <div class="brand-card-logo">${logo}</div>
                 <span class="brand-card-code">BRAND / ${String(index + 1).padStart(2, '0')}</span>
@@ -43,7 +47,7 @@ function renderBrandsPage() {
             <p class="brand-card-description" data-en="${info.description}" data-fa="${descriptionFa}">${descriptionFa}</p>
             <div class="brand-card-footer">
                 <span class="brand-product-count"><b dir="ltr">${counts[name] || 0}</b> <span data-en="products" data-fa="محصول">محصول</span></span>
-                <span class="brand-card-cta"><span data-en="View products" data-fa="مشاهده محصولات">مشاهده محصولات</span><i class="fas fa-arrow-right"></i></span>
+                <span class="brand-card-actions">${catalogBtn}<span class="brand-card-cta"><span data-en="View products" data-fa="مشاهده محصولات">مشاهده محصولات</span><i class="fas fa-arrow-right"></i></span></span>
             </div>
         </article>`;
     }).join('');

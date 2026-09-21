@@ -20,6 +20,21 @@ const BRAND_LOGOS = {
 };
 const ALLOWED_BRANDS = ['SKF', 'FAG', 'NTN', 'ZWZ', 'HKT', 'Timken', 'ASAHI', 'Flender', 'Ringspann'];
 
+/* Official company catalog for each brand (one entry per company).
+   Shown in the home “Trusted Brands” panel and on the brands directory page.
+   To host a catalog locally later, point the value at e.g. 'assets/catalogs/skf.pdf'. */
+const BRAND_CATALOGS = {
+    'SKF': 'https://www.skf.com/go/17000',
+    'FAG': 'https://medias.schaeffler.com/en',
+    'NTN': 'https://www.ntnglobal.com/en/products/catalog/',
+    'ZWZ': 'https://www.zwz-bearing.com/',
+    'HKT': 'https://hktbearings.com/',
+    'Timken': 'https://www.timken.com/catalogs',
+    'ASAHI': 'https://www.asahiseiko.co.jp/en/',
+    'Flender': 'https://www.flender.com/',
+    'Ringspann': 'https://www.ringspann.com/en/service/downloads/product-catalogues'
+};
+
 function brandCarouselItems() {
     const counts = {};
     ProductDatabase.forEach(p => { counts[p.brand] = (counts[p.brand] || 0) + 1; });
@@ -170,6 +185,13 @@ function updateBrandCarouselCaption() {
         if (lines) typeBrandStory(lines, story);
         if (count) count.textContent = (info ? info.count : '') + (AppState.language === 'fa' ? ' محصول' : ' items');
         if (cta) cta.onclick = () => filterByBrand(brand);
+        const catalog = document.getElementById('brandTypoCatalog');
+        if (catalog) {
+            const url = (typeof BRAND_CATALOGS !== 'undefined' && BRAND_CATALOGS[brand]) || '';
+            catalog.href = url || '#';
+            catalog.style.display = url ? '' : 'none';
+            catalog.setAttribute('aria-label', brand + (AppState.language === 'fa' ? ' — کاتالوگ شرکت' : ' — company catalog'));
+        }
     }
     [...ring.children].forEach((el, i) => {
         const rel = ((i * BrandCarousel.angle + BrandCarousel.rotY) % 360 + 360) % 360;
