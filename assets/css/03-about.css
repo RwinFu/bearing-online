@@ -260,6 +260,154 @@ button.ops-kpi:hover {
     color: #64748b;
 }
 
+/* Multi-supplier toggle chips inside the stock tab */
+.ops-sup-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid #d7e2f2;
+    background: #f6f9ff;
+    color: #334a75;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.4;
+    transition: all .15s ease;
+}
+.ops-sup-toggle.on {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    color: #ffffff;
+}
+.ops-sup-toggle:hover {
+    border-color: #1d4ed8;
+    transform: translateY(-1px);
+}
+.ops-sup-toggle.ops-sup-clear {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #9a3412;
+}
+
+/* Customer club tier chip */
+.club-tier {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+
+/* ===== OPERATIONS PANEL — distinct "operations" theme =====
+   The back-end uses a deliberate, calmer treatment (slate + teal accents)
+   instead of the public site's navy/gold, so employees recognise it instantly
+   and can't confuse it with the storefront. */
+#admin-modal .modal-overlay {
+    background: rgba(8, 17, 38, 0.72);
+}
+#admin-modal {
+    background: rgba(8, 17, 38, 0.72);
+    backdrop-filter: blur(6px);
+}
+#admin-modal > .min-h-screen,
+#ops-shell {
+    /* handled below */
+}
+#admin-modal .bg-white,
+#admin-modal .bg-gray-50 {
+    /* keep the light content cards readable on the new darker shell */
+}
+#ops-panel-card {
+    background: #f4f7fb;
+    border: 1px solid #d9e2f0;
+    box-shadow: 0 30px 80px rgba(8, 17, 38, .42);
+}
+#ops-panel-top {
+    background:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(135deg, #0f2a3f 0%, #123a52 60%, #0c2233 100%);
+    background-size: 28px 28px, 28px 28px, auto;
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 16px 16px 0 0;
+    padding: 16px 18px 14px;
+    margin: 0 0 14px;
+    color: #eef6fb;
+}
+#ops-panel-top h3 { color: #ffffff; }
+#ops-panel-top .ops-sub { color: #b7c9d8; }
+#ops-role,
+#ops-staff-name {
+    background: #ffffff;
+    border-color: #d3deeb;
+}
+#ops-permission-note {
+    background: #e7f2f7;
+    color: #0c4a6e;
+}
+#admin-modal .quick-filter-chip {
+    background: #ffffff;
+    border: 1px solid #d5dfec;
+    color: #33465f;
+}
+#admin-modal .quick-filter-chip:hover {
+    border-color: #0e7490;
+    color: #0e7490;
+    background: #ecfeff;
+}
+#admin-modal [data-ops-tab] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: #ffffff;
+    border: 1px solid #d5dfec;
+    color: #33465f;
+    font-weight: 800;
+    box-shadow: 0 2px 6px rgba(8,17,38,.06);
+}
+#admin-modal [data-ops-tab]:hover {
+    border-color: #0e7490;
+    color: #0e7490;
+    background: #ecfeff;
+}
+#admin-modal [data-ops-tab].ops-tab-active {
+    background: #0e7490 !important;
+    border-color: #0e7490 !important;
+    color: #ffffff !important;
+}
+/* The supermarket tint is reserved for the storefront; in the ops panel the
+   quick chips / KPI remain, but they take the ops accent on hover/active. */
+#admin-modal .ops-kpi {
+    border-color: #e1e8f2;
+}
+#admin-modal button.ops-kpi:hover {
+    box-shadow: 0 12px 28px rgba(14, 116, 144, .18);
+    border-color: #0e7490;
+}
+#admin-modal .ops-kpi b { color: #0c4a6e; }
+#admin-modal .ops-panel h4,
+#admin-modal .ops-panel .font-bold { color: #1e3a5f; }
+#admin-modal .btn-primary {
+    background: linear-gradient(135deg, #0e7490 0%, #155e75 100%);
+    box-shadow: 0 4px 16px rgba(14, 116, 144, .3);
+}
+#admin-modal .btn-primary:hover {
+    background: linear-gradient(135deg, #0ea5a0 0%, #0e7490 100%);
+    box-shadow: 0 8px 24px rgba(14, 116, 144, .4);
+}
+#admin-modal .btn-accent {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    box-shadow: 0 4px 16px rgba(217, 119, 6, .3);
+}
+
 ::selection {
     background: rgba(232, 168, 29, 0.38);
 }

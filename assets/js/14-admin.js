@@ -39,6 +39,8 @@ function refreshOpsTab(name) {
     else if (name === 'orders') renderOpsOrders();
     else if (name === 'complaints') renderOpsComplaints();
     else if (name === 'activity') renderOpsActivity();
+    else if (name === 'club') renderCustomerClub();
+    else if (name === 'daily') { const d = document.getElementById('dailyDay'); if (d && !d.value) d.value = new Date().toLocaleDateString('en-CA'); }
     updateOpsBadges();
 }
 
@@ -167,10 +169,57 @@ function saveAdminSettings() {
     renderSearchResults();
 }
 
+function supplierList() {
+    return MockDB.suppliers || [];
+}
+
 function supplierName(id) {
     if (!id || id === 'own') return 'انبار خودمان';
-    const s = MockDB.suppliers.find(x => x.id === id);
+    const s = supplierList().find(x => x.id === id);
     return s ? s.name : 'تامین‌کننده حذف‌شده';
+}
+
+// Toggle one supplier for a product. Used by the detailed multi-supplier chips
+// in the stock tab; the numbered dropdown in the same row keeps working as a
+// shortcut that ADDS to (never wipes) the product's supplier list.
+function toggleProductSupplier(productId, supplierId) {
+    if (!can('stock.write')) {
+        showNotification('این نقش اجازه تغییر منبع تامین را ندارد.', 'error');
+        renderOpsStock();
+        return;
+    }
+    if (!supplierId || supplierId === 'own') {
+        showNotification('برای حذف منبع، از همان تامین‌کننده در لیست استفاده کنید.', 'info');
+        return;
+    }
+    const product = ProductDatabase.find(p => p.id === productId);
+    if (!product) return;
+    supplierBookkeeping(product);
+    const add = !product.supplierIds.includes(supplierId);
+    if (add) product.supplierIds.push(supplierId);
+    else product.supplierIds = product.supplierIds.filter(id => id !== supplierId);
+    // A product with any external supplier becomes "supplier"-sourced; an empty
+    // list falls back to the in-house warehouse.
+    product.stockSource = product.supplierIds.length ? 'supplier' : 'own';
+    // Keep legacy fields in sync for anything that still reads supplierId.
+    product.supplierId = product.supplierIds[0] || '';
+    opsLog('stock.supplier', `${product.brand} ${product.code}: ${add ? '+' : '−'}${supplierName(supplierId)}`);
+    persistState();
+    renderOpsStock();
+    showNotification('منابع تامین به‌روز شد.', 'success');
+}
+
+function productSuppliers(product) {
+    supplierBookkeeping(product);
+    if (product.stockSource === 'own' && !product.supplierIds.length) {
+        return [{ id: 'own', name: 'انبار خودمان', type: 'own' }];
+    }
+    const ids = product.supplierIds.length ? product.supplierIds : (product.supplierId ? [product.supplierId] : []);
+    return ids
+        .filter(id => id !== 'own')
+        .map(id => supplierList().find(s => s.id === id))
+        .filter(Boolean)
+        .map(s => ({ id: s.id, name: s.name, type: s.type }));
 }
 
 function renderOpsStock() {
@@ -188,28 +237,56 @@ function renderOpsStock() {
     if (countEl) countEl.textContent = `نمایش ${rows.length} از ${all.length} کالا (کل کاتالوگ: ${ProductDatabase.length})`;
     container.innerHTML = rows.map(p => {
         const src = p.stockSource || 'own';
+        supplierBookkeeping(p);
+        const pSuppliers = productSuppliers(p);
         return `
         <div class="p-3 bg-white rounded-xl border border-gray-100">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
                 <div><b>${escapeHTML(p.brand)} ${escapeHTML(p.code)}</b>
                     <div class="text-xs text-gray-400">قابل فروش: ${p.available_to_sell} | ${p.sell_mode === 'instant' ? 'خرید آنلاین' : 'استعلامی'} | ${formatToman(p.unit_price_toman)} تومان</div>
-                    <div class="text-xs text-blue-600 mt-1">منبع: ${src === 'own' ? 'انبار خودمان' : escapeHTML(supplierName(p.supplierId))}</div>
+                    <div class="text-xs text-blue-600 mt-1">منابع تامین: ${src === 'own' ? 'انبار خودمان' : escapeHTML(pSuppliers.map(s => s.name).join('، ') || supplierName(p.supplierId))}</div>
                 </div>
                 ${manager ? `<button onclick="deleteProduct('${p.id}')" class="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-bold self-start" title="حذف کالا از کاتالوگ"><i class="fas fa-trash ml-1"></i>حذف</button>` : ''}
             </div>
+            ${stockEditable ? `<div class="flex flex-wrap items-center gap-1.5 mt-3">
+                <span class="text-xs text-gray-500">منابع تامین:</span>
+                ${suppliers.map(s => {
+                    const on = pSuppliers.some(ps => ps.id === s.id);
+                    return `<button type="button" onclick="toggleProductSupplier('${p.id}','${s.id}')" aria-pressed="${on}" class="ops-sup-toggle ${on ? 'on' : ''}">${on ? '×' : '+'} ${escapeHTML(s.name)}</button>`;
+                }).join('')}
+                ${pSuppliers.length ? `<button type="button" onclick="replaceProductSuppliers('${p.id}')" class="ops-sup-toggle ops-sup-clear">برگشت به انبار خودمان</button>` : ''}
+                <span class="text-[11px] text-gray-400">برای حذف یک منبع، روی نشان فعال (×) بزنید.</span>
+            </div>` : ''}
             <div class="grid grid-cols-2 md:grid-cols-5 gap-2 mt-3">
                 <label class="text-xs text-gray-500">موجودی<input type="number" min="0" value="${p.stock_on_hand}" ${stockEditable ? '' : 'disabled'} onchange="updateStock('${p.id}','stock_on_hand',this.value)" class="compact-input mt-1 ${stockEditable ? '' : 'ops-locked'}"></label>
                 <label class="text-xs text-gray-500">رزرو<input type="number" min="0" value="${p.stock_reserved}" ${stockEditable ? '' : 'disabled'} onchange="updateStock('${p.id}','stock_reserved',this.value)" class="compact-input mt-1 ${stockEditable ? '' : 'ops-locked'}"></label>
                 <label class="text-xs text-gray-500">قیمت دلاری ($)<input type="number" min="0" step="any" value="${p.priceUSD}" ${priceEditable ? '' : 'disabled'} onchange="updateProductPrice('${p.id}',this.value)" class="compact-input mt-1 ${priceEditable ? '' : 'ops-locked'}"></label>
                 <label class="text-xs text-gray-500">تحویل (روز)<input type="number" min="0" step="1" value="${p.lead_time_days ?? ''}" ${stockEditable ? '' : 'disabled'} onchange="updateLeadTime('${p.id}',this.value)" class="compact-input mt-1 ${stockEditable ? '' : 'ops-locked'}"></label>
-                <label class="text-xs text-gray-500">منبع تامین<select ${stockEditable ? '' : 'disabled'} onchange="setProductSource('${p.id}',this.value)" class="compact-input mt-1 ${stockEditable ? '' : 'ops-locked'}">
-                    <option value="own" ${src === 'own' ? 'selected' : ''}>انبار خودمان</option>
-                    ${suppliers.map(s => `<option value="${s.id}" ${p.supplierId === s.id ? 'selected' : ''}>${escapeHTML(s.name)}</option>`).join('')}
+                <label class="text-xs text-gray-500">افزودن منبع<select ${stockEditable ? '' : 'disabled'} onchange="setProductSource('${p.id}',this.value);this.value=''" class="compact-input mt-1 ${stockEditable ? '' : 'ops-locked'}">
+                    <option value="">+ افزودن…</option>
+                    ${suppliers.map(s => `<option value="${s.id}">${escapeHTML(s.name)}</option>`).join('')}
                 </select></label>
             </div>
         </div>`;
     }).join('') || '<p class="text-sm text-gray-400">محصولی پیدا نشد.</p>';
     container.scrollTop = st;
+}
+
+function replaceProductSuppliers(productId) {
+    if (!can('stock.write')) {
+        showNotification('این نقش اجازه تغییر منبع تامین را ندارد.', 'error');
+        renderOpsStock();
+        return;
+    }
+    const product = ProductDatabase.find(p => p.id === productId);
+    if (!product) return;
+    product.supplierIds = [];
+    product.supplierId = '';
+    product.stockSource = 'own';
+    opsLog('stock.supplier', `${product.brand} ${product.code}: منبع=انبار خودمان`);
+    persistState();
+    renderOpsStock();
+    showNotification('منابع تامین به انبار خودمان برگشت.', 'success');
 }
 
 function updateProductPrice(productId, value) {
@@ -282,6 +359,9 @@ function addProduct() {
     const d = num('ops-new-d'), D = num('ops-new-D'), B = num('ops-new-B');
     const type = document.getElementById('ops-new-type')?.value || 'bearing';
     const origin = document.getElementById('ops-new-origin')?.value.trim() || '';
+    const supplierIds = [...(document.getElementById('ops-new-suppliers')?.selectedOptions || [])]
+        .map(option => option.value)
+        .filter(id => id && id !== 'own');
     const product = {
         id: 'CUSTOM-' + Date.now(),
         code: typeof normalizePartCodeDisplay === 'function' ? normalizePartCodeDisplay(code) : code,
@@ -299,7 +379,9 @@ function addProduct() {
         cageType: 'Steel', sealType: 'Open', lubrication: 'Grease',
         internalClearance: 'C0', accuracyClass: 'P0',
         leadTimeFa: stock > 0 ? 'ارسال امروز' : 'استعلام',
-        stockSource: 'own', supplierId: '',
+        stockSource: supplierIds.length ? 'supplier' : 'own',
+        supplierId: supplierIds[0] || '',
+        supplierIds,
         searchMeta: { equivalent: false, suffixMatch: '' }
     };
     refreshProductAvailability(product);
@@ -309,6 +391,8 @@ function addProduct() {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
+    const supSel = document.getElementById('ops-new-suppliers');
+    if (supSel) supSel.selectedIndex = -1;
     const det = document.getElementById('ops-add-product');
     if (det) det.open = false;
     opsLog('product.add', `${brand} ${code}`);
@@ -350,9 +434,19 @@ function setProductSource(productId, value) {
     if (!can('stock.write')) { showNotification('این نقش اجازه تغییر منبع تامین را ندارد.', 'error'); renderOpsStock(); return; }
     const product = ProductDatabase.find(p => p.id === productId);
     if (!product) return;
-    if (value === 'own') { product.stockSource = 'own'; product.supplierId = ''; }
-    else { product.stockSource = 'supplier'; product.supplierId = value; }
-    opsLog('stock.source', `${product.brand} ${product.code}: منبع=${supplierName(product.supplierId)}`);
+    supplierBookkeeping(product);
+    if (value === 'own') {
+        product.stockSource = 'own';
+        product.supplierIds = [];
+        product.supplierId = '';
+    } else if (!product.supplierIds.includes(value)) {
+        // Adds to the product's supplier list instead of replacing it, so one
+        // product can be sourced from several suppliers at once.
+        product.supplierIds.push(value);
+        product.stockSource = 'supplier';
+        product.supplierId = product.supplierIds[0] || value;
+    }
+    opsLog('stock.source', `${product.brand} ${product.code}: منبع=${value === 'own' ? 'انبار خودمان' : supplierName(value)}`);
     persistState();
     renderOpsStock();
     showNotification('منبع تامین ثبت شد.', 'success');
@@ -363,8 +457,18 @@ function renderOpsSuppliers(editId = '') {
     if (!container) return;
     const st = container.scrollTop;
     const editable = can('suppliers.write');
+    // Keep the add-product multi-select in sync with the current supplier list.
+    const newSup = document.getElementById('ops-new-suppliers');
+    if (newSup) {
+        const selected = [...newSup.selectedOptions].map(o => o.value);
+        newSup.innerHTML = `<option value="">— انبار خودمان (خالی بماند) —</option>` +
+            MockDB.suppliers.filter(s => s.type !== 'own').map(s => `<option value="${s.id}">${escapeHTML(s.name)}</option>`).join('');
+        [...newSup.options].forEach(o => { if (selected.includes(o.value)) o.selected = true; });
+    }
     container.innerHTML = MockDB.suppliers.map(s => {
-        const count = ProductDatabase.filter(p => p.supplierId === s.id).length;
+        const count = ProductDatabase.filter(p =>
+            Array.isArray(p.supplierIds) && p.supplierIds.includes(s.id)
+        ).length;
         if (s.id === editId && editable) {
             return `
             <div class="p-3 bg-blue-50/50 rounded-xl border border-blue-200 grid md:grid-cols-4 gap-2">
@@ -439,7 +543,10 @@ function addSupplier() {
 function deleteSupplier(id) {
     if (!can('suppliers.write')) { showNotification('این نقش اجازه حذف تامین‌کننده را ندارد.', 'error'); return; }
     MockDB.suppliers = MockDB.suppliers.filter(s => s.id !== id || s.type === 'own');
-    ProductDatabase.forEach(p => { if (p.supplierId === id) { p.stockSource = 'own'; p.supplierId = ''; } });
+    ProductDatabase.forEach(p => {
+        if (Array.isArray(p.supplierIds) && p.supplierIds.includes(id)) p.supplierIds = p.supplierIds.filter(sid => sid !== id);
+        if (p.supplierId === id) { p.supplierId = p.supplierIds[0] || ''; p.stockSource = p.supplierIds.length ? 'supplier' : 'own'; }
+    });
     opsLog('supplier.delete', id);
     persistState();
     renderOpsSuppliers();
@@ -685,4 +792,202 @@ function clearOpsActivity() {
     renderOpsActivity();
     renderOpsOverview();
     showNotification('گزارش فعالیت پاک شد.', 'success');
+}
+
+// =============================================
+// CUSTOMER CLUB + DAILY EXCEL EXPORT
+// =============================================
+// A lightweight loyalty ledger: every paying customer gets a record (keyed by
+// mobile number). Their lifetime orders/sums are kept and both the club list
+// and the daily report are exported to a real .xlsx-compatible file.
+const CUSTOMER_CLUB_STORAGE = 'bo_customer_club';
+const CLUB_TIERS = [
+    { min: 0, label: 'برنزی', color: '#b45309' },
+    { min: 3, label: 'نقره‌ای', color: '#64748b' },
+    { min: 8, label: 'طلایی', color: '#b45309' },
+    { min: 20, label: 'الماسی', color: '#0e7490' }
+];
+
+function readCustomerClub() {
+    try { return JSON.parse(localStorage.getItem(CUSTOMER_CLUB_STORAGE) || '[]'); }
+    catch (e) { return []; }
+}
+
+function clubTier(count) {
+    let tier = CLUB_TIERS[0];
+    CLUB_TIERS.forEach(t => { if (count >= t.min) tier = t; });
+    return tier;
+}
+
+function syncCustomerClub() {
+    const club = readCustomerClub();
+    MockDB.orders.forEach(order => {
+        if (!order.address?.mobile) return;
+        const key = String(order.address.mobile).replace(/\D/g, '');
+        if (!key) return;
+        let member = club.find(m => m.mobile === key);
+        if (!member) {
+            member = {
+                mobile: key,
+                name: order.address.recipient_name || order.address.company || '—',
+                company: order.address.company || '',
+                orderCount: 0,
+                ordersTotal: 0,
+                firstOrder: null,
+                lastOrder: null,
+                createdAt: new Date().toISOString()
+            };
+            club.push(member);
+        }
+        member.orderCount += 1;
+        member.ordersTotal += order.grand_total || 0;
+        member.name = member.name === '—' ? (order.address.recipient_name || order.address.company || '—') : member.name;
+        member.company = order.address.company || member.company;
+        const at = order.events?.find(e => e.type === 'ORDER_PAID')?.at || order.paidAt || new Date().toLocaleString('fa-IR');
+        if (!member.firstOrder) member.firstOrder = at;
+        member.lastOrder = at;
+        member.tier = clubTier(member.orderCount).label;
+    });
+    try { localStorage.setItem(CUSTOMER_CLUB_STORAGE, JSON.stringify(club)); } catch (e) {}
+    return club;
+}
+
+function renderCustomerClub() {
+    const container = document.getElementById('club-list');
+    const stats = document.getElementById('club-stats');
+    if (!container) return;
+    const club = syncCustomerClub().slice().sort((a, b) => b.ordersTotal - a.ordersTotal);
+    if (stats) stats.textContent = `${club.length} عضو | مجموع سفارش‌ها: ${club.reduce((s, m) => s + m.orderCount, 0)} | مجموع فروش: ${formatToman(club.reduce((s, m) => s + m.ordersTotal, 0))} تومان`;
+    if (!club.length) {
+        container.innerHTML = '<p class="text-sm text-gray-400">هنوز عضوی ثبت نشده است؛ با اولین پرداختِ هر مشتری، عضو باشگاه می‌شود.</p>';
+        return;
+    }
+    container.innerHTML = club.map(m => {
+        const tier = clubTier(m.orderCount);
+        return `<div class="p-3 bg-white rounded-xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-2">
+            <div>
+                <div class="flex items-center gap-2 flex-wrap"><b>${escapeHTML(m.name || '—')}</b><span class="club-tier" style="background:${tier.color}1a;color:${tier.color};border-color:${tier.color}55">${tier.label}</span>${m.company ? `<span class="text-xs text-gray-400">${escapeHTML(m.company)}</span>` : ''}</div>
+                <div class="text-xs text-gray-500 mt-1" dir="ltr">${escapeHTML(m.mobile)} | ${escapeHTML(m.lastOrder || '—')}</div>
+            </div>
+            <div class="flex items-center gap-4 text-sm">
+                <span class="text-gray-500">سفارش: <b class="text-gray-800">${m.orderCount}</b></span>
+                <span class="text-gray-500">جمع خرید: <b class="text-gray-800">${formatToman(m.ordersTotal)} تومان</b></span>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// -----------------------------------------------------------------------------
+// Excel export (no libraries). Builds a real SpreadsheetML 2003 workbook —
+// Excel and LibreOffice open it directly, and it keeps Persian + digits intact.
+// -----------------------------------------------------------------------------
+function xlsxEscape(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function buildWorkbookXML(sheets) {
+    const sheetXml = sheets.map(sheet => {
+        const rows = sheet.rows.map(row =>
+            '<Row>' + row.map(cell => {
+                const type = typeof cell === 'number' ? 'Number' : 'String';
+                return `<Cell><Data ss:Type="${type}">${type === 'Number' ? cell : xlsxEscape(cell)}</Data></Cell>`;
+            }).join('') + '</Row>'
+        ).join('');
+        return `<Worksheet ss:Name="${xlsxEscape(sheet.name)}"><Table>${rows}</Table></Worksheet>`;
+    }).join('');
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+<Styles><Style ss:ID="1"><Font ss:Bold="1"/><Interior ss:Color="#E2EFDA" ss:Pattern="Solid"/></Style></Styles>
+${sheetXml}</Workbook>`;
+}
+
+function downloadFile(filename, content, mime) {
+    const blob = new Blob(['\ufeff' + content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+function exportDailyReport() {
+    const day = document.getElementById('dailyDay')?.value;
+    if (!day) {
+        showNotification('تاریخ را انتخاب کنید.', 'error');
+        return;
+    }
+    const faDay = new Date(day + 'T00:00:00').toLocaleDateString('fa-IR');
+    const jenDay = new Date(day + 'T00:00:00').toLocaleDateString('en-CA');
+    const orders = MockDB.orders.filter(o => {
+        if (o.paidAtISO) return o.paidAtISO.slice(0, 10) === day;
+        const at = o.paidAt || o.events?.find(e => e.type === 'ORDER_PAID')?.at || o.createdAt || '';
+        return String(at).includes(faDay);
+    });
+    const club = readCustomerClub();
+    const sheets = [];
+    const now = new Date().toLocaleString('fa-IR');
+
+    // Sheet 1 — raw source (sales): who sold, what, where from, how much.
+    sheets.push({
+        name: 'خلاصه-فروش',
+        rows: [
+            [`گزارش فروش روز ${faDay}`, '', '', ''], [`صدور: ${now}`, '', '', ''],
+            ['سفارش', 'مشتری', 'تامین‌کننده', 'مبلغ (تومان)']
+        ].concat(orders.map(o => [
+            o.orderNumber,
+            (o.address?.recipient_name || o.address?.company || '—') + ' ' + (o.address?.mobile || ''),
+            o.shippingQuote?.title || '—',
+            o.grand_total || 0
+        ])).concat([
+            ['جمع کل', '', '', orders.reduce((s, o) => s + (o.grand_total || 0), 0)],
+            ['تعداد سفارش', '', '', orders.length]
+        ])
+    });
+
+    // Sheet 2 — order items.
+    const itemRows = [['سفارش', 'کد', 'برند', 'تعداد', 'مبلغ واحد (تومان)', 'مبلغ کل (تومان)']];
+    orders.forEach(o => (o.items || []).forEach(it => {
+        const unit = moneyTomanFromUSD(it.priceUSD || 0);
+        itemRows.push([o.orderNumber, it.code || it.id || '', it.brand || '', it.quantity || 1, unit, unit * (it.quantity || 1)]);
+    }));
+    sheets.push({ name: 'اقلام-فروش', rows: itemRows });
+
+    // Sheet 3 — customer club ledger.
+    sheets.push({
+        name: 'باشگاه-مشتریان',
+        rows: [
+            ['باشگاه مشتریان برینگ آنلاین', '', '', '', ''], [`بروزرسانی: ${now}`, '', '', '', ''],
+            ['موبایل', 'نام', 'شرکت', 'تعداد سفارش', 'جمع خرید (تومان)']
+        ].concat(club.map(m => [m.mobile, m.name, m.company, m.orderCount, m.ordersTotal]))
+    });
+
+    downloadFile(`report-${jenDay}.xls`, buildWorkbookXML(sheets), 'application/vnd.ms-excel');
+    showNotification('فایل اکسل گزارش روز ساخته شد.', 'success');
+}
+
+function exportCustomerClub() {
+    const club = syncCustomerClub();
+    if (!club.length) {
+        showNotification('هنوز عضوی در باشگاه نیست.', 'info');
+        return;
+    }
+    const now = new Date().toLocaleString('fa-IR');
+    const sheets = [{
+        name: 'باشگاه-مشتریان',
+        rows: [
+            ['باشگاه مشتریان برینگ آنلاین', '', '', '', '', ''],
+            [`صدور: ${now}`, '', '', '', '', ''],
+            ['موبایل', 'نام', 'شرکت', 'تعداد سفارش', 'جمع خرید (تومان)', 'سطح'],
+            ...club.map(m => [m.mobile, m.name, m.company, m.orderCount, m.ordersTotal, clubTier(m.orderCount).label])
+        ]
+    }];
+    downloadFile('customer-club.xls', buildWorkbookXML(sheets), 'application/vnd.ms-excel');
+    showNotification('فایل اکسل باشگاه مشتریان ساخته شد.', 'success');
 }

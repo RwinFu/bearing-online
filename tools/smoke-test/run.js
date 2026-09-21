@@ -259,6 +259,30 @@ async function waitFor(fn, ms = 2000) {
         assert(faCart && faCart.textContent.trim() === 'اقلام سبد', 'cart stays English in fa mode: ' + (faCart && faCart.textContent));
         return 'fa ok';
     });
+    check('Cart records supplier choice for multi-supplier products', () => {
+        const AS = G('AppState');
+        const DB = G('MockDB');
+        const prod = G('ProductDatabase').find(p => p.id === 'SKF-6205');
+        window.replaceProductSuppliers(prod.id);
+        // Build a second shop supplier so SKF-6205 genuinely has two sources.
+        doc.getElementById('ops-sup-name').value = 'بازار لاله‌زار';
+        window.addSupplier();
+        const second = DB.suppliers[DB.suppliers.length - 1];
+        window.toggleProductSupplier(prod.id, 'SUP-ASKOUEI');
+        window.toggleProductSupplier(prod.id, second.id);
+        AS.cart = [];
+        window.addToCart('SKF-6205');
+        const item = AS.cart.find(i => i.id === 'SKF-6205');
+        assert(item && item.supplier && item.supplier !== 'انبار خودمان', 'supplier not recorded on cart line: ' + JSON.stringify(AS.cart));
+        window.setCartSupplier('SKF-6205', 'آقای اسکوئی');
+        assert(AS.cart.find(i => i.id === 'SKF-6205').supplier === 'آقای اسکوئی', 'setCartSupplier failed');
+        window.renderCart();
+        assert(txt('#cart-content').includes('آقای اسکوئی'), 'cart line does not show chosen supplier');
+        assert($('#cart-content select'), 'no supplier picker for multi-supplier item');
+        DB.suppliers = DB.suppliers.filter(s => s.id !== second.id);
+        window.replaceProductSuppliers(prod.id);
+        return 'supplier cart ok';
+    });
     check('Checkout: quotes → order → proforma', () => {
         window.showCheckout();
         window.renderCheckout();
@@ -496,6 +520,47 @@ async function waitFor(fn, ms = 2000) {
         assert(txt('#ops-activity-list').length > 0, 'activity log empty');
         window.closeAdminPanel();
         return 'ops writes ok';
+    });
+    check('Multi-supplier product chips + revert', () => {
+        const verify = G('ProductDatabase')[1];
+        window.replaceProductSuppliers(verify.id);           // clean slate
+        window.toggleProductSupplier(verify.id, 'SUP-ASKOUEI');
+        assert((verify.supplierIds || []).includes('SUP-ASKOUEI'), 'supplier not added via chip');
+        window.toggleProductSupplier(verify.id, 'SUP-OWN');
+        assert(verify.supplierIds.length === 2 && verify.stockSource === 'supplier', 'multiple suppliers: ' + (verify.supplierIds || []).join(','));
+        window.toggleProductSupplier(verify.id, 'SUP-ASKOUEI');
+        assert(!verify.supplierIds.includes('SUP-ASKOUEI') && verify.supplierIds.includes('SUP-OWN'), 'toggle-off failed');
+        window.replaceProductSuppliers(verify.id);
+        assert(verify.supplierIds.length === 0 && verify.stockSource === 'own', 'revert to own warehouse failed');
+        return 'multi-supplier ok';
+    });
+    check('Customer club ledger builds and tiers', () => {
+        assert(typeof window.syncCustomerClub === 'function', 'syncCustomerClub missing');
+        const club = window.syncCustomerClub();
+        assert(club.length === 1, 'club should have 1 member from the checkout, got ' + club.length);
+        const member = club[0];
+        assert(member.mobile === '09121234567', 'member mobile: ' + member.mobile);
+        assert(member.orderCount === 1 && member.ordersTotal === G('MockDB').orders[0].grand_total, 'club totals wrong');
+        assert(window.clubTier(0).label === 'برنزی', 'tier 0');
+        assert(window.clubTier(5).label === 'نقره‌ای', 'tier 5');
+        assert(window.clubTier(10).label === 'طلایی', 'tier 10');
+        assert(window.clubTier(50).label === 'الماسی', 'tier 50');
+        return 'club ok';
+    });
+    check('Excel export: daily report + club workbook', () => {
+        window.showAdminPanel();
+        window.switchOpsTab('daily');
+        const day = doc.getElementById('dailyDay');
+        assert(day && day.value === new Date().toLocaleDateString('en-CA'), 'daily day not defaulted');
+        const xml = window.buildWorkbookXML([{ name: 't', rows: [['سفارش', 1, 'PRM-1'], ['a < b & "c"']] }]);
+        assert(/<Workbook/.test(xml), 'not a workbook');
+        assert(/&lt;/.test(xml), 'XML not escaped');
+        window.exportDailyReport();
+        assert(txt('#notification-container').includes('اکسل گزارش روز'), 'daily export notification missing: ' + txt('#notification-container'));
+        window.exportCustomerClub();
+        assert(txt('#notification-container').includes('اکسل باشگاه مشتریان'), 'club export notification missing');
+        window.closeAdminPanel();
+        return 'xls built';
     });
     check('Proforma download (Blob + print window)', () => {
         window.downloadProforma(lastOrderNumber);

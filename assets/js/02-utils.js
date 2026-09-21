@@ -24,6 +24,26 @@ function productTypeIcon(type) {
     return type === 'bearing' ? 'circle-notch' : type === 'linear' ? 'grip-lines' : type === 'coupling' ? 'link' : type === 'grease' ? 'droplet' : 'cogs';
 }
 
+// Grease uses a free-text label; everything else uses the d×D×B dimensions.
+function productSizeLabel(product) {
+    return product && product.type === 'grease' ? (product.dimensionsLabel || '') : `${product.d}×${product.D}×${product.B} mm`;
+}
+
+// Supplier names shown on a product, or `null` when the product is only in-stock.
+// Reads the canonical `supplierIds` array the admin panel maintains; an empty
+// list means the product is sourced from our own warehouse.
+function productSupplierNames(product) {
+    if (!product) return null;
+    supplierBookkeeping(product);
+    const names = [];
+    if (product.stockSource === 'own' && !(product.supplierIds || []).length) names.push('انبار خودمان');
+    (product.supplierIds || []).forEach(id => {
+        if (id && id !== 'own') names.push(supplierName(id));
+    });
+    if (product.supplierId && !product.supplierIds.includes(product.supplierId)) names.push(supplierName(product.supplierId));
+    return names.length ? names : null;
+}
+
 function showNotification(message, type = 'success') {
     const container = document.getElementById('notification-container');
     const notification = document.createElement('div');

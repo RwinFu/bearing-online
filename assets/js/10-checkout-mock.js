@@ -4,6 +4,18 @@
 // =============================================
 const MockDB = { orders: [], rfqs: [], proformas: [], payments: [], events: [], shipments: [], suppliers: [], complaints: [], customProducts: [], deletedProducts: [] };
 
+// Move a product's default/legacy single-supplier data onto supplierIds so the
+// rest of the app only ever reads the canonical `supplierIds` list (a product
+// can be supplied by several suppliers at once).
+function supplierBookkeeping(p) {
+    if (!p) return;
+    if (!Array.isArray(p.supplierIds)) p.supplierIds = [];
+    if (p.supplierId && !p.supplierIds.includes(p.supplierId)) p.supplierIds.unshift(p.supplierId);
+    if (p.stockSource === 'supplier' && !p.supplierIds.length && p.supplierId) p.supplierIds.push(p.supplierId);
+    if (p.stockSource === 'supplier' && !p.supplierIds.length) p.stockSource = 'own';
+    if (p.stockSource === 'own' && p.supplierIds.length) delete p.stockSource;
+}
+
 function loadJSON(key, fallback) {
     try {
         const raw = localStorage.getItem(key);
@@ -34,9 +46,14 @@ function persistState() {
     const productOverrides = {};
     ProductDatabase.forEach(p => {
         if (String(p.id || '').startsWith('CUSTOM-')) return;
-        productOverrides[p.id] = { stock_on_hand: p.stock_on_hand, stock_reserved: p.stock_reserved, stockSource: p.stockSource || 'own', supplierId: p.supplierId || '', priceUSD: p.priceUSD, lead_time_days: p.lead_time_days };
+        supplierBookkeeping(p);
+        productOverrides[p.id] = { stock_on_hand: p.stock_on_hand, stock_reserved: p.stock_reserved, stockSource: p.stockSource || 'own', supplierId: p.supplierId || '', supplierIds: p.supplierIds || [], priceUSD: p.priceUSD, lead_time_days: p.lead_time_days };
     });
     saveJSON('prm_products', productOverrides);
+    MockDB.customProducts.forEach(cp => {
+        const live = ProductDatabase.find(p => p.id === cp.id);
+        if (live) { cp.supplierIds = live.supplierIds || []; cp.supplierId = live.supplierId || ''; cp.stockSource = live.stockSource || 'own'; }
+    });
     saveJSON('prm_custom_products', MockDB.customProducts);
     saveJSON('prm_deleted_products', MockDB.deletedProducts);
     saveJSON('prm_staff', { role: AppState.staffRole, name: AppState.staffName });
@@ -67,15 +84,18 @@ function applyProductOverrides() {
             if (typeof o.lead_time_days === 'number' && o.lead_time_days >= 0) p.lead_time_days = o.lead_time_days;
             p.stockSource = o.stockSource || 'own';
             p.supplierId = o.supplierId || '';
+            p.supplierIds = Array.isArray(o.supplierIds) ? o.supplierIds.slice() : [];
         } else if (!p.stockSource) {
             p.stockSource = 'own';
         }
+        supplierBookkeeping(p);
         refreshProductAvailability(p);
     });
     // Merge products added from the ops panel.
     (MockDB.customProducts || []).forEach(p => {
         if (!ProductDatabase.some(x => x.id === p.id)) {
             if (typeof p.unit_price_toman !== 'number') p.unit_price_toman = moneyTomanFromUSD(p.priceUSD || 0);
+            supplierBookkeeping(p);
             refreshProductAvailability(p);
             ProductDatabase.push(p);
         }
@@ -126,7 +146,7 @@ function hydrateState() {
 function getCartProducts() {
     return AppState.cart.map(item => {
         const product = ProductDatabase.find(p => p.id === item.id);
-        return product ? { ...product, quantity: item.quantity } : null;
+        return product ? { ...product, quantity: item.quantity, supplier: item.supplier || (productSupplierNames(product) || [])[0] || 'انبار خودمان' } : null;
     }).filter(Boolean);
 }
 
@@ -212,7 +232,7 @@ function renderCheckout() {
                 <div class="checkout-step-card overflow-hidden">
                     <div class="p-5 border-b border-gray-100 flex items-center gap-3"><span class="step-dot">۱</span><h3 class="font-extrabold">سبد خرید</h3></div>
                     <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50"><tr><th class="p-3 text-right">کالا</th><th class="p-3">موجودی</th><th class="p-3">تعداد</th><th class="p-3">جمع</th></tr></thead><tbody>
-                        ${getCartProducts().map(item => `<tr class="border-t"><td class="p-3"><b>${item.brand} ${item.code}</b><div class="text-gray-400">${item.sell_mode === 'instant' ? 'خرید آنلاین' : 'نیازمند استعلام'}</div></td><td class="p-3">${getStockBadge(item)}</td><td class="p-3">${item.quantity}</td><td class="p-3 font-bold">${item.sell_mode === 'instant' ? formatToman(moneyTomanFromUSD(item.priceUSD) * item.quantity) + ' تومان' : 'RFQ'}</td></tr>`).join('')}
+                        ${getCartProducts().map(item => `<tr class="border-t"><td class="p-3"><b>${item.brand} ${item.code}</b><div class="text-gray-400">${item.sell_mode === 'instant' ? 'خرید آنلاین' : 'نیازمند استعلام'}${item.supplier ? ' · ' + escapeHTML(item.supplier) : ''}</div></td><td class="p-3">${getStockBadge(item)}</td><td class="p-3">${item.quantity}</td><td class="p-3 font-bold">${item.sell_mode === 'instant' ? formatToman(moneyTomanFromUSD(item.priceUSD) * item.quantity) + ' تومان' : 'RFQ'}</td></tr>`).join('')}
                     </tbody></table></div>
                 </div>
                 ${quote.length ? `<div class="bg-orange-50 border border-orange-100 rounded-2xl p-5"><b>RFQ جداگانه</b><p class="text-sm text-orange-800 mt-2">${quote.length} قلم استعلامی از پرداخت فوری جدا شد و به پیش‌فاکتور/تأیید فروش متصل می‌شود. برای این اقلام قیمت حدس زده نمی‌شود.</p><button onclick="createRFQFromQuoteItems()" class="mt-4 btn-accent text-white px-5 py-3 rounded-xl font-bold">ثبت RFQ اقلام استعلامی</button></div>` : ''}
@@ -292,7 +312,23 @@ function createOrderAndPay() {
     const subtotal = instant.reduce((sum, item) => sum + moneyTomanFromUSD(item.priceUSD) * item.quantity, 0);
     const tax = Math.round(subtotal * 0.09);
     const grand = Math.round(subtotal + tax + selectedShippingQuote.price);
-    const order = { orderNumber: 'PRM-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-6), status: 'PAID', payment_status: 'paid', shipping_status: 'pending', address, items: instant, subtotal, tax, shipping_fee: Math.round(selectedShippingQuote.price), grand_total: grand, shippingQuote: selectedShippingQuote, events: [{ type: 'ORDER_PAID', actor: 'mock-gateway', at: new Date().toLocaleString('fa-IR') }] };
+    const order = { orderNumber: 'PRM-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-6), status: 'PAID', payment_status: 'paid', shipping_status: 'pending', address, items: instant, subtotal, tax, shipping_fee: Math.round(selectedShippingQuote.price), grand_total: grand, shippingQuote: selectedShippingQuote, paidAt: new Date().toLocaleString('fa-IR'), paidAtISO: new Date().toISOString(), events: [{ type: 'ORDER_PAID', actor: 'mock-gateway', at: new Date().toLocaleString('fa-IR') }] };
+    // Where did today's sale physically come from? Snapshot each item's supplier
+    // onto the order so the daily report can answer "we sold from where".
+    order.suppliers = {};
+    instant.forEach(it => {
+        // The buyer's supplier choice from the cart wins; for legacy carts with
+        // no supplier line we fall back to the product's canonical supplier list.
+        order.suppliers[it.id] = it.supplier
+            || (() => {
+                const p = ProductDatabase.find(product => product.id === it.id);
+                if (!p) return 'انبار خودمان';
+                supplierBookkeeping(p);
+                return p.stockSource === 'own' || !p.supplierIds.length
+                    ? 'انبار خودمان'
+                    : p.supplierIds.map(id => supplierName(id)).join('، ');
+            })();
+    });
     instant.forEach(item => { const p = ProductDatabase.find(product => product.id === item.id); if (p) p.stock_reserved += item.quantity; });
     MockDB.orders.unshift(order);
     MockDB.payments.unshift({ order_id: order.orderNumber, gateway: 'MockPaymentAdapter', amount: grand, status: 'paid', idempotency_key: order.orderNumber, verified_at: new Date().toISOString() });

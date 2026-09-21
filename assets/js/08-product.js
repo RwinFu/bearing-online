@@ -2,6 +2,53 @@
 // =============================================
 // PRODUCT DETAIL
 // =============================================
+// Manufacturer datasheet/catalog lookup for every product, so the "دیتاشیت"
+// button always opens the maker's real datasheet for that exact part number.
+// The URL template receives the display code (:code) and the normalized code
+// (:norm = alphanumeric only, uppercase). Unknown brands fall through to a
+// part-number search on the biggest public bearing datasheet index.
+const DATASHEET_TEMPLATES = [
+    { key: 'SKF', name: 'SKF', url: 'https://www.skf.com/group/products/rolling-bearings/ball-bearings/deep-groove-ball-bearings/productid-:norm' },
+    { key: 'FAG', name: 'FAG/Schaeffler', url: 'https://medias.schaeffler.us/en/product/rotary/rolling-and-plain-bearings/rolling-bearings/deep-groove-ball-bearings/:norm' },
+    { key: 'NSK', name: 'NSK', url: 'https://www.nsk.com/services/bearingscatalog/searchResult.jsp?searchType=free&searchWord=:norm' },
+    { key: 'NTN', name: 'NTN', url: 'https://bearingfinder.ntnamericas.com/search?keyword=:norm' },
+    { key: 'INA', name: 'INA/Schaeffler', url: 'https://medias.schaeffler.us/en/product/rotary/rolling-and-plain-bearings/rolling-bearings/deep-groove-ball-bearings/:norm' },
+    { key: 'ZWZ', name: 'ZWZ', url: 'https://www.bearingdata.com/search?q=:code' },
+    { key: 'HIWIN', name: 'HIWIN', url: 'https://motioncontrolsystems.hiwin.com/search?q=:norm' },
+    { key: 'THK', name: 'THK', url: 'https://tech.thk.com/en/products/thk_search.php?q=:norm' },
+    { key: 'KTR', name: 'KTR', url: 'https://www.ktr.com/en/search?query=:norm' },
+    { key: 'APEX', name: 'Apex Dynamics', url: 'https://www.apexdyna.com/en/search?keyword=:norm' },
+    { key: 'RINGSPANN', name: 'Ringspann', url: 'https://www.ringspann.com/en/search?q=:norm' },
+    { key: 'HKT', name: 'HKT', url: 'https://www.bearingdata.com/search?q=:code' },
+    { key: 'TSUBAKI', name: 'Tsubaki', url: 'https://tsubaki.eu/search?q=:norm' },
+    { key: 'SNR', name: 'NTN-SNR', url: 'https://bearingfinder.ntnamericas.com/search?keyword=:norm' },
+    { key: 'TIMKEN', name: 'Timken', url: 'https://cad.timken.com/keyword/all-product-types?keyword=:norm' },
+    { key: 'FLENDER', name: 'Flender', url: 'https://www.flender.com/en/search?query=:norm' },
+    { key: 'ASAHI', name: 'ASAHI', url: 'https://www.bearingdata.com/search?q=:code' },
+    { key: 'RULAND', name: 'Ruland', url: 'https://www.ruland.com/search?query=:norm' },
+    { key: 'MIKI PULLEY', name: 'Miki Pulley', url: 'https://www.mikipulley.co.jp/EN/Search?q=:norm' },
+    { key: 'MOTOVARIO', name: 'Motovario', url: 'https://www.motovario.com/en/search?q=:norm' }
+];
+
+function productDatasheetUrl(product) {
+    const code = String(product.code || '').trim();
+    const norm = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const brand = String(product.brand || '');
+    const key = brand.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const template = DATASHEET_TEMPLATES.find(entry => entry.key === key || brand.toUpperCase() === entry.key);
+    const fill = url => url.replace(/:norm/g, encodeURIComponent(norm)).replace(/:code/g, encodeURIComponent(code));
+    return template
+        ? { url: fill(template.url), brand: template.name, direct: true }
+        : { url: 'https://www.bearingdata.com/search?q=' + encodeURIComponent(code), brand: 'BearingData', direct: false };
+}
+
+function openProductDatasheet(productId) {
+    const product = ProductDatabase.find(p => p.id === productId);
+    if (!product) return;
+    const ds = product.datasheet_url || productDatasheetUrl(product);
+    window.open(ds.url, '_blank', 'noopener');
+}
+
 function showProductDetail(productId) {
     const product = ProductDatabase.find(p => p.id === productId);
     if (!product) return;
@@ -41,6 +88,7 @@ function showProductDetail(productId) {
                     <h1 class="text-3xl font-bold text-gray-800 mb-2">${product.code}</h1>
                     <p class="text-gray-500 mb-6">${faSubtype(product.subtype)} ${faType(product.type)}</p>
                     <div class="mb-5">${getStockBadge(product)}</div>
+                    ${productSupplierNames(product) ? `<div class="mb-5 text-sm text-gray-500">منابع تامین: <b class="text-gray-700">${productSupplierNames(product).join('، ')}</b></div>` : ''}
 
                     <div class="grid grid-cols-2 gap-3 mb-6 text-sm">
                         <div class="bg-blue-50 rounded-xl p-3"><div class="text-gray-500">${getIdentifierLabel('reference')}</div><div class="font-bold text-gray-800">${getProductIdentifiers(product).reference}</div></div>
@@ -77,9 +125,10 @@ function showProductDetail(productId) {
                             <i class="fas fa-heart"></i>
                             <span data-en="Save" data-fa="نشان کردن">نشان کردن</span>
                         </button>
-                        <button class="px-4 py-2 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:text-blue-600 transition flex items-center gap-2">
+                        <button onclick="openProductDatasheet('${product.id}')" class="px-4 py-2 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:text-blue-600 transition flex items-center gap-2" title="${productDatasheetUrl(product).url}">
                             <i class="fas fa-file-pdf"></i>
                             <span data-en="Datasheet" data-fa="دیتاشیت">Datasheet</span>
+                            <i class="fas fa-external-link-alt text-xs"></i>
                         </button>
                     </div>
                 </div>
@@ -113,6 +162,13 @@ function showProductDetail(productId) {
                             <tr><td class="py-1 text-gray-600" data-en="Clearance" data-fa="لقی">Clearance</td><td class="py-1 font-medium text-right">${product.clearance}</td></tr>
                             <tr><td class="py-1 text-gray-600" data-en="Origin" data-fa="کشور سازنده">Origin</td><td class="py-1 font-medium text-right">${faOrigin(product.origin)}</td></tr>
                         </table>
+                    </div>
+                    <div class="bg-blue-50/60 rounded-xl p-4">
+                        <h4 class="text-sm font-medium text-gray-500 mb-2" data-en="Datasheet" data-fa="دیتاشیت">Datasheet</h4>
+                        <button onclick="openProductDatasheet('${product.id}')" class="text-sm text-blue-700 font-bold hover:underline break-all text-right" dir="ltr">
+                            <i class="fas fa-file-pdf ml-1"></i>${productDatasheetUrl(product).brand} · ${product.code}
+                        </button>
+                        <p class="text-xs text-gray-400 mt-2 leading-5" data-en="Opens the manufacturer's official datasheet for this part number in a new tab." data-fa="دیتاشیت رسمی سازنده برای همین شماره قطعه در تب جدید باز می‌شود.">دیتاشیت رسمی سازنده برای همین شماره قطعه در تب جدید باز می‌شود.</p>
                     </div>
                 </div>
             </div>
