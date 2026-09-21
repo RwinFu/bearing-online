@@ -29,3 +29,255 @@
 @media (prefers-reduced-motion: reduce) {
     .hero-3d, .hero-3d-sub { animation: none; }
 }
+
+/* ===== INTERACTIVE VECTOR WORDMARK =====
+   Canvas enhancement inspired by Originkit's Vector Wordmark. The real text
+   remains in the DOM, so the heading and brand still work without JavaScript. */
+.vector-hero-title {
+    position: relative;
+    width: min(100%, 980px);
+    min-height: 1.5em;
+    margin-inline: auto;
+    isolation: isolate;
+    cursor: crosshair;
+}
+.vector-hero-title h2 {
+    margin: 0;
+    line-height: 1.45;
+    transition: opacity .2s ease;
+}
+.vector-hero-title > canvas,
+.vector-wordmark > canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+}
+.vector-hero-title.vector-ready h2 { opacity: 0; }
+.vector-hero-title::after {
+    content: "VECTOR / BEARING FINDER";
+    position: absolute;
+    inset-inline-end: 2px;
+    bottom: -8px;
+    color: rgba(19,72,200,.58);
+    font: 700 9px/1 Inter, sans-serif;
+    letter-spacing: .17em;
+    direction: ltr;
+    opacity: 0;
+    transition: opacity .25s ease;
+}
+.vector-hero-title.vector-ready::after { opacity: 1; }
+
+/* The new lockup keeps the bearing symbol and turns the name into a live,
+   technical wordmark. */
+.vector-brand {
+    width: 226px;
+    height: 62px;
+    padding: 4px 9px 4px 5px;
+    gap: 4px;
+    overflow: hidden;
+    direction: ltr;
+}
+.vector-brand-mark {
+    flex: 0 0 57px;
+    width: 57px;
+    height: 55px;
+    overflow: hidden;
+}
+.vector-wordmark {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 52px;
+    direction: rtl;
+    cursor: crosshair;
+}
+.vector-wordmark-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0b2560;
+    font-family: Vazirmatn, Inter, sans-serif;
+    font-size: 21px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+.vector-wordmark.vector-ready .vector-wordmark-fallback { opacity: 0; }
+footer .vector-brand { width: 190px; height: 58px; }
+footer .vector-brand-mark { width: 52px; height: 51px; flex-basis: 52px; }
+footer .vector-wordmark { height: 48px; }
+footer .vector-wordmark-fallback { font-size: 18px; }
+
+@media (max-width: 1023px) {
+    .vector-brand { width: 194px; height: 54px; }
+    .vector-brand-mark { width: 49px; height: 47px; flex-basis: 49px; }
+    .vector-wordmark { height: 45px; }
+    .vector-wordmark-fallback { font-size: 18px; }
+}
+@media (max-width: 639px) {
+    .vector-brand { width: 164px; height: 49px; padding: 3px 7px 3px 3px; }
+    .vector-brand-mark { width: 44px; height: 43px; flex-basis: 44px; }
+    .vector-wordmark { height: 41px; }
+    .vector-wordmark-fallback { font-size: 16px; }
+    .vector-hero-title { min-height: 5.6rem; }
+    .vector-hero-title::after { bottom: -3px; font-size: 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .vector-hero-title { cursor: default; }
+    .vector-hero-title::after { display: none; }
+}
+
+/* Engineering dashboard below the search: same vector language as the title. */
+.vector-engineering-panel {
+    --vx: 50%;
+    --vy: 45%;
+    position: relative;
+    overflow: hidden;
+    padding: 0 !important;
+    border: 1px solid rgba(19,72,200,.2) !important;
+    border-radius: 26px !important;
+    background:
+        radial-gradient(420px circle at var(--vx) var(--vy), rgba(74,130,255,.16), transparent 66%),
+        linear-gradient(rgba(19,72,200,.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(19,72,200,.055) 1px, transparent 1px),
+        rgba(255,255,255,.92) !important;
+    background-size: auto, 24px 24px, 24px 24px, auto !important;
+    box-shadow: 0 30px 70px rgba(11,37,96,.17), inset 0 1px 0 #fff !important;
+    isolation: isolate;
+}
+.vector-engineering-panel::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    bottom: 0;
+    left: var(--vx);
+    width: 1px;
+    background: linear-gradient(transparent, rgba(232,168,29,.75), transparent);
+    box-shadow: 0 0 18px rgba(232,168,29,.45);
+    opacity: .62;
+    animation: vectorPanelScan 8s ease-in-out infinite alternate;
+}
+.vector-engineering-panel::after {
+    content: '';
+    position: absolute;
+    inset: 10px;
+    border: 1px dashed rgba(19,72,200,.16);
+    border-radius: 19px;
+    pointer-events: none;
+}
+@keyframes vectorPanelScan { from { transform: translateX(-130px); } to { transform: translateX(130px); } }
+.stats-panel-heading {
+    min-height: 54px;
+    padding: 13px 24px;
+    border-bottom: 1px solid rgba(19,72,200,.13);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    color: #66738a;
+    font-size: 12px;
+    font-weight: 700;
+    position: relative;
+    z-index: 2;
+}
+.stats-panel-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #0b2560;
+    font: 800 10px/1 Inter, Vazirmatn, sans-serif;
+    letter-spacing: .1em;
+}
+.stats-panel-live i, .signal-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e8a81d;
+    box-shadow: 0 0 0 5px rgba(232,168,29,.14), 0 0 18px rgba(232,168,29,.75);
+    animation: signalPulse 1.8s ease-in-out infinite;
+}
+@keyframes signalPulse { 50% { opacity: .55; box-shadow: 0 0 0 9px rgba(232,168,29,0), 0 0 12px rgba(232,168,29,.4); } }
+.stats-vector-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); position: relative; z-index: 1; }
+.stat-vector-card {
+    position: relative;
+    min-height: 185px;
+    padding: 30px 22px 24px;
+    text-align: center;
+    border-inline-end: 1px dashed rgba(19,72,200,.2);
+    transition: transform .3s ease, background .3s ease;
+}
+html[dir="rtl"] .stat-vector-card:last-child,
+html[dir="ltr"] .stat-vector-card:last-child { border-inline-end: 0; }
+.stat-vector-card:hover { transform: translateY(-6px); background: rgba(255,255,255,.65); }
+.stat-index {
+    position: absolute;
+    top: 13px;
+    inset-inline-start: 15px;
+    color: rgba(19,72,200,.42);
+    font: 700 9px/1 ui-monospace, monospace;
+    letter-spacing: .1em;
+}
+.stat-vector-icon {
+    position: absolute;
+    top: 14px;
+    inset-inline-end: 16px;
+    color: #e8a81d;
+    font-size: 14px;
+    filter: drop-shadow(0 4px 7px rgba(232,168,29,.25));
+}
+.vector-engineering-panel .stat-num {
+    margin: 14px 0 6px;
+    color: #0b2560 !important;
+    font-size: clamp(28px, 3vw, 42px);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -.03em;
+}
+.vector-engineering-panel .stat-label { color: #203252 !important; font-size: 14px; font-weight: 850 !important; }
+.vector-engineering-panel .stat-sub { margin-top: 7px; color: #748198 !important; font-size: 11px; line-height: 1.8; }
+.brand-signal-strip {
+    position: relative;
+    background:
+        radial-gradient(700px 100px at 50% 120%, rgba(19,72,200,.36), transparent 70%),
+        linear-gradient(135deg,#040d20,#081a3d 52%,#06132d);
+    border-block: 1px solid rgba(232,168,29,.3);
+}
+.brand-signal-strip::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.025), transparent);
+    background-size: 180px 100%;
+    pointer-events: none;
+}
+.brand-signal-heading { display:flex; justify-content:center; align-items:center; gap:12px; margin-bottom:20px; color:rgba(255,255,255,.7); font-size:12px; font-weight:700; letter-spacing:.05em; }
+.brand-signal-track { gap: 20px !important; color: #fff; font-weight: 900; font-size: 17px; direction:ltr; }
+.brand-marquee-item {
+    min-width: 132px;
+    padding: 12px 22px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 999px;
+    background: rgba(255,255,255,.055);
+    box-shadow: inset 0 1px rgba(255,255,255,.09);
+    letter-spacing: .05em;
+}
+.brand-marquee-item::before { content:'◆'; color:#e8a81d; font-size:7px; margin-inline-end:10px; vertical-align:2px; }
+@media (max-width: 767px) {
+    .stats-panel-heading { padding: 12px 16px; align-items: flex-start; flex-direction: column; gap: 6px; }
+    .stats-vector-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    .stat-vector-card { min-height: 165px; padding: 28px 12px 18px; }
+    .stat-vector-card:nth-child(2) { border-inline-end: 0; }
+    .stat-vector-card:nth-child(-n+2) { border-bottom: 1px dashed rgba(19,72,200,.2); }
+    .vector-engineering-panel .stat-label { font-size: 12px; }
+    .vector-engineering-panel .stat-sub { font-size: 10px; }
+    .brand-marquee-item { min-width: 112px; padding: 10px 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .vector-engineering-panel::before, .stats-panel-live i, .signal-pulse { animation: none; }
+}
