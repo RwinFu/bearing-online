@@ -427,7 +427,8 @@ function initEngineeringPanels() {
 // Full-page vector motion layer (first page) — spreads the hero wordmark
 // motion across every [data-vector-page] text block: soft blueprint body,
 // gold dotted contour, a radial glow that follows the pointer (or an ambient
-// sweep when idle) and drifting vector handles on the active block.
+// sweep when idle) and an always-on construction triangle that rides the
+// glow across the whole page (hovered block if any, else the nearest one).
 // The DOM text stays in the tree (readable without JS); it is only faded out
 // while the layer is live. No canvas / reduced-motion / jsdom → plain text.
 // -----------------------------------------------------------------------------
@@ -590,12 +591,20 @@ function initPageVectorLayer() {
         let gx, gy;
         if (S.pointer.active) { gx = S.pointer.x; gy = S.pointer.y; }
         else {
+            // Ambient sweep roams the whole first page (not just the heroes'
+            // band) so the glow — and the construction triangle riding it —
+            // travel across every section while the page is idle.
             S.idleT += dt;
             gx = (S.idleT * 85) % (S.vw + 280) - 140;
-            gy = S.vh * (0.45 + 0.22 * Math.sin(S.idleT / 5.2));
+            gy = S.vh * (0.5 + 0.38 * Math.sin(S.idleT / 6.5));
         }
 
+        // The construction triangle is always on: it sits on the hovered text
+        // while the pointer is over one, otherwise it rides the glow point on
+        // the nearest visible block — so the vector rig roams the whole first
+        // page even when idle (and on touch devices, which have no hover).
         let active = null;
+        let nearest = null, nearestDist = Infinity;
         for (const item of S.items) {
             const rect = item.el.getBoundingClientRect();
             if (!rect.width || !rect.height) continue;
@@ -627,9 +636,24 @@ function initPageVectorLayer() {
             }
             c.restore();
 
-            if (S.pointer.active && !active &&
+            if (S.pointer.active &&
                 gx >= rect.left - 14 && gx <= rect.right + 14 &&
-                gy >= rect.top - 14 && gy <= rect.bottom + 14) active = { item, x: gx, y: gy };
+                gy >= rect.top - 14 && gy <= rect.bottom + 14) {
+                active = { item, x: gx, y: gy };
+            } else {
+                const dd = Math.hypot(gx - cx, gy - cy);
+                if (dd < nearestDist) { nearestDist = dd; nearest = { item, rect }; }
+            }
+        }
+        if (!active && nearest) {
+            // Clamp the roaming anchor onto the nearest block so the triangle
+            // always reads as a handle on live text, never floating in empty space.
+            const r = nearest.rect;
+            active = {
+                item: nearest.item,
+                x: Math.max(r.left, Math.min(gx, r.right)),
+                y: Math.max(r.top, Math.min(gy, r.bottom))
+            };
         }
         if (active) drawHandles(active.x, active.y, now, active.item);
     }
