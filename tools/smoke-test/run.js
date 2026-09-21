@@ -487,6 +487,134 @@ async function waitFor(fn, ms = 2000) {
         return 'modal + static pages ok';
     });
 
+    // ------------------------------------------------------- search / responsive regression audit
+    check('Persian and Arabic digits match Latin codes exactly', () => {
+        const ids = q => window.searchProducts(q).map(p => p.id).sort().join(',');
+        assert(ids('6205') === ids('۶۲۰۵') && ids('6205') === ids('٦٢٠٥'), 'numeric normalization differs');
+        assert(ids('۶۲۰۵ ۲RS') === 'SKF-6205-2RS', 'Persian suffix returned unsealed bearings');
+    });
+    check('Code / brand word order, Persian aliases and spaced codes', () => {
+        for (const query of ['6205 SKF', 'SKF 6205', 'SKF-6205', 'SKF6205', 'اس کا اف ۶۲۰۵', 'bearing SKF 6205']) {
+            const products = window.searchProducts(query);
+            assert(products.length === 2 && products.every(p => p.brand === 'SKF' && p.code.startsWith('6205')), query + ' → ' + products.map(p => p.id));
+        }
+        assert(window.searchProducts('UCP 205').length > 0, 'spaced part code failed');
+        assert(window.searchProducts('HIWIN MGN12H').length === 1, 'alphanumeric part code failed');
+        assert(window.searchProducts('6205 nonexistent').length === 0, 'unmatched token ignored');
+    });
+    check('Dimensions with Persian digits, spaces, brand and mm', () => {
+        for (const query of ['۲۵ × ۵۲ × ۱۵', 'ابعاد 25 x 52 x 15 mm', 'SKF 25*52*15']) {
+            const result = window.searchProducts(query);
+            assert(result.length && result.every(p => p.d === 25 && p.D === 52 && p.B === 15), 'failed ' + query);
+        }
+        assert(window.toMillimeter('۱٫۵', 'inch') === 38.099999999999994, 'Persian decimal conversion failed');
+        assert(window.toMillimeter('25oops', 'metric') === null, 'partial invalid dimension accepted');
+    });
+    check('Combined seal and clearance constraints; exact and equivalent suffixes', () => {
+        const DB = G('ProductDatabase');
+        DB.push({ ...DB[1], id: 'TEST-COMBINED', code: '6205-2RS', clearance: 'C3' });
+        try {
+            for (const query of ['6205-2RS/C3', '6205 2RS C3', '۶۲۰۵ ۲RS C3']) {
+                const result = window.searchProducts(query);
+                assert(result.length === 1 && result[0].id === 'TEST-COMBINED', query + ' mismatched');
+            }
+            const equivalent = window.searchProducts('6205 DDU');
+            assert(equivalent.length && equivalent.every(p => p.searchMeta.equivalent), 'equivalent seal missing');
+        } finally { DB.pop(); }
+    });
+    check('Autocomplete cannot overwrite current result metadata', () => {
+        const result = window.searchProducts('6205 DDU');
+        window.searchProducts('6205');
+        assert(result.every(p => p.searchMeta.equivalent), 'suggestions mutated existing results');
+    });
+    await checkAsync('Products navigation renders the catalogue on first entry', async () => {
+        $('#results-container').innerHTML = '<!-- initial placeholder -->';
+        window.clearFilters();
+        window.showPage('search');
+        assert(await waitFor(() => visible('#page-search') && $('#results-container .card-hover')), 'catalogue not rendered');
+    });
+    await checkAsync('New text/category/dimension searches do not retain stale filters', async () => {
+        window.filterByBrand('SKF');
+        await sleep(100);
+        window.performSearch('HIWIN');
+        assert(await waitFor(() => G('AppState').searchResults.length === 2 && G('AppState').searchResults.every(p => p.brand === 'HIWIN')), 'stale brand filter');
+        window.searchByType('gearbox');
+        await sleep(100);
+        assert(G('AppState').searchResults.length === 4, 'stale text filter in category search');
+        $('#dim-d').value = '۲۵'; $('#dim-D').value = '۵۲'; $('#dim-B').value = '۱۵';
+        window.searchByDimension();
+        await sleep(100);
+        assert(G('AppState').searchResults.length === 5 && !G('AppState').textQuery && !G('AppState').categoryFilter, 'stale category in dimensions');
+    });
+    check('All catalogue brands can be filtered, including non-featured brands', () => {
+        const brandInputs = new Set($$('.brand-filter').map(input => input.value));
+        assert(G('ProductDatabase').every(p => brandInputs.has(p.brand)), 'missing filter brands');
+    });
+    check('Search URL round-trip preserves dimensions, filters, sort and table view', () => {
+        const AS = G('AppState');
+        window.resetProductFilters();
+        AS.textQuery = '6205';
+        AS.dimensionSearch = { mode: 'exact', unit: 'metric', d: 25, D: 52, B: 15 };
+        $('.brand-filter[value="SKF"]').checked = true;
+        $('#sort-select').value = 'price-desc'; AS.viewMode = 'table';
+        const route = window.getSearchRoute();
+        window.restoreSearchRoute(new window.URLSearchParams(route.split('?')[1]));
+        window.recomputeResults();
+        assert(AS.textQuery === '6205' && AS.dimensionSearch.d === 25 && AS.viewMode === 'table', 'roundtrip lost state');
+        assert(AS.searchResults.length === 2 && AS.searchResults.every(p => p.brand === 'SKF'), 'roundtrip lost filters');
+        assert($('#sort-select').value === 'price-desc', 'sort not restored');
+        assert(!$('#results-table-container').classList.contains('hidden'), 'table not restored');
+        window.restoreSearchRoute(new window.URLSearchParams());
+        window.recomputeResults();
+    });
+    check('Sorting persists after filtering and never mutates catalogue order', () => {
+        const DB = G('ProductDatabase');
+        const before = DB.map(p => p.id).join(',');
+        $('#sort-select').value = 'name';
+        window.recomputeResults();
+        assert(G('AppState').searchResults.map(p => p.code).join(',') === [...DB].sort((a,b) => a.code.localeCompare(b.code)).map(p => p.code).join(','), 'sort not applied');
+        assert(DB.map(p => p.id).join(',') === before, 'catalogue mutated');
+        $('#sort-select').value = 'relevance';
+    });
+    check('Invalid dimensional ranges are rejected without destroying results', () => {
+        window.clearFilters();
+        const before = G('AppState').searchResults;
+        $('#filter-d-min').value = '۳۰'; $('#filter-d-max').value = '۲۰';
+        window.applyFilters();
+        assert($('#filter-d-max').getAttribute('aria-invalid') === 'true', 'invalid range not indicated');
+        assert(G('AppState').searchResults === before, 'invalid range applied');
+        window.clearFilters();
+    });
+    await checkAsync('Empty state escapes query markup and never opens an unsolicited modal', async () => {
+        window.closeLeadModal();
+        const query = '<img src=x onerror=alert(1)>';
+        window.performSearch(query);
+        await sleep(850);
+        assert(!$('#results-container img'), 'query injected as HTML');
+        assert(txt('#results-container').includes(query), 'query text missing');
+        assert($('#lead-modal').classList.contains('hidden'), 'unsolicited lead modal opened');
+        assert($('#results-container').classList.contains('results-empty'), 'empty state layout missing');
+        window.clearFilters();
+    });
+    check('Autocomplete has keyboard selection and Escape cancellation', () => {
+        $('#search-input').value = '6205';
+        window.executeAutocomplete('6205');
+        $('#search-input').dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+        assert($('#search-input').getAttribute('aria-activedescendant') === 'search-option-0', 'no active suggestion');
+        window.closeAutocomplete();
+        assert($('#search-input').getAttribute('aria-expanded') === 'false', 'not collapsed');
+    });
+    check('Fallback viewer controls are disabled instead of pretending to work', () => {
+        assert($('#bearingStage').classList.contains('is-fallback'), 'missing fallback state');
+        assert($('#bearingZoomIn').disabled && $('#bearingExplodeRange').disabled, 'unavailable 3D controls enabled');
+    });
+    await checkAsync('Malformed product URLs and missing products do not strand the UI', async () => {
+        window.location.hash = '#/product/%E0%A4%A';
+        assert(await waitFor(() => visible('#page-home')), 'malformed URL failed to recover');
+        window.location.hash = '#/product/not-in-catalogue';
+        assert(await waitFor(() => visible('#page-search')), 'missing product left stale view');
+    });
+
     check('No uncaught JS errors during the whole run', () => {
         const real = errors.filter(e => !/Could not parse CSS|Not implemented|Error creating WebGL context/.test(e));
         assert(!real.length, real.slice(0, 4).join(' | '));

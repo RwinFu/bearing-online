@@ -71,7 +71,7 @@
                 <circle cx="60" cy="60" r="23.5" fill="none" stroke="url(#boSharedGold)" stroke-width="2.3"></circle>
                 <circle cx="60" cy="60" r="10" fill="#0b2560" stroke="#ffd166" stroke-width="1.8"></circle>
                 <path d="M46 47 A19 19 0 0 1 63 42" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" opacity="0.68"></path>
-                <text x="348" y="48" text-anchor="end" style="direction:rtl" font-size="31" font-weight="800" fill="#0b2560" textLength="182" lengthAdjust="spacingAndGlyphs">برینگ آنلاین</text>
+                <text x="348" y="48" text-anchor="start" style="direction:rtl" font-size="31" font-weight="800" fill="#0b2560" textLength="182" lengthAdjust="spacingAndGlyphs">برینگ آنلاین</text>
                 <text x="146" y="87" text-anchor="start" font-size="34" font-weight="900" letter-spacing="0.5" textLength="202" lengthAdjust="spacingAndGlyphs">BEARING <tspan fill="#8a5a06">ONLINE</tspan></text>
                 <rect x="146" y="94" width="202" height="3.6" rx="1.8" fill="#0b2560"></rect>
                 <rect x="146" y="99" width="202" height="3.6" rx="1.8" fill="url(#boSharedGold)"></rect>
@@ -146,14 +146,13 @@
                 <a href="#" onclick="showPage('home')" class="flex items-center gap-3 nav-logo transition-transform" aria-label="برینگ آنلاین | Bearing Online">
                     <div class="brand-lockup">
                         <h1 class="sr-only" data-en="Bearing Online" data-fa="برینگ آنلاین">برینگ آنلاین</h1>
-                        <img src="https://bearingonline.ir/images/thumbs/001/0015751_300x300.webp" alt="" class="brand-logo-img" style="display:none" loading="lazy" onload="this.style.display='';var vector=document.getElementById('headerVectorLogo');if(vector){vector.style.display='none';}">
                         <svg id="headerVectorLogo" class="brand-logo" viewBox="0 0 360 116" role="img" aria-label="برینگ آنلاین | Bearing Online" style="direction:ltr">
                             <use href="#boLogoLockup"></use>
                         </svg>
                     </div>
                 </a>
 
-                <div class="hidden md:flex items-center gap-6">
+                <div class="desktop-nav hidden lg:flex items-center gap-6">
                     <a href="#" onclick="showPage('home')" class="nav-link text-white/80 hover:text-white transition font-medium" data-en="Home" data-fa="خانه">Home</a>
                     <a href="#" onclick="showPage('search')" class="nav-link text-white/80 hover:text-white transition font-medium" data-en="Products" data-fa="محصولات">Products</a>
                     <a href="#" onclick="showPage('brands')" class="nav-link text-white/80 hover:text-white transition font-medium" data-en="Brands" data-fa="برندها">Brands</a>
@@ -179,7 +178,7 @@
                     <button onclick="showAccount()" class="nav-icon-account relative text-white hover:text-white/80 transition" aria-label="Orders">
                         <i class="fas fa-receipt text-xl"></i>
                     </button>
-                    <button onclick="toggleMobileMenu()" class="md:hidden text-white" aria-label="Open menu">
+                    <button onclick="toggleMobileMenu()" id="mobile-menu-toggle" class="lg:hidden text-white" aria-label="باز کردن منو" aria-controls="mobile-menu" aria-expanded="false">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
                 </div>
@@ -189,7 +188,7 @@
 
     <!-- Mobile Navigation Drawer -->
     <div id="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
-    <aside id="mobile-menu" aria-label="Mobile menu">
+    <aside id="mobile-menu" aria-label="منوی اصلی" inert>
         <div class="flex items-center justify-between p-4 border-b border-gray-100">
             <span class="font-extrabold text-lg" style="color:#0b2560" data-en="Menu" data-fa="منو">منو</span>
             <button onclick="closeMobileMenu()" class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center" aria-label="Close menu">
@@ -197,15 +196,15 @@
             </button>
         </div>
         <nav class="flex-1 overflow-y-auto py-2">
-            <a class="mnav" onclick="closeMobileMenu();showPage('home')"><i class="fas fa-home w-6 text-center" style="color:#1348c8"></i><span data-en="Home" data-fa="خانه">خانه</span></a>
-            <a class="mnav" onclick="closeMobileMenu();showPage('search')"><i class="fas fa-boxes w-6 text-center" style="color:#1348c8"></i><span data-en="Products" data-fa="محصولات">محصولات</span></a>
-            <a class="mnav" onclick="closeMobileMenu();showPage('brands')"><i class="fas fa-award w-6 text-center" style="color:#1348c8"></i><span data-en="Brands" data-fa="برندها">برندها</span></a>
-            <a class="mnav" onclick="closeMobileMenu();showPage('services')"><i class="fas fa-gears w-6 text-center" style="color:#1348c8"></i><span data-en="Services" data-fa="خدمات">خدمات</span></a>
-            <a class="mnav" onclick="closeMobileMenu();showPage('about')"><i class="fas fa-circle-info w-6 text-center" style="color:#1348c8"></i><span data-en="About" data-fa="درباره ما">درباره ما</span></a>
-            <a class="mnav" onclick="closeMobileMenu();showPage('contact')"><i class="fas fa-phone w-6 text-center" style="color:#1348c8"></i><span data-en="Contact" data-fa="تماس">تماس</span></a>
-            <a class="mnav" onclick="closeMobileMenu();showAccount()"><i class="fas fa-receipt w-6 text-center" style="color:#1348c8"></i><span data-en="Orders" data-fa="سفارش‌ها">سفارش‌ها</span></a>
-            <a class="mnav" onclick="closeMobileMenu();showWishlist()"><i class="fas fa-heart w-6 text-center" style="color:#1348c8"></i><span data-en="Saved Products" data-fa="محصولات نشان‌شده">محصولات نشان‌شده</span></a>
-            <a class="mnav" onclick="closeMobileMenu();showCompare()"><i class="fas fa-balance-scale w-6 text-center" style="color:#1348c8"></i><span data-en="Compare Products" data-fa="مقایسه محصولات">مقایسه محصولات</span></a>
+            <a href="#" class="mnav" onclick="closeMobileMenu();showPage('home')"><i class="fas fa-home w-6 text-center" style="color:#1348c8"></i><span data-en="Home" data-fa="خانه">خانه</span></a>
+            <a href="#" class="mnav" onclick="closeMobileMenu();showPage('search')"><i class="fas fa-boxes w-6 text-center" style="color:#1348c8"></i><span data-en="Products" data-fa="محصولات">محصولات</span></a>
+            <a href="#" class="mnav" onclick="closeMobileMenu();showPage('brands')"><i class="fas fa-award w-6 text-center" style="color:#1348c8"></i><span data-en="Brands" data-fa="برندها">برندها</span></a>
+            <a href="#" class="mnav" onclick="closeMobileMenu();showPage('services')"><i class="fas fa-gears w-6 text-center" style="color:#1348c8"></i><span data-en="Services" data-fa="خدمات">خدمات</span></a>
+            <a href="#" class="mnav" onclick="closeMobileMenu();showPage('about')"><i class="fas fa-circle-info w-6 text-center" style="color:#1348c8"></i><span data-en="About" data-fa="درباره ما">درباره ما</span></a>
+            <a href="#" class="mnav" onclick="closeMobileMenu();showPage('contact')"><i class="fas fa-phone w-6 text-center" style="color:#1348c8"></i><span data-en="Contact" data-fa="تماس">تماس</span></a>
+            <a href="#" class="mnav" onclick="closeMobileMenu();showAccount()"><i class="fas fa-receipt w-6 text-center" style="color:#1348c8"></i><span data-en="Orders" data-fa="سفارش‌ها">سفارش‌ها</span></a>
+            <a href="#" class="mnav" onclick="closeMobileMenu();showWishlist()"><i class="fas fa-heart w-6 text-center" style="color:#1348c8"></i><span data-en="Saved Products" data-fa="محصولات نشان‌شده">محصولات نشان‌شده</span></a>
+            <a href="#" class="mnav" onclick="closeMobileMenu();showCompare()"><i class="fas fa-balance-scale w-6 text-center" style="color:#1348c8"></i><span data-en="Compare Products" data-fa="مقایسه محصولات">مقایسه محصولات</span></a>
         </nav>
         <div class="p-4 border-t border-gray-100 space-y-2">
             <a href="tel:+982188709158" class="flex items-center gap-3 font-bold" style="color:#0b2560"><i class="fas fa-phone"></i><span dir="ltr">+98 21 8870 9158</span></a>
@@ -232,8 +231,8 @@
                             <span class="hero-kicker-dot"></span>
                             <span data-en="Engineering sourcing desk is active" data-fa="میز تامین و مشاوره مهندسی فعال است">میز تامین و مشاوره مهندسی فعال است</span>
                         </div>
-                        <h2 class="text-4xl md:text-6xl font-extrabold mb-5 hero-title-clear hero-3d">قطعه صنعتی را در چند دقیقه پیدا کنید</h2>
-                        <p class="text-lg md:text-xl max-w-3xl mx-auto hero-subtitle-clear">با کد قطعه، برند، نام یا ابعاد جستجو کنید. اگر قطعه در دیتابیس نبود، همان جستجو فوراً به درخواست تامین برای تیم مهندسی تبدیل می‌شود.</p>
+                        <h2 class="text-4xl md:text-6xl font-extrabold mb-5 hero-title-clear hero-3d" data-en="Find your industrial part in minutes" data-fa="قطعه صنعتی را در چند دقیقه پیدا کنید">قطعه صنعتی را در چند دقیقه پیدا کنید</h2>
+                        <p class="text-lg md:text-xl max-w-3xl mx-auto hero-subtitle-clear" data-en="Search by part code, brand, name or dimensions. Can’t find it? Send a sourcing request to our engineering team." data-fa="با کد قطعه، برند، نام یا ابعاد جستجو کنید. قطعه را پیدا نکردید؟ درخواست تامین را برای تیم مهندسی ما بفرستید.">با کد قطعه، برند، نام یا ابعاد جستجو کنید. قطعه را پیدا نکردید؟ درخواست تامین را برای تیم مهندسی ما بفرستید.</p>
                         <div class="hero-proof-row">
                             <span class="hero-proof-chip" data-en="Bearings, housings, bushings" data-fa="برینگ، یاتاقان و بوش">برینگ، یاتاقان و بوش</span>
                             <span class="hero-proof-chip" data-en="Instant checkout for stocked items" data-fa="پرداخت آنلاین برای کالای موجود">پرداخت آنلاین برای کالای موجود</span>
@@ -257,19 +256,19 @@
                                     <strong data-en="Start with anything you have" data-fa="هر اطلاعاتی از قطعه دارید وارد کنید">هر اطلاعاتی از قطعه دارید وارد کنید</strong>
                                     <span data-en="Code, brand, name, size" data-fa="کد، برند، نام، ابعاد">کد، برند، نام، ابعاد</span>
                                 </div>
-                                <div class="relative">
-                                    <input type="text" id="search-input" 
+                                <div class="relative search-entry">
+                                    <input type="search" id="search-input" dir="auto" maxlength="250" autocomplete="off" role="combobox" aria-label="جستجوی کد، نام یا ابعاد قطعه" aria-autocomplete="list" aria-expanded="false" aria-controls="autocomplete-dropdown"
                                         class="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none search-glow transition"
                                         data-placeholder-en="Enter code or name: 6205, SKF-6205, bearing, 25x52x15..."
-                                        data-placeholder-fa="کد یا نام قطعه را وارد کنید؛ 6205، SKF-6205، بلبرینگ، 25x52x15..."
-                                        placeholder="کد یا نام قطعه را وارد کنید؛ 6205، SKF-6205، بلبرینگ، 25x52x15..."
+                                        data-placeholder-fa="کد، نام یا ابعاد؛ مثلاً ۶۲۰۵ یا SKF-6205"
+                                        placeholder="کد، نام یا ابعاد؛ مثلاً ۶۲۰۵ یا SKF-6205"
                                         oninput="handleSearchInput(this.value)">
-                                    <button onclick="performSearch()" class="absolute right-2 top-1/2 -translate-y-1/2 btn-primary pulse-glow text-white px-6 py-3 rounded-lg font-medium">
+                                    <button onclick="performSearch()" class="search-submit btn-primary text-white px-6 py-3 rounded-lg font-medium">
                                         <i class="fas fa-search mr-2"></i>
                                         <span data-en="Search" data-fa="جستجو">جستجو</span>
                                     </button>
                                     <!-- Autocomplete Dropdown -->
-                                    <div id="autocomplete-dropdown" class="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 hidden z-50 max-h-80 overflow-y-auto">
+                                    <div id="autocomplete-dropdown" role="listbox" aria-label="پیشنهادهای جستجو" class="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 hidden z-50 max-h-80 overflow-y-auto">
                                     </div>
                                 </div>
                                 <div class="mt-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -317,15 +316,15 @@
                                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                         <div>
                                             <label class="block text-sm font-bold text-gray-600 mb-2" data-en="Inner dia. (d)" data-fa="قطر داخل (d)">قطر داخل (d)</label>
-                                            <input type="number" step="0.001" id="dim-d" class="compact-input" placeholder="25">
+                                            <input type="text" inputmode="decimal" dir="ltr" aria-label="dim-d" id="dim-d" class="compact-input" placeholder="25">
                                         </div>
                                         <div>
                                             <label class="block text-sm font-bold text-gray-600 mb-2" data-en="Outer dia. (D)" data-fa="قطر خارج (D)">قطر خارج (D)</label>
-                                            <input type="number" step="0.001" id="dim-D" class="compact-input" placeholder="52">
+                                            <input type="text" inputmode="decimal" dir="ltr" aria-label="dim-D" id="dim-D" class="compact-input" placeholder="52">
                                         </div>
                                         <div>
                                             <label class="block text-sm font-bold text-gray-600 mb-2" data-en="Width (B)" data-fa="عرض (B)">عرض (B)</label>
-                                            <input type="number" step="0.001" id="dim-B" class="compact-input" placeholder="15">
+                                            <input type="text" inputmode="decimal" dir="ltr" aria-label="dim-B" id="dim-B" class="compact-input" placeholder="15">
                                         </div>
                                         <div class="flex items-end">
                                             <button onclick="searchByDimension()" class="w-full btn-primary text-white px-6 py-3 rounded-xl font-bold">
@@ -340,22 +339,22 @@
                                         <div>
                                             <label class="block text-sm font-bold text-gray-600 mb-2" data-en="d from / to" data-fa="قطر داخل از / تا">قطر داخل از / تا</label>
                                             <div class="grid grid-cols-2 gap-2">
-                                                <input type="number" step="0.001" id="dim-d-min" class="compact-input" placeholder="20">
-                                                <input type="number" step="0.001" id="dim-d-max" class="compact-input" placeholder="30">
+                                                <input type="text" inputmode="decimal" dir="ltr" aria-label="dim-d-min" id="dim-d-min" class="compact-input" placeholder="20">
+                                                <input type="text" inputmode="decimal" dir="ltr" aria-label="dim-d-max" id="dim-d-max" class="compact-input" placeholder="30">
                                             </div>
                                         </div>
                                         <div>
                                             <label class="block text-sm font-bold text-gray-600 mb-2" data-en="D from / to" data-fa="قطر خارج از / تا">قطر خارج از / تا</label>
                                             <div class="grid grid-cols-2 gap-2">
-                                                <input type="number" step="0.001" id="dim-D-min" class="compact-input" placeholder="47">
-                                                <input type="number" step="0.001" id="dim-D-max" class="compact-input" placeholder="62">
+                                                <input type="text" inputmode="decimal" dir="ltr" aria-label="dim-D-min" id="dim-D-min" class="compact-input" placeholder="47">
+                                                <input type="text" inputmode="decimal" dir="ltr" aria-label="dim-D-max" id="dim-D-max" class="compact-input" placeholder="62">
                                             </div>
                                         </div>
                                         <div>
                                             <label class="block text-sm font-bold text-gray-600 mb-2" data-en="B from / to" data-fa="عرض از / تا">عرض از / تا</label>
                                             <div class="grid grid-cols-2 gap-2">
-                                                <input type="number" step="0.001" id="dim-B-min" class="compact-input" placeholder="12">
-                                                <input type="number" step="0.001" id="dim-B-max" class="compact-input" placeholder="18">
+                                                <input type="text" inputmode="decimal" dir="ltr" aria-label="dim-B-min" id="dim-B-min" class="compact-input" placeholder="12">
+                                                <input type="text" inputmode="decimal" dir="ltr" aria-label="dim-B-max" id="dim-B-max" class="compact-input" placeholder="18">
                                             </div>
                                         </div>
                                         <div class="flex items-end">
@@ -567,7 +566,7 @@
                     <span data-en="Search Results" data-fa="نتایج جستجو">Search Results</span>
                 </div>
 
-                <button id="mobile-filter-btn" onclick="toggleMobileFilters()">
+                <button id="mobile-filter-btn" aria-controls="filters-aside" aria-expanded="false" onclick="toggleMobileFilters()">
                     <i class="fas fa-sliders"></i>
                     <span data-en="Filters" data-fa="فیلترها">فیلترها</span>
                     <span id="mobile-filter-count" class="px-2 py-0.5 rounded-full text-xs font-bold" style="background:rgba(19,72,200,.1);color:#1348c8">۰</span>
@@ -665,15 +664,15 @@
                                     <div class="grid grid-cols-1 gap-3">
                                         <div>
                                             <label class="block text-xs font-bold text-gray-500 mb-1" data-en="Inner diameter" data-fa="قطر داخل">قطر داخل</label>
-                                            <div class="grid grid-cols-2 gap-2"><input type="number" step="0.001" id="filter-d-min" class="compact-input text-sm" data-placeholder-en="Exact / from" data-placeholder-fa="دقیق / از" placeholder="دقیق / از" onchange="applyFilters()"><input type="number" step="0.001" id="filter-d-max" class="compact-input text-sm" data-placeholder-en="To" data-placeholder-fa="تا" placeholder="تا" onchange="applyFilters()"></div>
+                                            <div class="grid grid-cols-2 gap-2"><input type="text" inputmode="decimal" dir="ltr" aria-label="filter-d-min" id="filter-d-min" class="compact-input text-sm" data-placeholder-en="Exact / from" data-placeholder-fa="دقیق / از" placeholder="دقیق / از" onchange="applyFilters()"><input type="text" inputmode="decimal" dir="ltr" aria-label="filter-d-max" id="filter-d-max" class="compact-input text-sm" data-placeholder-en="To" data-placeholder-fa="تا" placeholder="تا" onchange="applyFilters()"></div>
                                         </div>
                                         <div>
                                             <label class="block text-xs font-bold text-gray-500 mb-1" data-en="Outer diameter" data-fa="قطر خارج">قطر خارج</label>
-                                            <div class="grid grid-cols-2 gap-2"><input type="number" step="0.001" id="filter-D-min" class="compact-input text-sm" data-placeholder-en="Exact / from" data-placeholder-fa="دقیق / از" placeholder="دقیق / از" onchange="applyFilters()"><input type="number" step="0.001" id="filter-D-max" class="compact-input text-sm" data-placeholder-en="To" data-placeholder-fa="تا" placeholder="تا" onchange="applyFilters()"></div>
+                                            <div class="grid grid-cols-2 gap-2"><input type="text" inputmode="decimal" dir="ltr" aria-label="filter-D-min" id="filter-D-min" class="compact-input text-sm" data-placeholder-en="Exact / from" data-placeholder-fa="دقیق / از" placeholder="دقیق / از" onchange="applyFilters()"><input type="text" inputmode="decimal" dir="ltr" aria-label="filter-D-max" id="filter-D-max" class="compact-input text-sm" data-placeholder-en="To" data-placeholder-fa="تا" placeholder="تا" onchange="applyFilters()"></div>
                                         </div>
                                         <div>
                                             <label class="block text-xs font-bold text-gray-500 mb-1" data-en="Width" data-fa="عرض">عرض</label>
-                                            <div class="grid grid-cols-2 gap-2"><input type="number" step="0.001" id="filter-B-min" class="compact-input text-sm" data-placeholder-en="Exact / from" data-placeholder-fa="دقیق / از" placeholder="دقیق / از" onchange="applyFilters()"><input type="number" step="0.001" id="filter-B-max" class="compact-input text-sm" data-placeholder-en="To" data-placeholder-fa="تا" placeholder="تا" onchange="applyFilters()"></div>
+                                            <div class="grid grid-cols-2 gap-2"><input type="text" inputmode="decimal" dir="ltr" aria-label="filter-B-min" id="filter-B-min" class="compact-input text-sm" data-placeholder-en="Exact / from" data-placeholder-fa="دقیق / از" placeholder="دقیق / از" onchange="applyFilters()"><input type="text" inputmode="decimal" dir="ltr" aria-label="filter-B-max" id="filter-B-max" class="compact-input text-sm" data-placeholder-en="To" data-placeholder-fa="تا" placeholder="تا" onchange="applyFilters()"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -747,26 +746,33 @@
                     </aside>
 
                     <!-- Results -->
-                    <div class="flex-1">
+                    <div class="results-main flex-1 min-w-0">
+                        <form class="results-search-form" onsubmit="event.preventDefault(); performSearch(document.getElementById('results-search-input').value)">
+                            <label for="results-search-input" data-en="Search products" data-fa="جستجوی قطعات">جستجوی قطعات</label>
+                            <div class="search-entry">
+                                <input id="results-search-input" type="search" dir="auto" maxlength="250" data-placeholder-en="Code, brand or dimensions…" data-placeholder-fa="کد، برند یا ابعاد قطعه…" placeholder="کد، برند یا ابعاد قطعه…">
+                                <button type="submit" class="btn-primary text-white px-5 py-3 rounded-xl"><i class="fas fa-search" aria-hidden="true"></i> <span data-en="Search" data-fa="جستجو">جستجو</span></button>
+                            </div>
+                        </form>
                         <!-- Results Header -->
                         <div class="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                             <div>
                                 <span class="text-gray-600" data-en="Showing" data-fa="نمایش">Showing</span>
-                                <span id="results-count" class="font-bold text-gray-800">0</span>
+                                <span id="results-count" aria-live="polite" class="font-bold text-gray-800">0</span>
                                 <span class="text-gray-600" data-en="results" data-fa="نتیجه">results</span>
                             </div>
                             <div class="flex items-center gap-4">
-                                <select id="sort-select" class="px-4 py-2 border rounded-lg text-gray-600 focus:outline-none focus:border-blue-500" onchange="sortResults()">
+                                <select id="sort-select" aria-label="مرتب‌سازی نتایج" class="px-4 py-2 border rounded-lg text-gray-600 focus:outline-none focus:border-blue-500" onchange="sortResults()">
                                     <option value="relevance" data-en="Relevance" data-fa="مرتبط‌ترین">Relevance</option>
                                     <option value="price-asc" data-en="Price: Low to High" data-fa="قیمت: کم به زیاد">Price: Low to High</option>
                                     <option value="price-desc" data-en="Price: High to Low" data-fa="قیمت: زیاد به کم">Price: High to Low</option>
                                     <option value="name" data-en="Name" data-fa="نام">Name</option>
                                 </select>
                                 <div class="flex gap-2">
-                                    <button onclick="setViewMode('grid')" class="view-mode-btn p-2 rounded-lg bg-blue-100 text-blue-600" data-mode="grid">
+                                    <button aria-label="نمای کارتی" aria-pressed="true" onclick="setViewMode('grid')" class="view-mode-btn p-2 rounded-lg bg-blue-100 text-blue-600" data-mode="grid">
                                         <i class="fas fa-th"></i>
                                     </button>
-                                    <button onclick="setViewMode('table')" class="view-mode-btn p-2 rounded-lg hover:bg-gray-100" data-mode="table">
+                                    <button aria-label="نمای جدولی" aria-pressed="false" onclick="setViewMode('table')" class="view-mode-btn p-2 rounded-lg hover:bg-gray-100" data-mode="table">
                                         <i class="fas fa-list"></i>
                                     </button>
                                 </div>
@@ -960,7 +966,7 @@
                     <span class="about-eyebrow" data-en="Our Story — Live 3D" data-fa="داستان ما — نمای زنده سه‌بعدی">داستان ما — نمای زنده سه‌بعدی</span>
                     <h3 class="about-title" data-en="Our Story" data-fa="داستان ما">داستان <span class="grad">ما</span></h3>
                     <p class="about-lead mb-4" data-en="Bearing Online is a specialized online store for industrial and automotive bearings, housings, bushings, grease, and power-transmission parts. Search by code, brand, name, or dimensions, compare technical options, and check out stocked items online." data-fa="برینگ آنلاین فروشگاه تخصصی آنلاین برینگ‌های صنعتی و خودرویی، یاتاقان و بوش، گریس و قطعات انتقال قدرت است. با کد، برند، نام یا ابعاد جستجو کنید، گزینه‌های فنی را مقایسه کنید و کالای موجود را آنلاین بخرید.">برینگ آنلاین فروشگاه تخصصی آنلاین برینگ‌های صنعتی و خودرویی، یاتاقان و بوش، گریس و قطعات انتقال قدرت است. با کد، برند، نام یا ابعاد جستجو کنید، گزینه‌های فنی را مقایسه کنید و کالای موجود را آنلاین بخرید.</p>
-                    <p class="about-lead mb-6" data-en="For rare or inquiry-only parts, every unsuccessful search becomes an RFQ. Our engineering team returns equivalents, final pricing, and delivery time quickly." data-fa="برای قطعات خاص یا استعلامی، هر جستجوی ناموفق به درخواست تامین تبدیل می‌شود و تیم مهندسی ما معادل، قیمت نهایی و زمان تحویل را سریع اعلام می‌کند.">برای قطعات خاص یا استعلامی، هر جستجوی ناموفق به درخواست تامین تبدیل می‌شود و تیم مهندسی ما معادل، قیمت نهایی و زمان تحویل را سریع اعلام می‌کند.</p>
+                    <p class="about-lead mb-6" data-en="For rare or inquiry-only parts, you can turn an unsuccessful search into an RFQ. Our engineering team returns equivalents, final pricing, and delivery time quickly." data-fa="برای قطعات خاص یا استعلامی، می‌توانید جستجوی ناموفق را به درخواست تامین تبدیل کنید و تیم مهندسی ما معادل، قیمت نهایی و زمان تحویل را سریع اعلام می‌کند.">برای قطعات خاص یا استعلامی، می‌توانید جستجوی ناموفق را به درخواست تامین تبدیل کنید و تیم مهندسی ما معادل، قیمت نهایی و زمان تحویل را سریع اعلام می‌کند.</p>
                     <div class="grid grid-cols-2 gap-6 max-w-md mx-auto">
                         <div class="about-stat">
                             <div class="num">15+</div>
@@ -974,30 +980,38 @@
                 </div>
                 <div class="about-bearing-wrap">
                     <div class="bearing-stage" id="bearingStage">
+                        <div id="bearingViewport" class="bearing-viewport" tabindex="0" role="img" aria-label="مدل تعاملی بلبرینگ؛ با کلیدهای جهت بچرخانید و با مثبت و منفی زوم کنید"></div>
                         <div class="bearing-hud">
                             <div class="bearing-pill"><span class="live-dot"></span><span data-en="Live 3D" data-fa="نمای سه‌بعدی زنده">نمای سه‌بعدی زنده</span></div>
-                            <div class="bearing-pill">
-                                <button id="bearingDirBtn" type="button" title="Direction"><i class="fas fa-arrows-rotate"></i></button>
-                                <button id="bearingPauseBtn" type="button" title="Pause"><i class="fas fa-pause"></i></button>
-                                <button id="bearingExplodeBtn" type="button" title="Exploded view"><i class="fas fa-layer-group"></i></button>
-                                <button id="bearingZoomIn" type="button" title="Zoom in"><i class="fas fa-plus"></i></button>
-                                <button id="bearingZoomOut" type="button" title="Zoom out"><i class="fas fa-minus"></i></button>
+                            <div class="bearing-pill bearing-controls" role="group" aria-label="کنترل نمایش سه‌بعدی">
+                                <button id="bearingDirBtn" aria-label="تغییر جهت چرخش" type="button" title="Direction"><i class="fas fa-arrows-rotate"></i></button>
+                                <button id="bearingPauseBtn" aria-label="توقف یا ادامه چرخش" type="button" title="Pause"><i class="fas fa-pause"></i></button>
+                                <button id="bearingExplodeBtn" aria-label="نمای بازشده قطعات" type="button" title="Exploded view"><i class="fas fa-layer-group"></i></button>
+                                <button id="bearingZoomIn" aria-label="بزرگ‌نمایی" type="button" title="Zoom in"><i class="fas fa-plus"></i></button>
+                                <button id="bearingResetBtn" type="button" title="Reset view" aria-label="بازنشانی نما"><i class="fas fa-house"></i></button>
+                                <button id="bearingZoomOut" aria-label="کوچک‌نمایی" type="button" title="Zoom out"><i class="fas fa-minus"></i></button>
                             </div>
                         </div>
                         <div class="bearing-vignette"></div>
                         <div class="bearing-scan"></div>
                         <div class="bearing-explodebar">
                             <i class="fas fa-layer-group" style="color:#e8a81d"></i>
-                            <span data-en="Explode" data-fa="بازکردن قطعات">بازکردن قطعات</span>
+                            <label for="bearingExplodeRange" data-en="Exploded view" data-fa="بازکردن قطعات">بازکردن قطعات</label>
                             <input id="bearingExplodeRange" type="range" min="0" max="100" value="0" step="1">
+                            <output id="bearingExplodeValue" for="bearingExplodeRange">0%</output>
+                        </div>
+                        <div class="bearing-presets" role="group" aria-label="حالت نمایش بلبرینگ">
+                            <button type="button" data-bearing-view="open" onclick="setBearingView('open')" data-en="Inside the bearing" data-fa="ساختار داخلی">ساختار داخلی</button>
+                            <button type="button" data-bearing-view="assembled" onclick="setBearingView('assembled')" data-en="Assembled" data-fa="مونتاژ کامل">مونتاژ کامل</button>
+                            <button type="button" data-bearing-view="exploded" onclick="setBearingView('exploded')" data-en="Exploded" data-fa="نمای انفجاری">نمای انفجاری</button>
                         </div>
                         <div class="bearing-caption">
                             <div class="bearing-model-tag" dir="ltr">6205 · 25×52×15</div>
-                            <div class="bearing-model-name"><span dir="ltr">SKF 6205-2RS</span><small data-en="Drag to rotate • Scroll to zoom • Slide to fully open • Double-click to reset" data-fa="بکشید تا بچرخد • اسکرول برای زوم • اسلایدر برای بازکردن کامل • دابل‌کلیک برای ریست">بکشید تا بچرخد • اسکرول برای زوم • اسلایدر برای بازکردن کامل • دابل‌کلیک برای ریست</small></div>
+                            <div class="bearing-model-name"><span dir="ltr">6205 · INTERACTIVE</span><small data-en="Drag or use arrow keys to rotate · + / − to zoom · Scroll the page freely" data-fa="برای چرخش بکشید یا از کلیدهای جهت استفاده کنید · زوم با + و −">برای چرخش بکشید یا از کلیدهای جهت استفاده کنید · زوم با + و −</small></div>
                         </div>
                         <div class="bearing-fallback" id="bearingFallback">
-                            <i class="fas fa-circle-notch fa-spin" style="font-size:28px;color:#e8a81d"></i>
-                            <span data-en="Loading 3D bearing…" data-fa="در حال بارگذاری بلبرینگ سه‌بعدی…">در حال بارگذاری بلبرینگ سه‌بعدی…</span>
+                            <div class="fallback-bearing" aria-hidden="true"><div></div></div>
+                            <span data-en="3D is unavailable on this device. Static preview shown." data-fa="نمای سه‌بعدی در این دستگاه در دسترس نیست؛ پیش‌نمایش ثابت نمایش داده می‌شود.">نمای سه‌بعدی در این دستگاه در دسترس نیست؛ پیش‌نمایش ثابت نمایش داده می‌شود.</span>
                         </div>
                     </div>
                     <div class="about-frame"></div>
@@ -1128,7 +1142,6 @@
                     <div class="flex items-center gap-3 mb-6">
                         <div class="brand-lockup">
                             <span class="sr-only" data-en="Bearing Online" data-fa="برینگ آنلاین">برینگ آنلاین</span>
-                            <img src="https://bearingonline.ir/images/thumbs/001/0015751_300x300.webp" alt="" class="brand-logo-img" style="display:none" loading="lazy" onload="this.style.display='';var vector=document.getElementById('footerVectorLogo');if(vector){vector.style.display='none';}">
                             <svg id="footerVectorLogo" class="brand-logo" viewBox="0 0 360 116" role="img" aria-label="برینگ آنلاین | Bearing Online" style="direction:ltr">
                                 <use href="#boLogoLockup"></use>
                             </svg>

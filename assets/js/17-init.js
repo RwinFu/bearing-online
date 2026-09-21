@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize search results
     hydrateState();
-    AppState.searchResults = ProductDatabase;
+    AppState.searchResults = [...ProductDatabase];
     updateHomeStats();
     renderHomeBrands();
     applyLanguage();
@@ -21,8 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initMagnetic();
     initRipple();
     initScrollEffects();
-    initCursor();
-    initTypingPlaceholder();
+    // Native cursor stays visible; no hidden custom-cursor animation loop.
+    // Keep the localized search hint stable and readable.
     initHeaderScroll();
     initParallax();
     initSpotlight();
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close dropdown when clicking outside
     document.addEventListener('click', (e) => {
         if (!e.target.closest('#search-input') && !e.target.closest('#autocomplete-dropdown')) {
-            document.getElementById('autocomplete-dropdown').classList.add('hidden');
+            closeAutocomplete();
         }
     });
 
@@ -64,12 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Search on enter
-    document.getElementById('search-input').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            performSearch();
-        }
-    });
+    document.getElementById('search-input').addEventListener('keydown', handleSearchKeydown);
     // Dummy "#" links must not jump the page; their onclick handlers do the navigation
     document.addEventListener('click', (e) => {
         const a = e.target && e.target.closest ? e.target.closest('a[href="#"]') : null;
@@ -81,15 +76,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Mobile: Escape closes drawer, filters start collapsed, badge mirrors active count
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeMobileMenu();
+        const menu = document.getElementById('mobile-menu');
+        if (e.key === 'Tab' && menu.classList.contains('open')) {
+            const items = [...menu.querySelectorAll('a[href], button')];
+            const first = items[0], last = items[items.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
     });
     const filtersAside = document.getElementById('filters-aside');
-    if (filtersAside && window.innerWidth <= 768) {
+    if (filtersAside && window.innerWidth < 1024) {
         filtersAside.classList.add('filters-collapsed');
     }
     window.addEventListener('resize', () => {
         const aside = document.getElementById('filters-aside');
         if (!aside) return;
-        if (window.innerWidth > 768) aside.classList.remove('filters-collapsed');
+        if (window.innerWidth >= 1024) closeMobileMenu();
     });
     const activeCount = document.getElementById('active-filter-count');
     const mobileCount = document.getElementById('mobile-filter-count');

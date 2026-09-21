@@ -23,6 +23,7 @@ function animateCounters() {
         const target = parseInt(counter.getAttribute('data-count'));
         const suffix = counter.getAttribute('data-suffix') || '';
         const duration = 2000;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { counter.textContent = formatNumber(target) + suffix; return; }
         const startTime = performance.now();
 
         function update(now) {
@@ -39,7 +40,10 @@ function animateCounters() {
 }
 
 function initTilt() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
     document.querySelectorAll('.tilt-card').forEach(card => {
+        if (card.dataset.tiltBound) return;
+        card.dataset.tiltBound = '1';
         card.addEventListener('mousemove', (e) => {
             const rect = card.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -57,6 +61,7 @@ function initTilt() {
 }
 
 function initMagnetic() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
     document.querySelectorAll('.magnetic').forEach(btn => {
         if (btn.dataset.mag) return;
         btn.dataset.mag = '1';
@@ -97,7 +102,7 @@ function initScrollEffects() {
     window.addEventListener('scroll', () => {
         const scrollTop = window.scrollY;
         const docHeight = document.body.scrollHeight - window.innerHeight;
-        const scrolled = (scrollTop / docHeight) * 100;
+        const scrolled = docHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / docHeight) * 100)) : 0;
         progress.style.width = scrolled + '%';
         if (scrollTop > 400) backToTop.classList.add('visible');
         else backToTop.classList.remove('visible');

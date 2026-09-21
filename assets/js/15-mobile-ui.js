@@ -8,6 +8,12 @@ function toggleMobileMenu(force) {
     if (!menu || !overlay) return;
     const open = force !== undefined ? force : !menu.classList.contains('open');
     menu.classList.toggle('open', open);
+    menu.inert = !open;
+    document.getElementById('mobile-menu-toggle')?.setAttribute('aria-expanded', String(open));
+    if (open) setTimeout(() => {
+        if (menu.classList.contains('open')) menu.querySelector('button')?.focus();
+    }, 260);
+    else if (menu.contains(document.activeElement)) document.getElementById('mobile-menu-toggle')?.focus();
     overlay.classList.toggle('open', open);
     document.body.style.overflow = open ? 'hidden' : '';
 }
@@ -22,6 +28,7 @@ function toggleMobileFilters() {
     if (!aside || !btn) return;
     const collapsed = aside.classList.toggle('filters-collapsed');
     btn.classList.toggle('expanded', !collapsed);
+    btn.setAttribute('aria-expanded', String(!collapsed));
 }
 
 // Hero 3D motion: mouse-driven depth tilt + layered float on homepage copy

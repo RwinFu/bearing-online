@@ -16,17 +16,17 @@ function setSearchMode(mode) {
 function normalizeSearchValue(value) {
     const fa = '۰۱۲۳۴۵۶۷۸۹';
     const ar = '٠١٢٣٤٥٦٧٨٩';
-    return String(value || '')
+    return String(value ?? '')
         .replace(/[۰-۹]/g, d => fa.indexOf(d))
         .replace(/[٠-٩]/g, d => ar.indexOf(d))
         .replace(/ي/g, 'ی')
         .replace(/ك/g, 'ک')
         .toLowerCase()
-        .replace(/[\s\-_/().]/g, '');
+        .replace(/[\s\u200c\u200e\u200f\-_/().]/g, '');
 }
 
 function normalizePartCodeDisplay(code) {
-    return String(code || '').replace(/\s+/g, '').toUpperCase();
+    return normalizeLoose(code).replace(/\s+/g, '').toUpperCase();
 }
 
 function getStockBadge(product) {
@@ -92,11 +92,13 @@ function suffixCompatible(querySuffix, product) {
 function normalizeLoose(value) {
     const fa = '۰۱۲۳۴۵۶۷۸۹';
     const ar = '٠١٢٣٤٥٦٧٨٩';
-    return String(value || '')
+    return String(value ?? '')
         .replace(/[۰-۹]/g, d => fa.indexOf(d))
         .replace(/[٠-٩]/g, d => ar.indexOf(d))
         .replace(/ي/g, 'ی')
         .replace(/ك/g, 'ک')
+        .replace(/[\u200c\u200e\u200f]/g, ' ')
+        .replace(/٫/g, '.')
         .toLowerCase()
         .trim();
 }
@@ -117,13 +119,13 @@ function levenshtein(a, b) {
 
 function getTypeKeywords(product) {
     const map = {
-        bearing: 'bearing bearings بلبرینگ بلبرنگ برینگ رولبرینگ یاتاقان بیرینگ ساچمه بلبرینگها',
+        bearing: 'bearing bearings بلبرینگ بلبرنگ برینگ بیرینگ ساچمه بلبرینگها',
         linear: 'linear guide block rail گاید خطی ریل واگن بلوک',
         coupling: 'coupling کوپلینگ کوپلن کوپلینگها کوپلینگ انتقال قدرت شفت',
         gearbox: 'gearbox gear گیربکس گیربکسها کاهنده جعبه دنده جعبه‌دنده',
         'deep-groove': 'deep groove شیار عمیق شیارعمیق',
-        spherical: 'spherical بشکه ای بشکه‌ای خودتنظیم',
-        tapered: 'tapered مخروطی',
+        spherical: 'spherical roller رولبرینگ بشکه ای بشکه‌ای خودتنظیم',
+        tapered: 'tapered roller رولبرینگ مخروطی',
         'pillow-block': 'pillow block ucp یاتاقان پایه دار پایه‌دار',
         jaw: 'jaw فکی',
         chain: 'chain زنجیر زنجیری',
@@ -137,8 +139,8 @@ function expandSearchTokens(tokens) {
         'بلبرنگ': ['بلبرینگ', 'bearing'],
         'بلبرینگ': ['بلبرنگ', 'bearing', 'برینگ'],
         'برینگ': ['bearing', 'بلبرینگ'],
-        'رولبرینگ': ['roller', 'bearing', 'بلبرینگ'],
-        'یاتاقان': ['ucp', 'pillow', 'bearing'],
+        'رولبرینگ': ['roller'],
+        'یاتاقان': ['ucp', 'pillow'],
         'کوپلینگ': ['coupling', 'coupler', 'کوپلن'],
         'کوپلن': ['coupling', 'کوپلینگ'],
         'گیربکس': ['gearbox', 'gear', 'کاهنده'],
@@ -157,7 +159,7 @@ function expandSearchTokens(tokens) {
 function getTokenAlternatives(token) {
     const synonyms = {
         'بلبرنگ': ['بلبرینگ', 'bearing'], 'بلبرینگ': ['بلبرنگ', 'bearing', 'برینگ'], 'برینگ': ['bearing', 'بلبرینگ'],
-        'رولبرینگ': ['roller', 'bearing'], 'یاتاقان': ['ucp', 'pillow', 'bearing'], 'کوپلینگ': ['coupling', 'coupler', 'کوپلن'],
+        'رولبرینگ': ['roller'], 'یاتاقان': ['ucp', 'pillow'], 'کوپلینگ': ['coupling', 'coupler', 'کوپلن'],
         'کوپلن': ['coupling', 'کوپلینگ'], 'گیربکس': ['gearbox', 'gear', 'کاهنده'], 'گاید': ['linear', 'guide', 'ریل'],
         'ریل': ['linear', 'guide', 'گاید'], 'فکی': ['jaw'], 'مخروطی': ['tapered'], 'بشکه': ['spherical'],
         'بشکه‌ای': ['spherical'], 'شیار': ['groove'], 'عمیق': ['deep']
@@ -195,16 +197,63 @@ function hasAllMeaningfulTokens(product, query) {
     return tokens.every(token => getTokenAlternatives(token).some(alt => tokenMatchesProduct(product, alt)));
 }
 
+// Parse a dimension sequence, not unrelated numbers elsewhere in the query.
 function parseDimensionQuery(query) {
-    const normalized = normalizeLoose(query).replace(/[×*]/g, 'x');
-    const nums = normalized.match(/\d+(?:\.\d+)?/g)?.map(Number) || [];
-    const hasDimensionSeparator = /\d\s*x\s*\d/i.test(normalized) || normalized.includes('قطر') || normalized.includes('ابعاد');
-    return hasDimensionSeparator && nums.length >= 2 ? nums.slice(0, 3) : [];
+    const match = normalizeLoose(query).match(/(\d+(?:\.\d+)?)\s*[x×*]\s*(\d+(?:\.\d+)?)(?:\s*[x×*]\s*(\d+(?:\.\d+)?))?/i);
+    return match ? match.slice(1).filter(value => value !== undefined).map(Number) : [];
 }
 
 function extractClearanceQuery(query) {
-    const match = normalizeLoose(query).toUpperCase().match(/(?:^|[^A-Z0-9])C([2-5])(?![0-9])/);
-    return match ? `C${match[1]}` : '';
+    const match = normalizeLoose(query).match(/c[0-5]$/i);
+    return match ? match[0].toUpperCase() : '';
+}
+
+// Brand aliases are normalized before tokenizing so word order never changes results.
+function normalizeSearchQuery(query) {
+    let text = normalizeLoose(query);
+    const aliases = [
+        [/اس\s*کا\s*اف/g, 'skf'], [/ان\s*اس\s*کا/g, 'nsk'], [/ان\s*تی\s*ان/g, 'ntn'],
+        [/اف\s*اِ?ی\s*جی|فاگ/g, 'fag'], [/هایوین|های\s*وین/g, 'hiwin'],
+        [/تیمکن/g, 'timken'], [/رینگ\s*اسپن/g, 'ringspann'], [/آساهی|اساهی/g, 'asahi'], [/فلندر/g, 'flender']
+    ];
+    aliases.forEach(([pattern, replacement]) => { text = text.replace(pattern, replacement); });
+    // Split maker references, e.g. SKF-6205 and HIWIN-MGN12H, without splitting PL60-5.
+    const brands = [...new Set(ProductDatabase.map(p => p.brand.toLowerCase()))];
+    brands.forEach(brand => {
+        text = text.replace(new RegExp('\\b' + brand + '(?=[\\s_-]*[a-z]*[0-9])', 'g'), brand + ' ');
+    });
+    return text;
+}
+
+function parseSearchQuery(query) {
+    let text = normalizeSearchQuery(query);
+    const dimensions = parseDimensionQuery(text);
+    if (dimensions.length) {
+        text = text.replace(/\d+(?:\.\d+)?\s*[x×*]\s*\d+(?:\.\d+)?(?:\s*[x×*]\s*\d+(?:\.\d+)?)?/i, ' ')
+            .replace(/\bmm\b|میلی\s*متر|ابعاد|قطر/g, ' ');
+    }
+    // A spaced alphabetic code prefix belongs to the following number (UCP 205, ROTEX 28).
+    text = text.replace(/\b([a-z]+)\s+(\d)/g, (match, prefix, digit) =>
+        ProductDatabase.some(p => normalizeSearchValue(p.code).startsWith(prefix + digit)) ? prefix + digit : match);
+    const tokens = text.split(/[\s,،+]+/).map(t => t.replace(/^[-_/]+|[-_/]+$/g, '')).filter(Boolean);
+    const codes = [], words = [], suffixes = [], clearances = [];
+    tokens.forEach(token => {
+        let compact = normalizeSearchValue(token).toUpperCase();
+        const clearance = compact.match(/C[0-5]$/);
+        if (clearance) {
+            clearances.push(clearance[0]);
+            compact = compact.slice(0, -clearance[0].length);
+        }
+        if (!compact) return;
+        const group = getSuffixGroup(compact);
+        if (group && !group.filterOnly) { suffixes.push(compact); return; }
+        if (/\d/.test(compact)) {
+            const parts = extractCodeParts(compact);
+            codes.push(parts.base);
+            if (parts.suffix) suffixes.push(parts.suffix);
+        } else words.push(token);
+    });
+    return { dimensions, codes, words, suffixes, clearances };
 }
 
 function productSearchScore(product, query, fields = getSelectedPartFields()) {
@@ -248,39 +297,23 @@ function productSearchScore(product, query, fields = getSelectedPartFields()) {
 }
 
 function searchProducts(query, fields = getSelectedPartFields()) {
-    const parts = extractCodeParts(query);
-    const queryGroup = getSuffixGroup(parts.suffix);
-    const dimensionQuery = parseDimensionQuery(query);
-            const clearanceQuery = normalizeSearchValue(extractClearanceQuery(query)) || (queryGroup && queryGroup.filterOnly ? normalizeSearchValue(parts.suffix) : '');
-    let results = ProductDatabase.filter(product => hasAllMeaningfulTokens(product, query));
-    if (dimensionQuery.length) {
-        // Text dimensional query such as 25x52x15 / 25*52*15 → match directly on d/D/B.
-        results = results.filter(product =>
-            Math.abs(product.d - dimensionQuery[0]) <= 0.2 &&
-            (dimensionQuery[1] === undefined || Math.abs(product.D - dimensionQuery[1]) <= 0.2) &&
-            (dimensionQuery[2] === undefined || Math.abs(product.B - dimensionQuery[2]) <= 0.2));
-    } else if (parts.base && /\d/.test(parts.base)) {
-        results = results.filter(product => normalizeSearchValue(product.code).includes(normalizeSearchValue(parts.base)) || normalizeSearchValue(product.id).includes(normalizeSearchValue(parts.base)));
-    }
-    if (clearanceQuery) {
-        // Clearance is a product field of its own; it must never be matched against the seal.
-        results = results.filter(product => normalizeSearchValue(product.clearance) === clearanceQuery);
-    }
-    return results
-        .filter(product => suffixCompatible(parts.suffix, product))
-        .map(product => {
-            const productSuffix = getProductSuffix(product);
-            const exactSuffix = parts.suffix && normalizeSearchValue(productSuffix) === normalizeSearchValue(parts.suffix);
-            const equivalentSuffix = parts.suffix && !exactSuffix && queryGroup && getSuffixGroup(productSuffix)?.group === queryGroup.group;
-            product.searchMeta = { equivalent: !!equivalentSuffix, suffixMatch: parts.suffix };
-            let score = productSearchScore(product, query, fields);
-            if (exactSuffix) score += 80;
-            if (equivalentSuffix) score += 25;
-            return { product, score };
-        })
-        .filter(item => item.score > 0)
-        .sort((a, b) => b.score - a.score || a.product.code.localeCompare(b.product.code))
-        .map(item => item.product);
+    if (!normalizeSearchValue(query)) return [...ProductDatabase];
+    const parsed = parseSearchQuery(query);
+    return ProductDatabase.filter(product => {
+        const ids = getProductIdentifiers(product);
+        const text = normalizeSearchValue(`${getSearchableText(product)} ${ORIGIN_FA[product.origin] || ''} ${SUBTYPE_FA[product.subtype] || ''}`);
+        return parsed.words.every(token => getTokenAlternatives(token).some(alt => text.includes(normalizeSearchValue(alt)))) &&
+            parsed.codes.every(code => fields.some(field => normalizeSearchValue(ids[field]).includes(normalizeSearchValue(code)))) &&
+            parsed.suffixes.every(suffix => suffixCompatible(suffix, product)) &&
+            parsed.clearances.every(clearance => normalizeSearchValue(product.clearance) === normalizeSearchValue(clearance)) &&
+            parsed.dimensions.every((value, i) => Math.abs(product[['d', 'D', 'B'][i]] - value) <= 0.2);
+    }).map(product => {
+        const suffix = getProductSuffix(product);
+        const equivalent = parsed.suffixes.some(value => value !== suffix && getSuffixGroup(value)?.group === getSuffixGroup(suffix)?.group);
+        const score = productSearchScore(product, normalizeSearchQuery(query), fields) + (equivalent ? 25 : 80);
+        // Suggestions must not mutate metadata on already-rendered search results.
+        return { product: { ...product, searchMeta: { equivalent, suffixMatch: parsed.suffixes.join(' ') } }, score };
+    }).sort((a, b) => b.score - a.score || a.product.code.localeCompare(b.product.code)).map(item => item.product);
 }
 
 function getProductIdentifiers(product) {
@@ -313,8 +346,10 @@ function productMatchesPartQuery(product, query, fields = getSelectedPartFields(
 }
 
 function toMillimeter(value, unit) {
-    const number = parseFloat(value);
-    if (!Number.isFinite(number)) return null;
+    const text = normalizeLoose(value);
+    if (!text) return null;
+    const number = Number(text);
+    if (!Number.isFinite(number) || number <= 0) return null;
     return unit === 'inch' ? number * 25.4 : number;
 }
 
@@ -340,15 +375,44 @@ function toggleDimensionMode(scope = 'hero') {
 }
 
 let autocompleteTimer;
-function handleSearchInput(value) {
+let autocompleteIndex = -1;
+function closeAutocomplete() {
     clearTimeout(autocompleteTimer);
+    autocompleteIndex = -1;
+    document.getElementById('autocomplete-dropdown').classList.add('hidden');
+    const input = document.getElementById('search-input');
+    input.setAttribute('aria-expanded', 'false');
+    input.removeAttribute('aria-activedescendant');
+}
+
+function handleSearchKeydown(event) {
+    if (event.isComposing) return;
+    const dropdown = document.getElementById('autocomplete-dropdown');
+    const items = [...dropdown.querySelectorAll('[role="option"]')];
+    if (event.key === 'Escape') { closeAutocomplete(); return; }
+    if (['ArrowDown', 'ArrowUp'].includes(event.key) && items.length && !dropdown.classList.contains('hidden')) {
+        event.preventDefault();
+        autocompleteIndex = (autocompleteIndex + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+        items.forEach((item, index) => item.setAttribute('aria-selected', String(index === autocompleteIndex)));
+        event.target.setAttribute('aria-activedescendant', items[autocompleteIndex].id);
+        items[autocompleteIndex].scrollIntoView({ block: 'nearest' });
+    } else if (event.key === 'Enter') {
+        event.preventDefault();
+        if (autocompleteIndex >= 0 && !dropdown.classList.contains('hidden')) items[autocompleteIndex]?.click();
+        else performSearch();
+    }
+}
+
+function handleSearchInput(value) {
+    closeAutocomplete();
     autocompleteTimer = setTimeout(() => executeAutocomplete(value), 250);
 }
 
 function executeAutocomplete(value) {
     const dropdown = document.getElementById('autocomplete-dropdown');
-    if (value.length < 2) {
-        dropdown.classList.add('hidden');
+    autocompleteIndex = -1;
+    if (value.trim().length < 2) {
+        closeAutocomplete();
         return;
     }
 
@@ -367,27 +431,29 @@ function executeAutocomplete(value) {
             </div>
         `;
         dropdown.classList.remove('hidden');
+    document.getElementById('search-input').setAttribute('aria-expanded', 'true');
         return;
     }
 
-    dropdown.innerHTML = matches.map(p => `
-        <div class="autocomplete-item px-4 py-3 cursor-pointer border-b border-gray-100 flex items-center justify-between hover:bg-blue-50 transition" onclick="showProductDetail('${p.id}')">
+    dropdown.innerHTML = matches.map((p, index) => `
+        <div id="search-option-${index}" role="option" aria-selected="false" class="autocomplete-item px-4 py-3 cursor-pointer border-b border-gray-100 flex items-center justify-between hover:bg-blue-50 transition" onclick="closeAutocomplete(); showProductDetail('${p.id}')">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
                     <i class="fas fa-${p.type === 'bearing' ? 'circle-notch' : p.type === 'linear' ? 'grip-lines' : p.type === 'coupling' ? 'link' : 'cogs'} text-gray-400"></i>
                 </div>
                 <div>
-                    <div class="font-medium text-gray-800">${p.brand} ${p.code} ${p.searchMeta?.equivalent ? `<span class="mr-2 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs">${AppState.language === 'fa' ? 'معادل' : 'Equivalent'}</span>` : ''}</div>
-                    <div class="text-sm text-gray-500">${p.d}×${p.D}×${p.B} mm | ${getIdentifierLabel('mpn')}: ${getProductIdentifiers(p).mpn}</div>
+                    <div class="font-medium text-gray-800" dir="ltr">${p.brand} ${p.code} ${p.searchMeta?.equivalent ? `<span class="mr-2 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs">${AppState.language === 'fa' ? 'معادل' : 'Equivalent'}</span>` : ''}</div>
+                    <div class="text-sm text-gray-500" dir="ltr">${p.d}×${p.D}×${p.B} mm | ${getIdentifierLabel('mpn')}: ${getProductIdentifiers(p).mpn}</div>
                 </div>
             </div>
             <div class="text-right">
                 <div class="mb-1">${getStockBadge(p)}</div>
-                <div class="text-sm font-medium text-blue-600">${formatPrice(p.priceUSD)} <span class="text-xs">تومان</span></div>
+                <div class="text-sm font-medium text-blue-600">${p.sell_mode === 'instant' ? formatPrice(p.priceUSD) + (AppState.language === 'fa' ? ' تومان' : ' Toman') : (AppState.language === 'fa' ? 'استعلام' : 'RFQ')}</div>
             </div>
         </div>
     `).join('');
     dropdown.classList.remove('hidden');
+    document.getElementById('search-input').setAttribute('aria-expanded', 'true');
 }
 
 function submitMissingSearchFromAutocomplete() {
@@ -396,14 +462,17 @@ function submitMissingSearchFromAutocomplete() {
     openLeadModal('failed-search');
 }
 
-function performSearch() {
-    const rawQuery = document.getElementById('search-input').value.trim();
+function performSearch(value = document.getElementById('search-input').value) {
+    const rawQuery = value.trim();
+    if (!rawQuery && !document.getElementById('page-search').classList.contains('hidden')) { clearFilters(); return; }
     if (!rawQuery) {
         showNotification(AppState.language === 'fa' ? 'کد، برند یا ابعاد قطعه را وارد کنید' : 'Enter part code, brand, or size', 'error');
         document.getElementById('search-input').focus();
         return;
     }
-    AppState.lastSearch = rawQuery || 'Empty search';
+    resetProductFilters();
+    closeAutocomplete();
+    AppState.lastSearch = rawQuery;
     AppState.textQuery = rawQuery;
     AppState.dimensionSearch = null;
     recomputeResults();
@@ -423,16 +492,25 @@ function searchByDimension() {
     const DMax = toMillimeter(document.getElementById('dim-D-max')?.value, unit);
     const BMin = toMillimeter(document.getElementById('dim-B-min')?.value, unit);
     const BMax = toMillimeter(document.getElementById('dim-B-max')?.value, unit);
+    const activeIds = mode === 'exact' ? ['dim-d', 'dim-D', 'dim-B'] : ['dim-d-min','dim-d-max','dim-D-min','dim-D-max','dim-B-min','dim-B-max'];
+    if (!validateDimensionInputs(activeIds)) return;
+    const values = mode === 'exact' ? [d, D, B] : [dMin, dMax, DMin, DMax, BMin, BMax];
+    if (values.every(value => value === null) || (mode === 'range' && [[dMin,dMax],[DMin,DMax],[BMin,BMax]].some(([min,max]) => min !== null && max !== null && min > max))) {
+        showNotification(AppState.language === 'fa' ? 'حداقل یک بُعد مثبت وارد کنید؛ حداقل بازه نباید از حداکثر بیشتر باشد.' : 'Enter a positive dimension and valid min/max ranges.', 'error');
+        return;
+    }
+    resetProductFilters();
     AppState.lastSearch = mode === 'exact'
         ? `Exact ${unit}: d=${document.getElementById('dim-d').value || '-'}, D=${document.getElementById('dim-D').value || '-'}, B=${document.getElementById('dim-B').value || '-'}`
         : `Range ${unit}: d=${document.getElementById('dim-d-min').value || '-'}-${document.getElementById('dim-d-max').value || '-'}, D=${document.getElementById('dim-D-min').value || '-'}-${document.getElementById('dim-D-max').value || '-'}, B=${document.getElementById('dim-B-min').value || '-'}-${document.getElementById('dim-B-max').value || '-'}`;
     AppState.dimensionSearch = { mode, unit, d, D, B, dMin, dMax, DMin, DMax, BMin, BMax };
 
     recomputeResults();
-    showPage('search');
+    updateHashRoute('search');
 }
 
 function searchByType(type) {
+    resetProductFilters();
     AppState.lastSearch = type;
     AppState.categoryFilter = type;
     recomputeResults();
@@ -444,12 +522,15 @@ function resetProductFilters() {
     AppState.categoryFilter = '';
     AppState.dimensionSearch = null;
     AppState.lastSearch = '';
+    AppState.relevanceOrder = [];
+    document.getElementById('filter-dim-range').checked = true;
+    document.getElementById('filter-unit-mm').checked = true;
     const input = document.getElementById('search-input');
     if (input) input.value = '';
     document.querySelectorAll('.brand-filter, .type-filter, .origin-filter, .tech-filter').forEach(cb => cb.checked = false);
     ['filter-d-min','filter-d-max','filter-D-min','filter-D-max','filter-B-min','filter-B-max'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.value = '';
+        if (el) { el.value = ''; el.removeAttribute('aria-invalid'); }
     });
     const onlyStock = document.getElementById('filter-only-stock');
     if (onlyStock) onlyStock.checked = false;
@@ -461,7 +542,6 @@ function filterByBrand(brand) {
     document.querySelectorAll('.brand-filter').forEach(input => input.checked = input.value === brand);
     recomputeResults();
     updateHashRoute('search');
-    showPage('search');
 }
 
 function toggleFilterGroup(button) {
@@ -482,7 +562,11 @@ function setQuickFilter(kind, value) {
 }
 
 function removeFilter(kind, value) {
-    if (kind === 'dimension') {
+    if (kind === 'category') {
+        AppState.categoryFilter = '';
+    } else if (kind === 'hero-dimension') {
+        AppState.dimensionSearch = null;
+    } else if (kind === 'dimension') {
         ['filter-d-min','filter-d-max','filter-D-min','filter-D-max','filter-B-min','filter-B-max'].forEach(id => {
             const input = document.getElementById(id);
             if (input) input.value = '';
@@ -511,10 +595,12 @@ function renderActiveFilters() {
     if (!container || !counter || !bar) return;
 
     const chips = [];
+    if (AppState.categoryFilter) chips.push({ kind: 'category', value: '', label: getCategoryLabel(AppState.categoryFilter) });
+    if (AppState.dimensionSearch) chips.push({ kind: 'hero-dimension', value: '', label: getDimensionLabel(AppState.dimensionSearch) });
     document.querySelectorAll('.brand-filter:checked').forEach(input => chips.push({ kind: 'brand', value: input.value, label: input.value }));
-    document.querySelectorAll('.type-filter:checked').forEach(input => chips.push({ kind: 'type', value: input.value, label: input.closest('label')?.innerText.trim().replace(/\d+$/,'').trim() || input.value }));
-    document.querySelectorAll('.origin-filter:checked').forEach(input => chips.push({ kind: 'origin', value: input.value, label: input.closest('label')?.innerText.trim().replace(/\d+$/,'').trim() || input.value }));
-    document.querySelectorAll('.tech-filter:checked').forEach(input => chips.push({ kind: 'tech', value: `${input.dataset.field}:${input.value}`, label: input.closest('label')?.innerText.trim() || input.value }));
+    document.querySelectorAll('.type-filter:checked').forEach(input => chips.push({ kind: 'type', value: input.value, label: input.closest('label')?.textContent.trim().replace(/\d+$/,'').trim() || input.value }));
+    document.querySelectorAll('.origin-filter:checked').forEach(input => chips.push({ kind: 'origin', value: input.value, label: input.closest('label')?.textContent.trim().replace(/\d+$/,'').trim() || input.value }));
+    document.querySelectorAll('.tech-filter:checked').forEach(input => chips.push({ kind: 'tech', value: `${input.dataset.field}:${input.value}`, label: input.closest('label')?.textContent.trim() || input.value }));
 
     const dimIds = ['filter-d-min','filter-d-max','filter-D-min','filter-D-max','filter-B-min','filter-B-max'];
     const hasDim = dimIds.some(id => document.getElementById(id)?.value);
@@ -531,13 +617,22 @@ function renderActiveFilters() {
 
     container.innerHTML = chips.map(chip => `
         <span class="active-filter-chip">
-            ${chip.label}
+            ${escapeHTML(chip.label)}
             <button onclick="removeFilter('${chip.kind}', '${chip.value}')" aria-label="Remove filter">×</button>
         </span>
     `).join('');
 }
 
 function updateFilterCounts() {
+    // The catalogue includes more brands than the initial featured-brand list.
+    const list = document.querySelector('.brand-filter')?.closest('.filter-content');
+    const shown = [...document.querySelectorAll('.brand-filter')].map(input => input.value);
+    [...new Set(ProductDatabase.map(product => product.brand))].filter(brand => !shown.includes(brand)).sort().forEach(brand => {
+        const row = document.createElement('label');
+        row.className = 'filter-row';
+        row.innerHTML = `<span class="flex items-center gap-2"><input type="checkbox" class="brand-filter" value="${escapeHTML(brand)}" onchange="applyFilters()"><span>${escapeHTML(brand)}</span></span><span class="filter-count"></span>`;
+        list?.appendChild(row);
+    });
     document.querySelectorAll('.filter-row input').forEach(input => {
         const row = input.closest('.filter-row');
         const countEl = row?.querySelector('.filter-count');
@@ -573,6 +668,7 @@ function getSidebarFilterState() {
     const onlyStock = !!document.getElementById('filter-only-stock')?.checked;
     const dimMode = document.querySelector('input[name="filter-dim-mode"]:checked')?.value || 'range';
     const dimUnit = document.querySelector('input[name="filter-dim-unit"]:checked')?.value || 'metric';
+    document.querySelectorAll('#filters-aside input[id$="-max"]').forEach(input => { input.disabled = dimMode === 'exact'; });
     const dMin = toMillimeter(document.getElementById('filter-d-min').value, dimUnit);
     const dMax = toMillimeter(document.getElementById('filter-d-max').value, dimUnit);
     const DMin = toMillimeter(document.getElementById('filter-D-min').value, dimUnit);
@@ -598,7 +694,7 @@ function recomputeResults() {
     const filter = getSidebarFilterState();
     const query = AppState.textQuery || '';
     let results = query ? searchProducts(query, getSelectedPartFields()) : [...ProductDatabase];
-    if (query) AppState.relevanceOrder = results.map(product => product.id);
+    AppState.relevanceOrder = results.map(product => product.id);
 
     if (AppState.categoryFilter) {
         const category = AppState.categoryFilter;
@@ -647,33 +743,28 @@ function recomputeResults() {
     }
 
     AppState.searchResults = results;
+    const input = document.getElementById('results-search-input');
+    if (input) input.value = query;
+    document.getElementById('search-input').value = query;
     renderActiveFilters();
-    renderSearchResults();
+    sortResults(false);
 }
 
 function applyFilters() {
+    const exact = document.getElementById('filter-dim-exact').checked;
+    if (!validateDimensionInputs(exact ? ['filter-d-min','filter-D-min','filter-B-min'] : ['filter-d-min','filter-d-max','filter-D-min','filter-D-max','filter-B-min','filter-B-max'])) return;
     recomputeResults();
+    syncSearchRoute();
 }
 
 function clearFilters() {
-    document.querySelectorAll('.brand-filter, .type-filter, .origin-filter, .tech-filter').forEach(cb => cb.checked = false);
-    ['filter-d-min','filter-d-max','filter-D-min','filter-D-max','filter-B-min','filter-B-max'].forEach(id => {
-        const input = document.getElementById(id);
-        if (input) input.value = '';
-    });
-    document.getElementById('filter-dim-range').checked = true;
-    document.getElementById('filter-unit-mm').checked = true;
-    const onlyStock = document.getElementById('filter-only-stock');
-    if (onlyStock) onlyStock.checked = false;
-    AppState.textQuery = '';
-    AppState.categoryFilter = '';
-    AppState.dimensionSearch = null;
-    AppState.searchResults = ProductDatabase;
-    renderActiveFilters();
-    renderSearchResults();
+    resetProductFilters();
+    recomputeResults();
+    syncSearchRoute();
 }
 
-function sortResults() {
+function sortResults(sync = true) {
+    AppState.searchResults = [...AppState.searchResults];
     const sortBy = document.getElementById('sort-select').value;
     switch (sortBy) {
         case 'relevance':
@@ -682,21 +773,23 @@ function sortResults() {
             }
             break;
         case 'price-asc':
-            AppState.searchResults.sort((a, b) => a.priceUSD - b.priceUSD);
+            AppState.searchResults.sort((a, b) => Number(b.sell_mode === 'instant') - Number(a.sell_mode === 'instant') || a.priceUSD - b.priceUSD);
             break;
         case 'price-desc':
-            AppState.searchResults.sort((a, b) => b.priceUSD - a.priceUSD);
+            AppState.searchResults.sort((a, b) => Number(b.sell_mode === 'instant') - Number(a.sell_mode === 'instant') || b.priceUSD - a.priceUSD);
             break;
         case 'name':
             AppState.searchResults.sort((a, b) => a.code.localeCompare(b.code));
             break;
     }
     renderSearchResults();
+    if (sync) syncSearchRoute();
 }
 
 function setViewMode(mode) {
     AppState.viewMode = mode;
     document.querySelectorAll('.view-mode-btn').forEach(btn => {
+        btn.setAttribute('aria-pressed', String(btn.dataset.mode === mode));
         btn.classList.remove('bg-blue-100', 'text-blue-600');
         btn.classList.add('hover:bg-gray-100');
         if (btn.dataset.mode === mode) {
@@ -705,18 +798,19 @@ function setViewMode(mode) {
         }
     });
     renderSearchResults();
+    syncSearchRoute();
 }
 
 function renderSearchResults() {
     const container = document.getElementById('results-container');
     const tableContainer = document.getElementById('results-table-container');
     const tableBody = document.getElementById('results-table-body');
-    document.getElementById('results-count').textContent = AppState.searchResults.length;
+    document.getElementById('results-count').textContent = formatNumber(AppState.searchResults.length);
 
     if (AppState.searchResults.length === 0) {
         tableContainer.classList.add('hidden');
         container.classList.remove('hidden');
-        container.className = 'grid grid-cols-1 gap-6';
+        container.className = 'results-empty grid grid-cols-1 gap-6';
         const title = AppState.language === 'fa' ? 'قطعه در دیتابیس پیدا نشد' : 'Part not found in the indexed database';
         const desc = AppState.language === 'fa'
             ? 'این جستجو را به درخواست تامین تبدیل کنید. تیم مهندسی برینگ آنلاین کد معادل، برند جایگزین، قیمت نهایی و زمان تحویل را سریع اعلام می‌کند.'
@@ -728,10 +822,11 @@ function renderSearchResults() {
             <div class="lead-card rounded-2xl p-4 sm:p-5 text-white animate-slide-up">
                 <div class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 text-white/70 text-xs mb-2 w-fit max-w-full">
                     <i class="fas fa-magnifying-glass-chart shrink-0"></i>
-                    <span class="truncate">${queryLabel}: ${AppState.lastSearch || '-'}</span>
+                    <span class="truncate">${queryLabel}: ${escapeHTML(AppState.textQuery || (AppState.dimensionSearch ? getDimensionLabel(AppState.dimensionSearch) : '') || getCategoryLabel(AppState.categoryFilter) || AppState.lastSearch || '-')}</span>
                 </div>
                 <h3 class="text-lg sm:text-xl font-extrabold mb-1">${title}</h3>
                 <p class="text-white/70 text-xs sm:text-sm mb-3 max-w-2xl leading-5">${desc}</p>
+                <button onclick="clearFilters()" class="mb-3 underline text-sm">${AppState.language === 'fa' ? 'پاک کردن جستجو و فیلترها' : 'Clear search and filters'}</button>
                 <div class="flex flex-col sm:flex-row gap-2">
                     <button onclick="openLeadModal('failed-search')" class="btn-accent magnetic text-white px-4 py-2.5 rounded-xl font-bold text-sm">
                         <i class="fas fa-bolt mr-2"></i>${sendLabel}
@@ -744,25 +839,21 @@ function renderSearchResults() {
         `;
         initMagnetic();
         initRipple();
-        if (AppState.lastSearch && AppState.lastLeadPrompt !== AppState.lastSearch) {
-            AppState.lastLeadPrompt = AppState.lastSearch;
-            setTimeout(() => openLeadModal('failed-search'), 650);
-        }
         return;
     }
 
     if (AppState.viewMode === 'grid') {
-        container.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
+        container.className = 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6';
         container.classList.remove('hidden');
         tableContainer.classList.add('hidden');
         container.innerHTML = AppState.searchResults.map(p => `
-            <div class="bg-white rounded-2xl shadow-sm overflow-hidden card-hover tilt-card animate-fade-in cursor-pointer" onclick="showProductDetail('${p.id}')">
+            <div tabindex="0" role="link" aria-label="${p.brand} ${p.code}" onkeydown="if(event.target === this && event.key === 'Enter') showProductDetail('${p.id}')" class="bg-white rounded-2xl shadow-sm overflow-hidden card-hover tilt-card animate-fade-in cursor-pointer" onclick="showProductDetail('${p.id}')">
                 <div class="product-image-bg p-8 flex items-center justify-center relative">
                     <i class="fas fa-${p.type === 'bearing' ? 'circle-notch' : p.type === 'linear' ? 'grip-lines' : p.type === 'coupling' ? 'link' : 'cogs'} text-6xl text-gray-300"></i>
-                    <button onclick="event.stopPropagation(); toggleCompare('${p.id}')" class="absolute top-4 right-4 w-10 h-10 rounded-full ${AppState.compareList.includes(p.id) ? 'bg-blue-500 text-white' : 'bg-white text-gray-400 hover:text-blue-500'} shadow flex items-center justify-center transition">
+                    <button onclick="event.stopPropagation(); toggleCompare('${p.id}')" aria-label="${AppState.language === 'fa' ? 'مقایسه' : 'Compare'}" class="absolute top-4 right-4 w-10 h-10 rounded-full ${AppState.compareList.includes(p.id) ? 'bg-blue-500 text-white' : 'bg-white text-gray-400 hover:text-blue-500'} shadow flex items-center justify-center transition">
                         <i class="fas fa-balance-scale"></i>
                     </button>
-                    <button onclick="event.stopPropagation(); toggleWishlist('${p.id}')" class="absolute top-4 left-4 w-10 h-10 rounded-full ${AppState.wishlist.includes(p.id) ? 'bg-red-500 text-white' : 'bg-white text-gray-400 hover:text-red-500'} shadow flex items-center justify-center transition">
+                    <button onclick="event.stopPropagation(); toggleWishlist('${p.id}')" aria-label="${AppState.language === 'fa' ? 'علاقه‌مندی' : 'Save product'}" class="absolute top-4 left-4 w-10 h-10 rounded-full ${AppState.wishlist.includes(p.id) ? 'bg-red-500 text-white' : 'bg-white text-gray-400 hover:text-red-500'} shadow flex items-center justify-center transition">
                         <i class="fas fa-heart"></i>
                     </button>
                 </div>
@@ -771,15 +862,15 @@ function renderSearchResults() {
                         <span class="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-600">${p.brand}</span>
                         <span class="px-2 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600">${faOrigin(p.origin)}</span>
                     </div>
-                    <h4 class="text-lg font-bold text-gray-800 mb-2 hover:text-blue-600">${p.code} ${p.searchMeta?.equivalent ? `<span class="mr-2 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs">${AppState.language === 'fa' ? 'معادل' : 'Equivalent'}</span>` : ''}</h4>
-                    <p class="text-sm text-gray-500 mb-3">${formatDimensions(p)}</p>
+                    <h4 dir="ltr" class="product-code text-lg font-bold text-gray-800 mb-2 hover:text-blue-600">${p.code} ${p.searchMeta?.equivalent ? `<span class="mr-2 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs">${AppState.language === 'fa' ? 'معادل' : 'Equivalent'}</span>` : ''}</h4>
+                    <p class="product-dimensions text-sm text-gray-500 mb-3" dir="ltr">${formatDimensions(p)}</p>
                     <div class="mb-4">${getStockBadge(p)}</div>
-                    <div class="flex items-center justify-between">
+                    <div class="product-card-footer flex items-center justify-between">
                         <div>
-                            <span class="text-2xl font-bold ${p.sell_mode === 'instant' ? 'text-gray-800' : 'text-orange-600'}">${p.sell_mode === 'instant' ? formatPrice(p.priceUSD) : 'استعلام'}</span>
-                            ${p.sell_mode === 'instant' ? '<span class="text-sm text-gray-500"> تومان</span>' : ''}
+                            <span class="text-2xl font-bold ${p.sell_mode === 'instant' ? 'text-gray-800' : 'text-orange-600'}">${p.sell_mode === 'instant' ? formatPrice(p.priceUSD) : (AppState.language === 'fa' ? 'استعلام' : 'RFQ')}</span>
+                            ${p.sell_mode === 'instant' ? `<span class="text-sm text-gray-500"> ${AppState.language === 'fa' ? 'تومان' : 'Toman'}</span>` : ''}
                         </div>
-                        ${p.sell_mode === 'instant' ? `<button onclick="event.stopPropagation(); addToCart('${p.id}')" class="btn-primary text-white px-4 py-2 rounded-lg"><i class="fas fa-cart-plus"></i></button>` : `<button onclick="event.stopPropagation(); requestQuote('${p.id}')" class="btn-accent text-white px-4 py-2 rounded-lg text-sm">استعلام</button>`}
+                        ${p.sell_mode === 'instant' ? `<button onclick="event.stopPropagation(); addToCart('${p.id}')" aria-label="${AppState.language === 'fa' ? 'افزودن به سبد' : 'Add to cart'}" class="btn-primary text-white px-4 py-2 rounded-lg"><i class="fas fa-cart-plus"></i></button>` : `<button onclick="event.stopPropagation(); requestQuote('${p.id}')" class="btn-accent text-white px-4 py-2 rounded-lg text-sm">${AppState.language === 'fa' ? 'استعلام' : 'RFQ'}</button>`}
                     </div>
                 </div>
             </div>
@@ -795,10 +886,10 @@ function renderSearchResults() {
                 <td class="px-4 py-4">
                     <span class="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-600">${p.brand}</span>
                 </td>
-                <td class="px-4 py-4 text-gray-600">${formatDimensions(p)}</td>
+                <td dir="ltr" class="px-4 py-4 text-gray-600">${formatDimensions(p)}</td>
                 <td class="px-4 py-4 text-gray-600">${faType(p.type)}</td>
                 <td class="px-4 py-4">${getStockBadge(p)}</td>
-                <td class="px-4 py-4 font-bold ${p.sell_mode === 'instant' ? 'text-gray-800' : 'text-orange-600'}">${p.sell_mode === 'instant' ? `${formatPrice(p.priceUSD)} <span class="text-xs text-gray-500">تومان</span>` : 'استعلام'}</td>
+                <td class="px-4 py-4 font-bold ${p.sell_mode === 'instant' ? 'text-gray-800' : 'text-orange-600'}">${p.sell_mode === 'instant' ? `${formatPrice(p.priceUSD)} <span class="text-xs text-gray-500">${AppState.language === 'fa' ? 'تومان' : 'Toman'}</span>` : (AppState.language === 'fa' ? 'استعلام' : 'RFQ')}</td>
                 <td class="px-4 py-4">
                     <div class="flex gap-2">
                         ${p.sell_mode === 'instant' ? `<button onclick="event.stopPropagation(); addToCart('${p.id}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Add to cart"><i class="fas fa-cart-plus"></i></button>` : `<button onclick="event.stopPropagation(); requestQuote('${p.id}')" class="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition" title="RFQ"><i class="fas fa-file-invoice"></i></button>`}
@@ -813,4 +904,121 @@ function renderSearchResults() {
             </tr>
         `).join('');
     }
+}
+
+// Keep the complete search context in the URL (share, reload and Back all agree).
+function getSearchRoute() {
+    const params = new URLSearchParams();
+    if (AppState.textQuery) params.set('q', AppState.textQuery);
+    if (AppState.categoryFilter) params.set('category', AppState.categoryFilter);
+    if (AppState.dimensionSearch) params.set('dim', JSON.stringify(AppState.dimensionSearch));
+    ['brand', 'type', 'origin', 'tech'].forEach(kind => {
+        document.querySelectorAll(`.${kind}-filter:checked`).forEach(input => {
+            params.append(kind, kind === 'tech' ? `${input.dataset.field}:${input.value}` : input.value);
+        });
+    });
+    if (document.getElementById('filter-only-stock').checked) params.set('stock', '1');
+    ['d-min','d-max','D-min','D-max','B-min','B-max'].forEach(key => {
+        const value = document.getElementById(`filter-${key}`).value;
+        if (value) params.set(key, value);
+    });
+    ['mode', 'unit'].forEach(key => {
+        const value = document.querySelector(`input[name="filter-dim-${key}"]:checked`)?.value;
+        if (value && value !== (key === 'mode' ? 'range' : 'metric')) params.set(key, value);
+    });
+    const sort = document.getElementById('sort-select').value;
+    if (sort !== 'relevance') params.set('sort', sort);
+    if (AppState.viewMode !== 'grid') params.set('view', AppState.viewMode);
+    const fields = getSelectedPartFields();
+    if (fields.length !== 3) params.set('fields', fields.join(','));
+    return '#/search' + (params.size ? '?' + params.toString() : '');
+}
+
+function syncSearchRoute() {
+    if (!AppState.routing && location.hash.startsWith('#/search')) {
+        history.replaceState(null, '', getSearchRoute());
+    }
+}
+
+function restoreSearchRoute(params) {
+    resetProductFilters();
+    AppState.textQuery = (params.get('q') || '').slice(0, 250);
+    AppState.lastSearch = AppState.textQuery;
+    const category = params.get('category') || '';
+    AppState.categoryFilter = ['bearing','industrial-bearing','automotive-bearing','housing-bushing','grease','linear','coupling','gearbox', ...ProductDatabase.map(p => p.subtype)].includes(category) ? category : '';
+    try {
+        const dim = JSON.parse(params.get('dim'));
+        if (dim && ['exact', 'range'].includes(dim.mode) && ['metric', 'inch'].includes(dim.unit)) {
+            const safe = { mode: dim.mode, unit: dim.unit };
+            ['d','D','B','dMin','dMax','DMin','DMax','BMin','BMax'].forEach(key => {
+                safe[key] = typeof dim[key] === 'number' && Number.isFinite(dim[key]) && dim[key] > 0 ? dim[key] : null;
+            });
+            AppState.dimensionSearch = safe;
+        }
+    } catch (_) { /* Ignore malformed optional dimension state. */ }
+    ['brand', 'type', 'origin', 'tech'].forEach(kind => {
+        const values = params.getAll(kind);
+        document.querySelectorAll(`.${kind}-filter`).forEach(input => {
+            input.checked = values.includes(kind === 'tech' ? `${input.dataset.field}:${input.value}` : input.value);
+        });
+    });
+    document.getElementById('filter-only-stock').checked = params.get('stock') === '1';
+    ['d-min','d-max','D-min','D-max','B-min','B-max'].forEach(key => {
+        document.getElementById(`filter-${key}`).value = params.get(key) || '';
+    });
+    ['mode', 'unit'].forEach(key => {
+        const value = params.get(key) || (key === 'mode' ? 'range' : 'metric');
+        document.querySelectorAll(`input[name="filter-dim-${key}"]`).forEach(input => { input.checked = input.value === value; });
+    });
+    const sort = document.getElementById('sort-select');
+    sort.value = ['relevance','price-asc','price-desc','name'].includes(params.get('sort')) ? params.get('sort') : 'relevance';
+    AppState.viewMode = params.get('view') === 'table' ? 'table' : 'grid';
+    const fields = params.has('fields') ? params.get('fields').split(',') : ['article','reference','mpn'];
+    document.querySelectorAll('.part-field').forEach(input => { input.checked = fields.includes(input.value); });
+    document.querySelectorAll('.view-mode-btn').forEach(btn => {
+        const active = btn.dataset.mode === AppState.viewMode;
+        btn.classList.toggle('bg-blue-100', active);
+        btn.classList.toggle('text-blue-600', active);
+        btn.setAttribute('aria-pressed', String(active));
+    });
+}
+
+function getCategoryLabel(category) {
+    const labels = {
+        'industrial-bearing': ['برینگ صنعتی', 'Industrial bearings'],
+        'automotive-bearing': ['برینگ خودرویی', 'Automotive bearings'],
+        'housing-bushing': ['یاتاقان و بوش', 'Housings & bushings'],
+        grease: ['گریس', 'Grease']
+    };
+    return labels[category]?.[AppState.language === 'fa' ? 0 : 1] || faType(category);
+}
+
+function getDimensionLabel(dim) {
+    const parts = ['d', 'D', 'B'].map(key => {
+        if (dim.mode === 'exact') return dim[key] == null ? '' : `${key}: ${Number(dim[key].toFixed(3))}`;
+        return dim[key + 'Min'] == null && dim[key + 'Max'] == null ? '' : `${key}: ${dim[key + 'Min'] ?? '…'}–${dim[key + 'Max'] ?? '…'}`;
+    }).filter(Boolean);
+    return `${parts.join(' / ')} mm`;
+}
+
+function validateDimensionInputs(ids) {
+    let invalid = false;
+    ids.forEach(id => {
+        const input = document.getElementById(id);
+        const bad = !!input.value.trim() && toMillimeter(input.value, 'metric') === null;
+        input.setAttribute('aria-invalid', String(bad));
+        invalid ||= bad;
+    });
+    ids.filter(id => id.endsWith('-min')).forEach(id => {
+        const maxId = id.replace(/-min$/, '-max');
+        if (!ids.includes(maxId)) return;
+        const min = toMillimeter(document.getElementById(id).value, 'metric');
+        const max = toMillimeter(document.getElementById(maxId).value, 'metric');
+        if (min !== null && max !== null && min > max) {
+            invalid = true;
+            document.getElementById(maxId).setAttribute('aria-invalid', 'true');
+        }
+    });
+    if (invalid) showNotification(AppState.language === 'fa' ? 'ابعاد باید عدد مثبت باشند و حداقل بازه از حداکثر بیشتر نباشد.' : 'Use positive dimensions with min no greater than max.', 'error');
+    return !invalid;
 }

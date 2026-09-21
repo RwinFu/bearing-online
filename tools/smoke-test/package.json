@@ -4,9 +4,11 @@
   "private": true,
   "description": "Optional dev-only smoke test for the static Bearing Online site (jsdom + static cross-checks). The site itself needs no build step.",
   "scripts": {
-    "test": "node static-check.js && node run.js"
+    "test": "node static-check.js && node run.js",
+    "test:browser": "node browser-test.js"
   },
   "devDependencies": {
-    "jsdom": "^30.1.0"
+    "jsdom": "^30.1.0",
+    "playwright": "^1.63.0"
   }
 }

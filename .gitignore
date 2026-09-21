@@ -1,3 +1,6 @@
 # only the optional dev tooling (tools/smoke-test) pulls dependencies — the site has no build step
 node_modules/
 .DS_Store
+
+# Local audit screenshots and browser scratch scripts
+.arena/

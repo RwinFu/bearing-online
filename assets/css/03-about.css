@@ -289,3 +289,52 @@ html[dir="rtl"] .compare-badge {
     from { opacity: 1; }
     to { opacity: 0; }
 }
+
+/* Interactive technical showroom: controls never cover the model. */
+#page-about .about-bearing-wrap { max-width: 1040px; width: calc(100% - 48px); margin: 28px auto 0; }
+#page-about .bearing-stage { height: auto; min-height: 620px; padding: 20px; display: flex; flex-direction: column; }
+#page-about .bearing-hud { position: relative; inset: auto; order: 0; flex-wrap: wrap; }
+#page-about .bearing-viewport { position: relative; order: 1; height: 400px; width: 100%; touch-action: pan-y; cursor: grab; }
+#page-about .bearing-viewport:active { cursor: grabbing; }
+#page-about .bearing-viewport canvas { position: absolute; inset: 0; }
+#page-about .bearing-controls { gap: 6px; padding: 6px; }
+#page-about .bearing-controls button { width: 40px; height: 40px; font-size: 14px; }
+#page-about .bearing-presets { position: relative; z-index: 6; order: 2; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 12px; }
+#page-about .bearing-presets button { border: 1px solid #ffffff26; border-radius: 10px; background: #ffffff08; color: #cbd5e1; padding: 10px 16px; min-height: 44px; font-size: 13px; }
+#page-about .bearing-presets button[aria-pressed="true"] { color: #ffe2a0; border-color: #e8a81d88; background: #e8a81d20; }
+#page-about .bearing-explodebar { position: relative; order: 3; inset: auto; border-radius: 12px; padding: 12px 16px; }
+#page-about .bearing-explodebar input { min-width: 40px; min-height: 24px; direction: ltr; }
+#bearingExplodeValue { min-width: 36px; direction: ltr; color: #ffd166; }
+#page-about .bearing-caption { position: relative; order: 4; inset: auto; margin-top: 18px; }
+#page-about .bearing-model-tag { font-size: 11px; letter-spacing: 2px; }
+#page-about .bearing-model-name { font-size: 16px; }
+#page-about .bearing-model-name small { color: #cbd5e1; margin-top: 8px; line-height: 1.8; }
+#page-about .spec-chip { position: static; display: inline-flex; margin: 14px 4px 0; animation: none; box-shadow: none; }
+#page-about .about-bearing-wrap { text-align: center; }
+#page-about .about-frame { inset: -8px -8px 45px; }
+#page-about .bearing-scan { opacity: .3; }
+#page-about .bearing-fallback { inset: 90px 20px auto; height: 320px; z-index: 5; background: #0b1528; border-radius: 18px; }
+#page-about .is-fallback .bearing-viewport { visibility: hidden; }
+#page-about .is-fallback .bearing-pill .live-dot { background: #94a3b8; box-shadow: none; animation: none; }
+#page-about .is-fallback button, #page-about .is-fallback input { opacity: .4; cursor: not-allowed; }
+.fallback-bearing { width: 170px; height: 170px; border: 24px solid #a7b5c9; border-radius: 50%; background: repeating-conic-gradient(#e8b956 0deg 14deg, #182540 15deg 40deg); box-shadow: inset 5px 5px 14px #0009, 0 12px 30px #0007; display: grid; place-items: center; transform: rotateX(20deg) rotateY(-25deg); }
+.fallback-bearing > div { width: 78px; height: 78px; border: 15px solid #b9c5d8; border-radius: 50%; background: #0b1528; }
+.bearing-legend > span > span { border: 0; padding: 0; background: none !important; }
+@media (max-width: 639px) {
+    #page-about .about-bearing-wrap { width: calc(100% - 32px); }
+    #page-about .bearing-stage { padding: 12px; min-height: 580px; }
+    #page-about .bearing-hud { justify-content: center; gap: 10px; }
+    #page-about .bearing-controls { width: 100%; justify-content: center; }
+    #page-about .bearing-controls button { width: 38px; height: 44px; }
+    #page-about .bearing-viewport { height: 310px; }
+    #page-about .bearing-presets { gap: 6px; }
+    #page-about .bearing-presets button { flex: 1; padding: 8px 6px; font-size: 12px; }
+    #page-about .bearing-explodebar { padding: 10px; gap: 8px; }
+    #page-about .bearing-explodebar label { font-size: 11px; }
+    #page-about .bearing-caption { padding: 0 4px; }
+    #page-about .about-frame { display: none; }
+    #page-about .spec-chip { font-size: 11px; padding: 8px 10px; }
+    #page-about .about-title { font-size: 30px !important; }
+    #page-about .about-lead { font-size: 15px !important; }
+    #page-about .bearing-fallback { top: 135px; height: 260px; }
+}
