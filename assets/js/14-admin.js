@@ -26,12 +26,41 @@ function switchOpsTab(name) {
     document.querySelectorAll('.ops-panel').forEach(panel => panel.classList.add('hidden'));
     document.getElementById(`ops-${name}`)?.classList.remove('hidden');
     document.querySelectorAll('[data-ops-tab]').forEach(btn => btn.classList.toggle('ops-tab-active', btn.dataset.opsTab === name));
+    refreshOpsTab(name);
+}
+
+function refreshOpsTab(name) {
+    if (name === 'overview') renderOpsOverview();
+    else if (name === 'pricing') updatePricingPreview();
+    else if (name === 'stock') renderOpsStock();
+    else if (name === 'tech') renderAdminLeads();
+    else if (name === 'rfq') renderOpsRFQ();
+    else if (name === 'suppliers') renderOpsSuppliers();
+    else if (name === 'orders') renderOpsOrders();
+    else if (name === 'complaints') renderOpsComplaints();
+    else if (name === 'activity') renderOpsActivity();
+    updateOpsBadges();
+}
+
+function setOpsBadge(id, n) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = n > 99 ? '99+' : n;
+    el.hidden = !(n > 0);
+}
+
+function updateOpsBadges() {
+    setOpsBadge('ops-count-tech', AppState.leads.filter(l => l.status === 'new').length);
+    setOpsBadge('ops-count-rfq', MockDB.rfqs.filter(r => r.status === 'waiting_sales').length);
+    setOpsBadge('ops-count-complaints', MockDB.complaints.filter(c => c.status === 'new').length);
+    setOpsBadge('ops-count-orders', MockDB.orders.filter(o => !['DELIVERED', 'CANCELLED'].includes(o.status)).length);
 }
 
 function opsLog(action, detail = '') {
     MockDB.events.unshift({ at: new Date().toLocaleString('fa-IR'), role: AppState.staffRole, staff: AppState.staffName || '-', action, detail });
     persistState();
     renderOpsActivity();
+    updateOpsBadges();
 }
 
 function renderOpsConsole() {
@@ -54,7 +83,10 @@ function renderOpsConsole() {
     const margin = document.getElementById('admin-profit-margin');
     if (rate) rate.disabled = !can('pricing.write');
     if (margin) margin.disabled = !can('pricing.write');
-    if (!document.querySelector('[data-ops-tab].ops-tab-active')) switchOpsTab('pricing');
+    if (!document.querySelector('[data-ops-tab].ops-tab-active')) switchOpsTab('overview');
+    renderOpsOverview();
+    updatePricingPreview();
+    updateOpsBadges();
     renderAdminLeads();
     renderOpsStock();
     renderOpsSuppliers();
@@ -62,6 +94,45 @@ function renderOpsConsole() {
     renderOpsOrders();
     renderOpsComplaints();
     renderOpsActivity();
+}
+
+function renderOpsOverview() {
+    const kpis = document.getElementById('ops-overview-kpis');
+    const low = document.getElementById('ops-overview-lowstock');
+    const recent = document.getElementById('ops-overview-recent');
+    if (!kpis || !low || !recent) return;
+    const instant = ProductDatabase.filter(p => p.sell_mode === 'instant').length;
+    const stockValue = ProductDatabase.reduce((s, p) => s + (p.unit_price_toman || 0) * (p.stock_on_hand || 0), 0);
+    const openOrders = MockDB.orders.filter(o => !['DELIVERED', 'CANCELLED'].includes(o.status)).length;
+    const waitingRFQ = MockDB.rfqs.filter(r => r.status === 'waiting_sales').length;
+    const newLeads = AppState.leads.filter(l => l.status === 'new').length;
+    const newComplaints = MockDB.complaints.filter(c => c.status === 'new').length;
+    kpis.innerHTML = `
+        <button class="ops-kpi" onclick="switchOpsTab('stock')"><b>${ProductDatabase.length}</b><span>کالای کاتالوگ</span></button>
+        <button class="ops-kpi" onclick="switchOpsTab('stock')"><b>${instant}</b><span>قابل خرید آنلاین</span></button>
+        <button class="ops-kpi" onclick="switchOpsTab('orders')"><b>${openOrders}</b><span>سفارش باز</span></button>
+        <button class="ops-kpi" onclick="switchOpsTab('rfq')"><b>${waitingRFQ}</b><span>استعلام در انتظار</span></button>
+        <button class="ops-kpi" onclick="switchOpsTab('tech')"><b>${newLeads}</b><span>لید جدید</span></button>
+        <button class="ops-kpi" onclick="switchOpsTab('complaints')"><b>${newComplaints}</b><span>شکایت جدید</span></button>
+        <div class="ops-kpi"><b>${formatToman(stockValue)}</b><span>ارزش موجودی (تومان)</span></div>
+        <div class="ops-kpi"><b>${MockDB.suppliers.length}</b><span>تامین‌کننده</span></div>`;
+    const lowItems = ProductDatabase.filter(p => (p.available_to_sell || 0) <= 2).slice(0, 8);
+    low.innerHTML = lowItems.map(p => `<div class="flex items-center justify-between gap-2 p-2 rounded-lg ${p.available_to_sell === 0 ? 'bg-red-50' : 'bg-orange-50'}"><span class="font-bold text-gray-700">${escapeHTML(p.brand)} ${escapeHTML(p.code)}</span><span class="text-xs ${p.available_to_sell === 0 ? 'text-red-600' : 'text-orange-600'} font-bold">${p.available_to_sell === 0 ? 'ناموجود' : 'فقط ' + p.available_to_sell + ' عدد'}</span></div>`).join('') || '<p class="text-xs text-gray-400">موجودی همه کالاها مناسب است.</p>';
+    recent.innerHTML = MockDB.events.slice(0, 5).map(e => `<div class="text-xs text-gray-500"><b class="text-gray-700">${escapeHTML(e.action)}</b>${e.detail ? ' — ' + escapeHTML(e.detail) : ''} <span class="text-gray-400">(${escapeHTML(e.staff)} | ${escapeHTML(e.at)})</span></div>`).join('') || '<p class="text-xs text-gray-400">فعالیتی ثبت نشده است.</p>';
+}
+
+function updatePricingPreview() {
+    const box = document.getElementById('ops-pricing-preview');
+    if (!box) return;
+    const rate = parseFloat(document.getElementById('admin-exchange-rate')?.value) || 0;
+    const margin = parseFloat(document.getElementById('admin-profit-margin')?.value) || 0;
+    const sample = ProductDatabase.find(p => p.sell_mode === 'instant') || ProductDatabase[0];
+    if (!sample || rate <= 0) {
+        box.innerHTML = '<span class="text-gray-400">نرخ معتبر وارد کنید تا پیش‌نمایش محاسبه شود.</span>';
+        return;
+    }
+    const next = Math.round(sample.priceUSD * rate * (1 + margin / 100));
+    box.innerHTML = `<b>پیش‌نمایش زنده:</b> ${escapeHTML(sample.brand)} ${escapeHTML(sample.code)} <span class="text-gray-400">(${sample.priceUSD}$)</span><br>فعلی: <b>${formatToman(sample.unit_price_toman)} تومان</b> ← با نرخ جدید: <b class="text-blue-700">${formatToman(next)} تومان</b><br><span class="text-xs text-gray-400">پس از ذخیره روی همه ${ProductDatabase.length} قلم کاتالوگ اعمال می‌شود.</span>`;
 }
 
 function showAdminPanel() {
@@ -87,10 +158,12 @@ function saveAdminSettings() {
         product.pricing_updated_at = new Date().toISOString();
     });
     opsLog('pricing.update', `نرخ=${AppState.exchangeRate} حاشیه=${AppState.profitMargin}%`);
-    closeAdminPanel();
     showNotification(AppState.language === 'en' ? 'Settings saved successfully!' : 'تنظیمات با موفقیت ذخیره شد!', 'success');
 
-    // Re-render current page to update prices
+    // Re-render prices everywhere; keep the panel open for continued work
+    updatePricingPreview();
+    renderOpsStock();
+    renderOpsOverview();
     renderSearchResults();
 }
 
@@ -103,24 +176,174 @@ function supplierName(id) {
 function renderOpsStock() {
     const container = document.getElementById('ops-stock-list');
     if (!container) return;
+    const st = container.scrollTop;
     const q = normalizeSearchValue(document.getElementById('ops-stock-search')?.value || '');
-    const editable = can('stock.write');
-    const rows = ProductDatabase.filter(p => !q || normalizeSearchValue(`${p.brand} ${p.code} ${p.id}`).includes(q)).slice(0, 60);
+    const stockEditable = can('stock.write');
+    const priceEditable = can('pricing.write');
+    const manager = AppState.staffRole === 'manager';
+    const all = ProductDatabase.filter(p => !q || normalizeSearchValue(`${p.brand} ${p.code} ${p.id}`).includes(q));
+    const rows = all.slice(0, 60);
     const suppliers = MockDB.suppliers.filter(s => s.type !== 'own');
+    const countEl = document.getElementById('ops-stock-count');
+    if (countEl) countEl.textContent = `نمایش ${rows.length} از ${all.length} کالا (کل کاتالوگ: ${ProductDatabase.length})`;
     container.innerHTML = rows.map(p => {
         const src = p.stockSource || 'own';
         return `
-        <div class="p-3 bg-white rounded-xl border border-gray-100 grid md:grid-cols-6 gap-3 items-center">
-            <div class="md:col-span-2"><b>${p.brand} ${p.code}</b><div class="text-xs text-gray-400">قابل فروش: ${p.available_to_sell} | ${p.sell_mode === 'instant' ? 'خرید آنلاین' : 'استعلامی'}</div><div class="text-xs text-blue-600 mt-1">منبع: ${src === 'own' ? 'انبار خودمان' : supplierName(p.supplierId)}</div></div>
-            <label class="text-xs text-gray-500">موجودی<input type="number" min="0" value="${p.stock_on_hand}" ${editable ? '' : 'disabled'} onchange="updateStock('${p.id}','stock_on_hand',this.value)" class="compact-input mt-1 ${editable ? '' : 'ops-locked'}"></label>
-            <label class="text-xs text-gray-500">رزرو<input type="number" min="0" value="${p.stock_reserved}" ${editable ? '' : 'disabled'} onchange="updateStock('${p.id}','stock_reserved',this.value)" class="compact-input mt-1 ${editable ? '' : 'ops-locked'}"></label>
-            <label class="text-xs text-gray-500">منبع تامین<select ${editable ? '' : 'disabled'} onchange="setProductSource('${p.id}',this.value)" class="compact-input mt-1 ${editable ? '' : 'ops-locked'}">
-                <option value="own" ${src === 'own' ? 'selected' : ''}>انبار خودمان</option>
-                ${suppliers.map(s => `<option value="${s.id}" ${p.supplierId === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
-            </select></label>
-            <div class="text-xs ${editable ? 'text-green-700' : 'text-gray-400'}">${editable ? 'قابل ویرایش' : 'فقط مدیر/انباردار'}</div>
+        <div class="p-3 bg-white rounded-xl border border-gray-100">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div><b>${escapeHTML(p.brand)} ${escapeHTML(p.code)}</b>
+                    <div class="text-xs text-gray-400">قابل فروش: ${p.available_to_sell} | ${p.sell_mode === 'instant' ? 'خرید آنلاین' : 'استعلامی'} | ${formatToman(p.unit_price_toman)} تومان</div>
+                    <div class="text-xs text-blue-600 mt-1">منبع: ${src === 'own' ? 'انبار خودمان' : escapeHTML(supplierName(p.supplierId))}</div>
+                </div>
+                ${manager ? `<button onclick="deleteProduct('${p.id}')" class="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-bold self-start" title="حذف کالا از کاتالوگ"><i class="fas fa-trash ml-1"></i>حذف</button>` : ''}
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 mt-3">
+                <label class="text-xs text-gray-500">موجودی<input type="number" min="0" value="${p.stock_on_hand}" ${stockEditable ? '' : 'disabled'} onchange="updateStock('${p.id}','stock_on_hand',this.value)" class="compact-input mt-1 ${stockEditable ? '' : 'ops-locked'}"></label>
+                <label class="text-xs text-gray-500">رزرو<input type="number" min="0" value="${p.stock_reserved}" ${stockEditable ? '' : 'disabled'} onchange="updateStock('${p.id}','stock_reserved',this.value)" class="compact-input mt-1 ${stockEditable ? '' : 'ops-locked'}"></label>
+                <label class="text-xs text-gray-500">قیمت دلاری ($)<input type="number" min="0" step="any" value="${p.priceUSD}" ${priceEditable ? '' : 'disabled'} onchange="updateProductPrice('${p.id}',this.value)" class="compact-input mt-1 ${priceEditable ? '' : 'ops-locked'}"></label>
+                <label class="text-xs text-gray-500">تحویل (روز)<input type="number" min="0" step="1" value="${p.lead_time_days ?? ''}" ${stockEditable ? '' : 'disabled'} onchange="updateLeadTime('${p.id}',this.value)" class="compact-input mt-1 ${stockEditable ? '' : 'ops-locked'}"></label>
+                <label class="text-xs text-gray-500">منبع تامین<select ${stockEditable ? '' : 'disabled'} onchange="setProductSource('${p.id}',this.value)" class="compact-input mt-1 ${stockEditable ? '' : 'ops-locked'}">
+                    <option value="own" ${src === 'own' ? 'selected' : ''}>انبار خودمان</option>
+                    ${suppliers.map(s => `<option value="${s.id}" ${p.supplierId === s.id ? 'selected' : ''}>${escapeHTML(s.name)}</option>`).join('')}
+                </select></label>
+            </div>
         </div>`;
     }).join('') || '<p class="text-sm text-gray-400">محصولی پیدا نشد.</p>';
+    container.scrollTop = st;
+}
+
+function updateProductPrice(productId, value) {
+    if (!can('pricing.write')) {
+        showNotification('فقط مدیر می‌تواند قیمت کالا را تغییر دهد.', 'error');
+        renderOpsStock();
+        return;
+    }
+    const product = ProductDatabase.find(p => p.id === productId);
+    if (!product) return;
+    const v = parseFloat(value);
+    if (!isFinite(v) || v < 0) {
+        showNotification('قیمت دلاری معتبر نیست.', 'error');
+        renderOpsStock();
+        return;
+    }
+    product.priceUSD = v;
+    product.unit_price_toman = moneyTomanFromUSD(v);
+    product.pricing_updated_at = new Date().toISOString();
+    opsLog('product.price', `${product.brand} ${product.code}: ${v}$`);
+    persistState();
+    renderOpsStock();
+    renderOpsOverview();
+    renderSearchResults();
+    showNotification('قیمت کالا به‌روز شد.', 'success');
+}
+
+function updateLeadTime(productId, value) {
+    if (!can('stock.write')) {
+        showNotification('این نقش اجازه تغییر زمان تحویل را ندارد.', 'error');
+        renderOpsStock();
+        return;
+    }
+    const product = ProductDatabase.find(p => p.id === productId);
+    if (!product) return;
+    const v = parseInt(value);
+    if (!isFinite(v) || v < 0) {
+        showNotification('زمان تحویل معتبر نیست.', 'error');
+        renderOpsStock();
+        return;
+    }
+    product.lead_time_days = v;
+    opsLog('product.leadtime', `${product.brand} ${product.code}: ${v} روز`);
+    persistState();
+    renderOpsStock();
+    showNotification('زمان تحویل ثبت شد.', 'success');
+}
+
+function addProduct() {
+    if (AppState.staffRole !== 'manager') {
+        showNotification('فقط مدیر می‌تواند کالا اضافه کند.', 'error');
+        return;
+    }
+    const brand = document.getElementById('ops-new-brand')?.value.trim() || '';
+    const code = document.getElementById('ops-new-code')?.value.trim() || '';
+    const price = parseFloat(document.getElementById('ops-new-price')?.value);
+    if (!brand || !code) {
+        showNotification('برند و کد قطعه الزامی است.', 'error');
+        return;
+    }
+    if (!isFinite(price) || price < 0) {
+        showNotification('قیمت دلاری معتبر نیست.', 'error');
+        return;
+    }
+    const num = id => {
+        const v = parseFloat(document.getElementById(id)?.value);
+        return isFinite(v) && v >= 0 ? v : 0;
+    };
+    const stock = Math.max(0, parseInt(document.getElementById('ops-new-stock')?.value) || 0);
+    const d = num('ops-new-d'), D = num('ops-new-D'), B = num('ops-new-B');
+    const type = document.getElementById('ops-new-type')?.value || 'bearing';
+    const origin = document.getElementById('ops-new-origin')?.value.trim() || '';
+    const product = {
+        id: 'CUSTOM-' + Date.now(),
+        code: typeof normalizePartCodeDisplay === 'function' ? normalizePartCodeDisplay(code) : code,
+        brand, type, subtype: 'standard', d, D, B,
+        priceUSD: price, speedRating: 0, loadRating: 0, weight: 0.1, origin,
+        seal: 'Open', clearance: 'C0', image: type,
+        stock_on_hand: stock, stock_reserved: 0,
+        unit_price_toman: moneyTomanFromUSD(price),
+        pricing_updated_at: new Date().toISOString(),
+        package_length_cm: Math.max(8, Math.ceil(D / 10) + 6),
+        package_width_cm: Math.max(8, Math.ceil(D / 10) + 6),
+        package_height_cm: Math.max(5, Math.ceil(B / 10) + 4),
+        lead_time_days: stock > 0 ? 1 : 21,
+        tax_class: 'standard',
+        cageType: 'Steel', sealType: 'Open', lubrication: 'Grease',
+        internalClearance: 'C0', accuracyClass: 'P0',
+        leadTimeFa: stock > 0 ? 'ارسال امروز' : 'استعلام',
+        stockSource: 'own', supplierId: '',
+        searchMeta: { equivalent: false, suffixMatch: '' }
+    };
+    refreshProductAvailability(product);
+    ProductDatabase.push(product);
+    MockDB.customProducts.push(product);
+    ['ops-new-brand', 'ops-new-code', 'ops-new-d', 'ops-new-D', 'ops-new-B', 'ops-new-price', 'ops-new-stock', 'ops-new-origin'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    const det = document.getElementById('ops-add-product');
+    if (det) det.open = false;
+    opsLog('product.add', `${brand} ${code}`);
+    persistState();
+    updateFilterCounts();
+    updateHomeStats();
+    renderSearchResults();
+    renderOpsStock();
+    renderOpsOverview();
+    updateOpsBadges();
+    showNotification('کالا به کاتالوگ اضافه شد.', 'success');
+}
+
+function deleteProduct(productId) {
+    if (AppState.staffRole !== 'manager') {
+        showNotification('فقط مدیر می‌تواند کالا را حذف کند.', 'error');
+        return;
+    }
+    const idx = ProductDatabase.findIndex(p => p.id === productId);
+    if (idx < 0) return;
+    const removed = ProductDatabase.splice(idx, 1)[0];
+    if (String(productId).startsWith('CUSTOM-')) {
+        MockDB.customProducts = MockDB.customProducts.filter(p => p.id !== productId);
+    } else if (!MockDB.deletedProducts.includes(productId)) {
+        MockDB.deletedProducts.push(productId);
+    }
+    opsLog('product.delete', `${removed.brand} ${removed.code}`);
+    persistState();
+    updateFilterCounts();
+    updateHomeStats();
+    renderSearchResults();
+    renderOpsStock();
+    renderOpsOverview();
+    updateOpsBadges();
+    showNotification('کالا از کاتالوگ حذف شد.', 'success');
 }
 
 function setProductSource(productId, value) {
@@ -135,18 +358,69 @@ function setProductSource(productId, value) {
     showNotification('منبع تامین ثبت شد.', 'success');
 }
 
-function renderOpsSuppliers() {
+function renderOpsSuppliers(editId = '') {
     const container = document.getElementById('ops-supplier-list');
     if (!container) return;
+    const st = container.scrollTop;
     const editable = can('suppliers.write');
     container.innerHTML = MockDB.suppliers.map(s => {
         const count = ProductDatabase.filter(p => p.supplierId === s.id).length;
+        if (s.id === editId && editable) {
+            return `
+            <div class="p-3 bg-blue-50/50 rounded-xl border border-blue-200 grid md:grid-cols-4 gap-2">
+                <label class="text-xs text-gray-500">نام *<input id="ops-edit-name" value="${escapeHTML(s.name)}" class="compact-input mt-1"></label>
+                <label class="text-xs text-gray-500">تلفن<input id="ops-edit-phone" value="${escapeHTML(s.phone || '')}" class="compact-input mt-1"></label>
+                <label class="text-xs text-gray-500">آدرس / بازار<input id="ops-edit-address" value="${escapeHTML(s.address || '')}" class="compact-input mt-1"></label>
+                <label class="text-xs text-gray-500">توضیح<input id="ops-edit-note" value="${escapeHTML(s.note || '')}" class="compact-input mt-1"></label>
+                <div class="md:col-span-4 flex gap-2">
+                    <button onclick="saveSupplier('${s.id}')" class="btn-primary text-white px-4 py-2 rounded-xl font-bold text-sm">ذخیره</button>
+                    <button onclick="renderOpsSuppliers()" class="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-600">انصراف</button>
+                </div>
+            </div>`;
+        }
         return `
         <div class="p-3 bg-white rounded-xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-2">
-            <div><b>${s.name}</b> ${s.type === 'own' ? '<span class="text-xs text-green-700">(انبار خودمان)</span>' : '<span class="text-xs text-blue-600">(مغازه/تامین‌کننده)</span>'}<div class="text-xs text-gray-400 mt-1">${s.phone || '-'} | ${s.address || '-'}${s.note ? ' | ' + s.note : ''}</div><div class="text-xs text-gray-500 mt-1">${count} کالا از این منبع تامین می‌شود</div></div>
-            ${s.type === 'own' || !editable ? `<span class="text-xs text-gray-400">${s.type === 'own' ? 'پیش‌فرض سیستم' : 'فقط مدیر/انباردار'}</span>` : `<button onclick="deleteSupplier('${s.id}')" class="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-bold">حذف</button>`}
+            <div><b>${escapeHTML(s.name)}</b> ${s.type === 'own' ? '<span class="text-xs text-green-700">(انبار خودمان)</span>' : '<span class="text-xs text-blue-600">(مغازه/تامین‌کننده)</span>'}<div class="text-xs text-gray-400 mt-1">${escapeHTML(s.phone) || '-'} | ${escapeHTML(s.address) || '-'}${s.note ? ' | ' + escapeHTML(s.note) : ''}</div><div class="text-xs text-gray-500 mt-1">${count} کالا از این منبع تامین می‌شود</div></div>
+            ${!editable ? '<span class="text-xs text-gray-400">فقط مدیر/انباردار</span>' : `<div class="flex gap-2">
+                <button onclick="editSupplier('${s.id}')" class="px-3 py-2 rounded-xl border border-blue-200 text-blue-700 text-sm font-bold">ویرایش</button>
+                ${s.type === 'own' ? '' : `<button onclick="deleteSupplier('${s.id}')" class="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-bold">حذف</button>`}
+            </div>`}
         </div>`;
     }).join('') || '<p class="text-sm text-gray-400">تامین‌کننده‌ای ثبت نشده است.</p>';
+    container.scrollTop = st;
+}
+
+function editSupplier(id) {
+    if (!can('suppliers.write')) {
+        showNotification('این نقش اجازه ویرایش تامین‌کننده را ندارد.', 'error');
+        return;
+    }
+    renderOpsSuppliers(id);
+}
+
+function saveSupplier(id) {
+    if (!can('suppliers.write')) {
+        showNotification('این نقش اجازه ویرایش تامین‌کننده را ندارد.', 'error');
+        renderOpsSuppliers();
+        return;
+    }
+    const s = MockDB.suppliers.find(x => x.id === id);
+    if (!s) return;
+    const name = document.getElementById('ops-edit-name')?.value.trim() || '';
+    if (!name) {
+        showNotification('نام تامین‌کننده را وارد کنید.', 'error');
+        return;
+    }
+    s.name = name;
+    s.phone = document.getElementById('ops-edit-phone')?.value.trim() || '';
+    s.address = document.getElementById('ops-edit-address')?.value.trim() || '';
+    s.note = document.getElementById('ops-edit-note')?.value.trim() || '';
+    opsLog('supplier.edit', name);
+    persistState();
+    renderOpsSuppliers();
+    renderOpsStock();
+    renderOpsOverview();
+    showNotification('تامین‌کننده به‌روز شد.', 'success');
 }
 
 function addSupplier() {
@@ -190,6 +464,7 @@ function updateStock(productId, field, value) {
     persistState();
     updateFilterCounts();
     renderOpsStock();
+    renderOpsOverview();
     renderSearchResults();
 }
 
@@ -207,25 +482,66 @@ function setLeadStatus(leadId, status) {
     renderAdminLeads();
 }
 
+const RFQ_STATUS_FA = { waiting_sales: 'در انتظار فروش', quoted: 'قیمت اعلام شد', approved: 'تایید شد', rejected: 'رد شد' };
+
+function rfqItemsText(rfq) {
+    return (rfq.items || []).map(it => `${it.brand || ''} ${it.code || it.id || ''} × ${it.quantity || 1}`).join('، ');
+}
+
+function setRFQNote(rfqNumber, value) {
+    if (!can('rfq.write')) {
+        showNotification('این نقش اجازه ثبت یادداشت استعلام را ندارد.', 'error');
+        renderOpsRFQ();
+        return;
+    }
+    const rfq = MockDB.rfqs.find(item => item.rfqNumber === rfqNumber);
+    if (!rfq) return;
+    rfq.opsNote = value.trim();
+    opsLog('rfq.note', rfqNumber);
+    persistState();
+    showNotification('یادداشت استعلام ذخیره شد.', 'success');
+}
+
+function deleteRFQ(rfqNumber) {
+    if (!can('rfq.write')) {
+        showNotification('این نقش اجازه حذف استعلام را ندارد.', 'error');
+        return;
+    }
+    MockDB.rfqs = MockDB.rfqs.filter(item => item.rfqNumber !== rfqNumber);
+    opsLog('rfq.delete', rfqNumber);
+    persistState();
+    renderOpsRFQ();
+    renderOpsOverview();
+    updateOpsBadges();
+    showNotification('استعلام حذف شد.', 'success');
+}
+
 function renderOpsRFQ() {
     const container = document.getElementById('ops-rfq-list');
     if (!container) return;
+    const st = container.scrollTop;
     const editable = can('rfq.write');
     container.innerHTML = MockDB.rfqs.map(rfq => `
         <div class="p-4 bg-white rounded-xl border border-gray-100">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <div><b>${rfq.rfqNumber}</b><div class="text-xs text-gray-400">${rfq.items?.length || 0} قلم | وضعیت: ${rfq.status}</div></div>
-                <select ${editable ? '' : 'disabled'} onchange="setRFQStatus('${rfq.rfqNumber}',this.value)" class="compact-input md:w-48 ${editable ? '' : 'ops-locked'}">
-                    ${['waiting_sales','quoted','approved','rejected'].map(s => `<option value="${s}" ${rfq.status === s ? 'selected' : ''}>${s}</option>`).join('')}
-                </select>
+                <div><b>${escapeHTML(rfq.rfqNumber)}</b><div class="text-xs text-gray-400">${rfq.items?.length || 0} قلم${rfq.createdAt ? ' | ' + escapeHTML(rfq.createdAt) : ''}${rfq.linkedOrder ? ' | سفارش ' + escapeHTML(rfq.linkedOrder) : ''}</div></div>
+                <div class="flex gap-2">
+                    <select ${editable ? '' : 'disabled'} onchange="setRFQStatus('${rfq.rfqNumber}',this.value)" class="compact-input md:w-48 ${editable ? '' : 'ops-locked'}">
+                        ${Object.keys(RFQ_STATUS_FA).map(s => `<option value="${s}" ${rfq.status === s ? 'selected' : ''}>${RFQ_STATUS_FA[s]}</option>`).join('')}
+                    </select>
+                    ${editable ? `<button onclick="deleteRFQ('${rfq.rfqNumber}')" class="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-bold" title="حذف استعلام"><i class="fas fa-trash"></i></button>` : ''}
+                </div>
             </div>
-            <div class="grid md:grid-cols-3 gap-3 mt-3">
-                <input ${editable ? '' : 'disabled'} value="${rfq.quotedPrice || ''}" oninput="setRFQField('${rfq.rfqNumber}','quotedPrice',this.value)" class="compact-input ${editable ? '' : 'ops-locked'}" placeholder="قیمت تاییدشده">
-                <input ${editable ? '' : 'disabled'} value="${rfq.leadTime || ''}" oninput="setRFQField('${rfq.rfqNumber}','leadTime',this.value)" class="compact-input ${editable ? '' : 'ops-locked'}" placeholder="زمان تحویل">
-                <div class="text-xs ${editable ? 'text-green-700' : 'text-gray-400'}">${editable ? 'قابل ویرایش' : 'فقط مدیر/مشاور استعلام'}</div>
+            <div class="text-xs text-gray-600 bg-gray-50 rounded-lg p-2 mt-2">اقلام: ${escapeHTML(rfqItemsText(rfq)) || '-'}</div>
+            <div class="grid md:grid-cols-2 gap-3 mt-3">
+                <label class="text-xs text-gray-500">قیمت تاییدشده (تومان)<input ${editable ? '' : 'disabled'} value="${escapeHTML(rfq.quotedPrice || '')}" oninput="setRFQField('${rfq.rfqNumber}','quotedPrice',this.value)" class="compact-input mt-1 ${editable ? '' : 'ops-locked'}" placeholder="مثلاً ۲٬۵۰۰٬۰۰۰"></label>
+                <label class="text-xs text-gray-500">زمان تحویل<input ${editable ? '' : 'disabled'} value="${escapeHTML(rfq.leadTime || '')}" oninput="setRFQField('${rfq.rfqNumber}','leadTime',this.value)" class="compact-input mt-1 ${editable ? '' : 'ops-locked'}" placeholder="مثلاً ۲ تا ۳ هفته"></label>
             </div>
+            <label class="block text-xs text-gray-500 mt-2">یادداشت داخلی<textarea ${editable ? '' : 'disabled'} onchange="setRFQNote('${rfq.rfqNumber}',this.value)" rows="2" class="compact-input mt-1 text-xs ${editable ? '' : 'ops-locked'}" placeholder="منبع تامین، مذاکره با مشتری...">${escapeHTML(rfq.opsNote || '')}</textarea></label>
+            ${editable ? '' : '<div class="text-xs text-gray-400 mt-1">فقط مدیر/مشاور استعلام</div>'}
         </div>
     `).join('') || '<p class="text-sm text-gray-400">RFQ ثبت نشده است.</p>';
+    container.scrollTop = st;
 }
 
 function setRFQStatus(rfqNumber, status) {
@@ -250,25 +566,79 @@ function setRFQField(rfqNumber, field, value) {
     persistState();
 }
 
+const opsOpenOrders = new Set();
+
+function toggleOrderDetail(orderNumber) {
+    if (opsOpenOrders.has(orderNumber)) opsOpenOrders.delete(orderNumber);
+    else opsOpenOrders.add(orderNumber);
+    renderOpsOrders();
+}
+
+function setOrderField(orderNumber, field, value) {
+    if (AppState.staffRole !== 'manager') {
+        showNotification('فقط مدیر می‌تواند سفارش را ویرایش کند.', 'error');
+        renderOpsOrders();
+        return;
+    }
+    const order = MockDB.orders.find(item => item.orderNumber === orderNumber);
+    if (!order) return;
+    const v = String(value || '').trim();
+    if (field.startsWith('address.')) {
+        order.address = order.address || {};
+        order.address[field.slice(8)] = v;
+    } else {
+        order[field] = v;
+    }
+    opsLog('order.edit', `${orderNumber}: ${field}`);
+    persistState();
+    showNotification('سفارش به‌روز شد.', 'success');
+}
+
 function renderOpsOrders() {
     const container = document.getElementById('ops-orders-list');
     if (!container) return;
+    const st = container.scrollTop;
     const editable = AppState.staffRole === 'manager';
     const statusFa = { PAID: 'پرداخت شد', PACKED: 'بسته‌بندی شد', SHIPPED: 'ارسال شد', DELIVERED: 'تحویل شد', CANCELLED: 'لغو شد' };
-    container.innerHTML = MockDB.orders.map(order => `
+    container.innerHTML = MockDB.orders.map(order => {
+        const open = opsOpenOrders.has(order.orderNumber);
+        const items = (order.items || []).map(it => {
+            const unit = moneyTomanFromUSD(it.priceUSD || 0);
+            return `<tr class="border-t"><td class="p-2"><b>${escapeHTML(it.brand || '')} ${escapeHTML(it.code || '')}</b></td><td class="p-2">${it.quantity || 1}</td><td class="p-2">${formatToman(unit)}</td><td class="p-2 font-bold">${formatToman(unit * (it.quantity || 1))}</td></tr>`;
+        }).join('');
+        const events = (order.events || []).slice(-4).map(e => `<div class="text-xs text-gray-500">${escapeHTML(e.type)} — ${escapeHTML(e.actor || '')} <span class="text-gray-400">${escapeHTML(e.at || '')}</span></div>`).join('');
+        return `
         <div class="p-4 bg-white rounded-xl border border-gray-100">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
-                    <b>${order.orderNumber}</b>
-                    <div class="text-xs text-gray-400 mt-1">${order.items?.length || 0} قلم | ${formatToman(order.grand_total)} تومان | ${order.address?.city || ''}</div>
+                    <b>${escapeHTML(order.orderNumber)}</b>
+                    <div class="text-xs text-gray-400 mt-1">${order.items?.length || 0} قلم | ${formatToman(order.grand_total)} تومان | ${escapeHTML(order.address?.city || '')}</div>
                 </div>
-                <select ${editable ? '' : 'disabled'} onchange="setOrderStatus('${order.orderNumber}',this.value)" class="compact-input md:w-48 text-sm ${editable ? '' : 'ops-locked'}">
-                    ${Object.keys(statusFa).map(s => `<option value="${s}" ${order.status === s ? 'selected' : ''}>${statusFa[s]}</option>`).join('')}
-                </select>
+                <div class="flex gap-2">
+                    <select ${editable ? '' : 'disabled'} onchange="setOrderStatus('${order.orderNumber}',this.value)" class="compact-input md:w-44 text-sm ${editable ? '' : 'ops-locked'}">
+                        ${Object.keys(statusFa).map(s => `<option value="${s}" ${order.status === s ? 'selected' : ''}>${statusFa[s]}</option>`).join('')}
+                    </select>
+                    <button onclick="toggleOrderDetail('${order.orderNumber}')" class="px-3 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 whitespace-nowrap">${open ? 'بستن ▲' : 'جزئیات ▼'}</button>
+                </div>
             </div>
-            <div class="text-xs text-gray-400 mt-2">پرداخت: ${order.payment_status} | ارسال: ${order.shipping_status}${editable ? '' : ' | فقط مدیر'}</div>
-        </div>
-    `).join('') || '<p class="text-sm text-gray-400">سفارشی ثبت نشده است.</p>';
+            <div class="text-xs text-gray-400 mt-2">پرداخت: ${escapeHTML(order.payment_status)} | ارسال: ${escapeHTML(order.shipping_status)}${order.trackingCode ? ' | رهگیری: ' + escapeHTML(order.trackingCode) : ''}${editable ? '' : ' | فقط مدیر'}</div>
+            ${open ? `
+            <div class="mt-3 pt-3 border-t border-gray-100 space-y-3">
+                <div class="overflow-x-auto"><table class="w-full text-xs"><thead class="bg-gray-50"><tr><th class="p-2 text-right">کالا</th><th class="p-2 text-right">تعداد</th><th class="p-2 text-right">واحد (تومان)</th><th class="p-2 text-right">جمع (تومان)</th></tr></thead><tbody>${items}</tbody></table></div>
+                <div class="text-xs text-gray-500">گیرنده: <b>${escapeHTML(order.address?.recipient_name || '-')}</b> | <span dir="ltr">${escapeHTML(order.address?.mobile || '')}</span> | ${escapeHTML(order.address?.province || '')}، ${escapeHTML(order.address?.city || '')}، ${escapeHTML(order.address?.full_address || '')} | کدپستی: ${escapeHTML(order.address?.postal_code || '-')}</div>
+                <div class="grid md:grid-cols-4 gap-2">
+                    <label class="text-xs text-gray-500">کد رهگیری مرسوله<input value="${escapeHTML(order.trackingCode || '')}" ${editable ? '' : 'disabled'} onchange="setOrderField('${order.orderNumber}','trackingCode',this.value)" class="compact-input mt-1 text-xs ${editable ? '' : 'ops-locked'}" placeholder="کد تیپاکس / پیک"></label>
+                    <label class="text-xs text-gray-500">شرکت حمل<input value="${escapeHTML(order.carrier || '')}" ${editable ? '' : 'disabled'} onchange="setOrderField('${order.orderNumber}','carrier',this.value)" class="compact-input mt-1 text-xs ${editable ? '' : 'ops-locked'}" placeholder="تیپاکس، پیک..."></label>
+                    <label class="text-xs text-gray-500">موبایل گیرنده<input value="${escapeHTML(order.address?.mobile || '')}" ${editable ? '' : 'disabled'} onchange="setOrderField('${order.orderNumber}','address.mobile',this.value)" class="compact-input mt-1 text-xs ${editable ? '' : 'ops-locked'}"></label>
+                    <label class="text-xs text-gray-500">شهر<input value="${escapeHTML(order.address?.city || '')}" ${editable ? '' : 'disabled'} onchange="setOrderField('${order.orderNumber}','address.city',this.value)" class="compact-input mt-1 text-xs ${editable ? '' : 'ops-locked'}"></label>
+                </div>
+                <label class="block text-xs text-gray-500">آدرس کامل<input value="${escapeHTML(order.address?.full_address || '')}" ${editable ? '' : 'disabled'} onchange="setOrderField('${order.orderNumber}','address.full_address',this.value)" class="compact-input mt-1 text-xs ${editable ? '' : 'ops-locked'}"></label>
+                <label class="block text-xs text-gray-500">یادداشت داخلی سفارش<textarea ${editable ? '' : 'disabled'} onchange="setOrderField('${order.orderNumber}','opsNote',this.value)" rows="2" class="compact-input mt-1 text-xs ${editable ? '' : 'ops-locked'}" placeholder="توضیح بسته‌بندی، هماهنگی ارسال...">${escapeHTML(order.opsNote || '')}</textarea></label>
+                ${events ? `<div class="bg-gray-50 rounded-lg p-2 space-y-1">${events}</div>` : ''}
+            </div>` : ''}
+        </div>`;
+    }).join('') || '<p class="text-sm text-gray-400">سفارشی ثبت نشده است.</p>';
+    container.scrollTop = st;
 }
 
 function setOrderStatus(orderNumber, status) {
@@ -292,11 +662,27 @@ function setOrderStatus(orderNumber, status) {
 function renderOpsActivity() {
     const container = document.getElementById('ops-activity-list');
     if (!container) return;
-    container.innerHTML = MockDB.events.map(event => `
+    const st = container.scrollTop;
+    const q = normalizeSearchValue(document.getElementById('ops-activity-filter')?.value || '');
+    const events = MockDB.events.filter(e => !q || normalizeSearchValue(`${e.action} ${e.detail || ''} ${e.staff} ${e.role}`).includes(q));
+    container.innerHTML = events.map(event => `
         <div class="p-3 bg-white rounded-lg border border-gray-100">
-            <b>${event.action}</b>
-            <div class="text-xs text-gray-500">${event.staff} | ${event.role} | ${event.at}</div>
-            ${event.detail ? `<div class="text-xs text-gray-400 mt-1">${event.detail}</div>` : ''}
+            <b>${escapeHTML(event.action)}</b>
+            <div class="text-xs text-gray-500">${escapeHTML(event.staff)} | ${escapeHTML(event.role)} | ${escapeHTML(event.at)}</div>
+            ${event.detail ? `<div class="text-xs text-gray-400 mt-1">${escapeHTML(event.detail)}</div>` : ''}
         </div>
     `).join('') || '<p>فعالیتی ثبت نشده است.</p>';
+    container.scrollTop = st;
+}
+
+function clearOpsActivity() {
+    if (AppState.staffRole !== 'manager') {
+        showNotification('فقط مدیر می‌تواند گزارش فعالیت را پاک کند.', 'error');
+        return;
+    }
+    MockDB.events = [];
+    persistState();
+    renderOpsActivity();
+    renderOpsOverview();
+    showNotification('گزارش فعالیت پاک شد.', 'success');
 }

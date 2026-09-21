@@ -2,7 +2,7 @@
 // =============================================
 // MOCK CHECKOUT BACKEND SERVICES
 // =============================================
-const MockDB = { orders: [], rfqs: [], proformas: [], payments: [], events: [], shipments: [], suppliers: [], complaints: [] };
+const MockDB = { orders: [], rfqs: [], proformas: [], payments: [], events: [], shipments: [], suppliers: [], complaints: [], customProducts: [], deletedProducts: [] };
 
 function loadJSON(key, fallback) {
     try {
@@ -33,9 +33,12 @@ function persistState() {
     saveJSON('prm_complaints', MockDB.complaints);
     const productOverrides = {};
     ProductDatabase.forEach(p => {
-        productOverrides[p.id] = { stock_on_hand: p.stock_on_hand, stock_reserved: p.stock_reserved, stockSource: p.stockSource || 'own', supplierId: p.supplierId || '' };
+        if (String(p.id || '').startsWith('CUSTOM-')) return;
+        productOverrides[p.id] = { stock_on_hand: p.stock_on_hand, stock_reserved: p.stock_reserved, stockSource: p.stockSource || 'own', supplierId: p.supplierId || '', priceUSD: p.priceUSD, lead_time_days: p.lead_time_days };
     });
     saveJSON('prm_products', productOverrides);
+    saveJSON('prm_custom_products', MockDB.customProducts);
+    saveJSON('prm_deleted_products', MockDB.deletedProducts);
     saveJSON('prm_staff', { role: AppState.staffRole, name: AppState.staffName });
     saveJSON('prm_rates', { exchangeRate: AppState.exchangeRate, profitMargin: AppState.profitMargin });
 }
@@ -51,21 +54,39 @@ function seedDefaultSuppliers() {
 
 function applyProductOverrides() {
     const overrides = loadJSON('prm_products', {});
+    // Drop catalogue products the manager deleted from the ops panel.
+    for (let i = ProductDatabase.length - 1; i >= 0; i--) {
+        if (MockDB.deletedProducts.includes(ProductDatabase[i].id)) ProductDatabase.splice(i, 1);
+    }
     ProductDatabase.forEach(p => {
         const o = overrides[p.id];
         if (o) {
             if (typeof o.stock_on_hand === 'number') p.stock_on_hand = o.stock_on_hand;
             if (typeof o.stock_reserved === 'number') p.stock_reserved = o.stock_reserved;
+            if (typeof o.priceUSD === 'number' && o.priceUSD >= 0) p.priceUSD = o.priceUSD;
+            if (typeof o.lead_time_days === 'number' && o.lead_time_days >= 0) p.lead_time_days = o.lead_time_days;
             p.stockSource = o.stockSource || 'own';
             p.supplierId = o.supplierId || '';
         } else if (!p.stockSource) {
             p.stockSource = 'own';
         }
-        p.stock = p.stock_on_hand;
-        p.available_to_sell = Math.max(0, p.stock_on_hand - p.stock_reserved);
-        p.sell_mode = p.available_to_sell > 0 ? 'instant' : 'quote';
-        p.stockStatus = p.available_to_sell > 0 ? 'in-stock' : 'inquiry';
+        refreshProductAvailability(p);
     });
+    // Merge products added from the ops panel.
+    (MockDB.customProducts || []).forEach(p => {
+        if (!ProductDatabase.some(x => x.id === p.id)) {
+            if (typeof p.unit_price_toman !== 'number') p.unit_price_toman = moneyTomanFromUSD(p.priceUSD || 0);
+            refreshProductAvailability(p);
+            ProductDatabase.push(p);
+        }
+    });
+}
+
+function refreshProductAvailability(p) {
+    p.stock = p.stock_on_hand;
+    p.available_to_sell = Math.max(0, (p.stock_on_hand || 0) - (p.stock_reserved || 0));
+    p.sell_mode = p.available_to_sell > 0 ? 'instant' : 'quote';
+    p.stockStatus = p.available_to_sell > 0 ? 'in-stock' : 'inquiry';
 }
 
 function hydrateState() {
@@ -80,6 +101,8 @@ function hydrateState() {
     MockDB.events = loadJSON('prm_events', []);
     MockDB.suppliers = loadJSON('prm_suppliers', []);
     MockDB.complaints = loadJSON('prm_complaints', []);
+    MockDB.customProducts = loadJSON('prm_custom_products', []);
+    MockDB.deletedProducts = loadJSON('prm_deleted_products', []);
     seedDefaultSuppliers();
     applyProductOverrides();
     const staff = loadJSON('prm_staff', null);
@@ -420,23 +443,53 @@ function setComplaintStatus(id, status) {
     renderAccountComplaints();
 }
 
+function setComplaintReply(id, value) {
+    if (!can('complaints.write')) { showNotification('این نقش اجازه ثبت پاسخ شکایت را ندارد.', 'error'); renderOpsComplaints(); return; }
+    const c = MockDB.complaints.find(x => x.id === id);
+    if (!c) return;
+    c.opsReply = value.trim();
+    opsLog('complaint.reply', `${id}`);
+    persistState();
+    showNotification('پاسخ داخلی شکایت ذخیره شد.', 'success');
+}
+
+function deleteComplaint(id) {
+    if (!can('complaints.write')) { showNotification('این نقش اجازه حذف شکایت را ندارد.', 'error'); return; }
+    MockDB.complaints = MockDB.complaints.filter(x => x.id !== id);
+    opsLog('complaint.delete', id);
+    persistState();
+    renderOpsComplaints();
+    renderAccountComplaints();
+    updateOpsBadges();
+    showNotification('شکایت حذف شد.', 'success');
+}
+
 function renderOpsComplaints() {
     const container = document.getElementById('ops-complaint-list');
     const count = document.getElementById('admin-complaint-count');
     if (count) count.textContent = MockDB.complaints.length;
     if (!container) return;
+    const st = container.scrollTop;
     const editable = can('complaints.write');
     container.innerHTML = MockDB.complaints.map(c => `
         <div class="p-3 bg-white rounded-xl border border-gray-100">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                <div class="font-bold text-gray-800">${c.subject} <span class="text-xs text-gray-400">${c.id}${c.orderNumber ? ' | سفارش ' + c.orderNumber : ''}</span></div>
-                <select ${editable ? '' : 'disabled'} onchange="setComplaintStatus('${c.id}',this.value)" class="compact-input md:w-40 text-sm ${editable ? '' : 'ops-locked'}">
-                    ${['new','in-review','resolved','rejected'].map(s => `<option value="${s}" ${c.status === s ? 'selected' : ''}>${complaintStatusFa(s)}</option>`).join('')}
-                </select>
+                <div class="font-bold text-gray-800">${escapeHTML(c.subject)} <span class="text-xs text-gray-400">${escapeHTML(c.id)}${c.orderNumber ? ' | سفارش ' + escapeHTML(c.orderNumber) : ''}</span></div>
+                <div class="flex gap-2">
+                    <select ${editable ? '' : 'disabled'} onchange="setComplaintStatus('${c.id}',this.value)" class="compact-input md:w-40 text-sm ${editable ? '' : 'ops-locked'}">
+                        ${['new','in-review','resolved','rejected'].map(s => `<option value="${s}" ${c.status === s ? 'selected' : ''}>${complaintStatusFa(s)}</option>`).join('')}
+                    </select>
+                    ${editable ? `<button onclick="deleteComplaint('${c.id}')" class="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-bold" title="حذف شکایت"><i class="fas fa-trash"></i></button>` : ''}
+                </div>
             </div>
-            <div class="text-xs text-gray-500 mt-1">${c.name} | ${c.phone} | ${c.createdAt}</div>
-            <div class="text-xs text-gray-600 mt-1">${c.message}</div>
+            <div class="text-xs text-gray-500 mt-1">${escapeHTML(c.name)} | <span dir="ltr">${escapeHTML(c.phone)}</span> | ${escapeHTML(c.createdAt)}</div>
+            <div class="text-xs text-gray-600 mt-1">${escapeHTML(c.message)}</div>
+            <label class="block text-xs text-gray-500 mt-2">پاسخ / یادداشت داخلی
+                <textarea ${editable ? '' : 'disabled'} onchange="setComplaintReply('${c.id}',this.value)" rows="2" class="compact-input mt-1 text-xs ${editable ? '' : 'ops-locked'}" placeholder="نتیجه بررسی، تصمیم و اقدام انجام‌شده...">${escapeHTML(c.opsReply || '')}</textarea>
+            </label>
+            ${editable ? '' : '<div class="text-xs text-gray-400 mt-1">فقط مدیر/مشاور فنی</div>'}
         </div>`).join('') || '<p>هنوز شکایتی ثبت نشده است.</p>';
+    container.scrollTop = st;
 }
 
 function renderAccountComplaints() {
@@ -459,7 +512,7 @@ function renderAccountComplaints() {
         </form>
         <div class="grid gap-3">${MockDB.complaints.map(c => `
             <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-2">
-                <div><b>${c.subject}</b><div class="text-xs text-gray-400 mt-1">${c.id}${c.orderNumber ? ' | سفارش ' + c.orderNumber : ''} | ${c.createdAt}</div><div class="text-xs text-gray-600 mt-1">${c.message}</div></div>
+                <div><b>${escapeHTML(c.subject)}</b><div class="text-xs text-gray-400 mt-1">${escapeHTML(c.id)}${c.orderNumber ? ' | سفارش ' + escapeHTML(c.orderNumber) : ''} | ${escapeHTML(c.createdAt)}</div><div class="text-xs text-gray-600 mt-1">${escapeHTML(c.message)}</div>${c.opsReply ? `<div class="text-xs text-green-700 mt-1">پاسخ پشتیبانی: ${escapeHTML(c.opsReply)}</div>` : ''}</div>
                 <span class="stock-badge ${c.status === 'resolved' ? 'in-stock' : c.status === 'new' ? 'inquiry' : 'on-order'}">${complaintStatusFa(c.status)}</span>
             </div>`).join('') || '<div class="bg-white rounded-2xl p-6 text-center text-gray-400 text-sm">شکایتی ثبت نشده است.</div>'}
         </div>`;

@@ -1365,28 +1365,50 @@
                 <div id="ops-permission-note" class="mb-4 text-sm rounded-xl p-3 bg-blue-50 text-blue-800"></div>
 
                 <div class="flex flex-wrap gap-2 mb-5">
+                    <button data-ops-tab="overview" onclick="switchOpsTab('overview')" class="quick-filter-chip">نمای کلی</button>
                     <button data-ops-tab="pricing" onclick="switchOpsTab('pricing')" class="quick-filter-chip">نرخ دلار و سود</button>
                     <button data-ops-tab="staff" onclick="switchOpsTab('staff')" class="quick-filter-chip">نقش‌ها و دسترسی</button>
                     <button data-ops-tab="stock" onclick="switchOpsTab('stock')" class="quick-filter-chip">انبار و موجودی</button>
-                    <button data-ops-tab="tech" onclick="switchOpsTab('tech')" class="quick-filter-chip">مشاوره فنی / لیدها</button>
-                    <button data-ops-tab="rfq" onclick="switchOpsTab('rfq')" class="quick-filter-chip">استعلام‌ها / RFQ</button>
+                    <button data-ops-tab="tech" onclick="switchOpsTab('tech')" class="quick-filter-chip">مشاوره فنی / لیدها <span id="ops-count-tech" class="ops-badge" hidden></span></button>
+                    <button data-ops-tab="rfq" onclick="switchOpsTab('rfq')" class="quick-filter-chip">استعلام‌ها / RFQ <span id="ops-count-rfq" class="ops-badge" hidden></span></button>
                     <button data-ops-tab="suppliers" onclick="switchOpsTab('suppliers')" class="quick-filter-chip">تامین‌کنندگان انبار</button>
-                    <button data-ops-tab="complaints" onclick="switchOpsTab('complaints')" class="quick-filter-chip">شکایات</button>
-                    <button data-ops-tab="orders" onclick="switchOpsTab('orders')" class="quick-filter-chip">سفارش‌ها</button>
+                    <button data-ops-tab="complaints" onclick="switchOpsTab('complaints')" class="quick-filter-chip">شکایات <span id="ops-count-complaints" class="ops-badge" hidden></span></button>
+                    <button data-ops-tab="orders" onclick="switchOpsTab('orders')" class="quick-filter-chip">سفارش‌ها <span id="ops-count-orders" class="ops-badge" hidden></span></button>
                     <button data-ops-tab="activity" onclick="switchOpsTab('activity')" class="quick-filter-chip">گزارش فعالیت</button>
                 </div>
 
-                <section id="ops-pricing" class="ops-panel space-y-4">
+                <section id="ops-overview" class="ops-panel space-y-4">
+                    <div id="ops-overview-kpis" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-white rounded-2xl border border-gray-100 p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-bold text-gray-800">هشدار موجودی</h4>
+                                <button onclick="switchOpsTab('stock')" class="text-xs font-bold text-blue-600 hover:underline">رفتن به انبار ←</button>
+                            </div>
+                            <div id="ops-overview-lowstock" class="space-y-2 max-h-56 overflow-y-auto text-sm"></div>
+                        </div>
+                        <div class="bg-white rounded-2xl border border-gray-100 p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-bold text-gray-800">آخرین فعالیت‌ها</h4>
+                                <button onclick="switchOpsTab('activity')" class="text-xs font-bold text-blue-600 hover:underline">همه ←</button>
+                            </div>
+                            <div id="ops-overview-recent" class="space-y-2 max-h-56 overflow-y-auto text-sm text-gray-600"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="ops-pricing" class="ops-panel hidden space-y-4">
                     <div class="grid md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">نرخ دلار (تومان)</label>
-                            <input type="number" id="admin-exchange-rate" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none" value="52000">
+                            <input type="number" id="admin-exchange-rate" oninput="updatePricingPreview()" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none" value="52000">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">حاشیه سود (٪)</label>
-                            <input type="number" id="admin-profit-margin" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none" value="25">
+                            <input type="number" id="admin-profit-margin" oninput="updatePricingPreview()" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none" value="25">
                         </div>
                     </div>
+                    <div id="ops-pricing-preview" class="bg-white rounded-xl border border-gray-100 p-4 text-sm text-gray-600"></div>
                     <div class="bg-blue-50 rounded-xl p-4">
                         <p class="text-sm text-blue-800">فرمول: قیمت نهایی = قیمت دلاری × نرخ ارز × (۱ + درصد سود). فقط مدیر می‌تواند ذخیره کند.</p>
                     </div>
@@ -1413,10 +1435,26 @@
                 </section>
 
                 <section id="ops-stock" class="ops-panel hidden">
-                    <div class="flex flex-col md:flex-row gap-3 mb-4">
+                    <div class="flex flex-col md:flex-row md:items-center gap-3 mb-3">
                         <input id="ops-stock-search" class="compact-input" placeholder="جستجوی کد یا برند انبار..." oninput="renderOpsStock()">
-                        <span class="text-sm text-gray-400">فقط مدیر و انباردار می‌توانند تعداد و منبع تامین را تغییر دهند.</span>
+                        <span id="ops-stock-count" class="text-xs text-gray-400 whitespace-nowrap"></span>
                     </div>
+                    <p class="text-xs text-gray-400 mb-3">موجودی و منبع: مدیر و انباردار | قیمت دلاری و افزودن/حذف کالا: فقط مدیر</p>
+                    <details id="ops-add-product" class="rounded-xl border border-gray-200 bg-white mb-4 overflow-hidden">
+                        <summary class="px-4 py-3 text-sm font-bold text-gray-700 cursor-pointer select-none">＋ افزودن کالای جدید به کاتالوگ</summary>
+                        <div class="p-4 pt-1 grid md:grid-cols-4 gap-3 bg-gray-50">
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1">برند *</label><input id="ops-new-brand" class="compact-input" placeholder="SKF"></div>
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1">کد قطعه *</label><input id="ops-new-code" class="compact-input" placeholder="6205-2RS"></div>
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1">نوع قطعه</label><select id="ops-new-type" class="compact-input"><option value="bearing">برینگ و یاتاقان</option><option value="grease">گریس</option><option value="linear">گاید خطی</option><option value="coupling">کوپلینگ</option><option value="gearbox">گیربکس</option></select></div>
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1">کشور سازنده</label><input id="ops-new-origin" class="compact-input" placeholder="Sweden"></div>
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1">قطر داخل d</label><input id="ops-new-d" type="number" min="0" step="any" class="compact-input" placeholder="25"></div>
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1">قطر خارج D</label><input id="ops-new-D" type="number" min="0" step="any" class="compact-input" placeholder="52"></div>
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1">عرض B</label><input id="ops-new-B" type="number" min="0" step="any" class="compact-input" placeholder="15"></div>
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1">قیمت دلاری *</label><input id="ops-new-price" type="number" min="0" step="any" class="compact-input" placeholder="8.5"></div>
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1">موجودی اولیه</label><input id="ops-new-stock" type="number" min="0" step="1" class="compact-input" placeholder="0"></div>
+                            <div class="md:col-span-3 flex items-end"><button onclick="addProduct()" class="btn-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm w-full md:w-auto">ثبت کالا در کاتالوگ</button></div>
+                        </div>
+                    </details>
                     <div id="ops-stock-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
                 </section>
 
@@ -1436,6 +1474,9 @@
                     <div class="flex items-center justify-between mb-3">
                         <h4 class="font-bold text-gray-800">لیدهای ثبت‌شده</h4>
                         <span id="admin-lead-count" class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">0</span>
+                    </div>
+                    <div class="mb-3">
+                        <input id="ops-lead-search" class="compact-input" placeholder="جستجوی قطعه، نام یا موبایل..." oninput="renderAdminLeads()">
                     </div>
                     <div id="admin-lead-list" class="space-y-2 max-h-96 overflow-y-auto text-sm text-gray-600">
                         <p>هنوز لیدی ثبت نشده است.</p>
@@ -1460,6 +1501,10 @@
                 </section>
 
                 <section id="ops-activity" class="ops-panel hidden">
+                    <div class="flex flex-col md:flex-row gap-3 mb-3">
+                        <input id="ops-activity-filter" class="compact-input" placeholder="فیلتر فعالیت‌ها..." oninput="renderOpsActivity()">
+                        <button onclick="clearOpsActivity()" class="px-4 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-bold whitespace-nowrap">پاک کردن گزارش</button>
+                    </div>
                     <div id="ops-activity-list" class="space-y-2 max-h-96 overflow-y-auto text-sm text-gray-600"></div>
                 </section>
             </div>
