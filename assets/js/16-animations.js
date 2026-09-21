@@ -331,7 +331,7 @@ function initVectorWordmarks() {
             const glow = ctx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, reach);
             glow.addColorStop(0, isHero ? '#0b2560' : '#0b2560');
             glow.addColorStop(.52, isHero ? '#1348c8' : '#17409f');
-            glow.addColorStop(1, 'rgba(19,72,200,.05)');
+            glow.addColorStop(1, isHero ? 'rgba(11,37,96,.72)' : 'rgba(19,72,200,.05)');
             ctx.fillStyle = glow;
             ctx.shadowColor = isHero ? 'rgba(19,72,200,.22)' : 'rgba(232,168,29,.18)';
             ctx.shadowBlur = isHero ? 13 : 5;
@@ -396,7 +396,11 @@ function initVectorWordmarks() {
         instances.push({ draw, resize, resizeObserver });
     }
 
-    document.querySelectorAll('[data-vector-title]').forEach(el => create(el, true));
+    // The hero headline canvas relies on a hovering pointer for its glow; on
+    // touch / small screens it only produced a faint blurred copy that hid the
+    // real title, so keep the DOM <h2> there.
+    const touchLike = window.matchMedia && (window.matchMedia('(hover: none), (pointer: coarse)').matches || window.matchMedia('(max-width: 1023px)').matches);
+    if (!touchLike) document.querySelectorAll('[data-vector-title]').forEach(el => create(el, true));
     document.querySelectorAll('[data-vector-wordmark]').forEach(el => create(el, false));
     if (!instances.length) return;
 
@@ -443,6 +447,12 @@ function initPageVectorLayer() {
     const page = document.getElementById('page-home');
     if (!canvas || !page) return;
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // Touch / small screens: the pointer glow never fires and the mobile
+    // viewport height changes with the URL bar, so keep the real DOM text.
+    if (window.matchMedia && (window.matchMedia('(hover: none), (pointer: coarse)').matches || window.matchMedia('(max-width: 1023px)').matches)) {
+        canvas.style.display = 'none';
+        return;
+    }
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -543,6 +553,10 @@ function initPageVectorLayer() {
         S.vw = vw; S.vh = vh; S.dpr = dpr;
         S.canvas.width = Math.max(1, Math.round(vw * dpr));
         S.canvas.height = Math.max(1, Math.round(vh * dpr));
+        // Pin the CSS box to the same pixel size; 100vw/100vh would include
+        // the scrollbar / collapsed browser chrome and stretch the drawing.
+        S.canvas.style.width = vw + 'px';
+        S.canvas.style.height = vh + 'px';
         S.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
@@ -639,4 +653,20 @@ function initPageVectorLayer() {
     rebuildAll();
     S.page.classList.add('vector-page-live');
     S.raf = requestAnimationFrame(frame);
+
+    // Resized into the mobile range → hand the text back to the DOM.
+    const narrow = window.matchMedia('(max-width: 1023px)');
+    const onNarrow = () => {
+        if (narrow.matches) {
+            cancelAnimationFrame(S.raf); S.raf = 0;
+            S.page.classList.remove('vector-page-live');
+            S.canvas.style.display = 'none';
+        } else if (!S.raf) {
+            S.canvas.style.display = '';
+            rebuildAll();
+            S.page.classList.add('vector-page-live');
+            S.raf = requestAnimationFrame(frame);
+        }
+    };
+    if (narrow.addEventListener) narrow.addEventListener('change', onNarrow);
 }

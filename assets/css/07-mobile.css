@@ -74,12 +74,21 @@ header .nav-logo { flex-shrink: 0; }
     #filters-aside.filters-collapsed { display: none; }
     .filter-shell { position: static; max-height: none; }
     .results-main > .bg-white.flex > .flex { flex-wrap: wrap; gap: 12px; }
-    .quick-action-panel { top: auto; bottom: calc(12px + env(safe-area-inset-bottom)); left: 50%; right: auto; transform: translateX(-50%); flex-direction: row; gap: 10px; padding: 8px; background: #fffffff2; border: 1px solid #dbe4f5; border-radius: 999px; box-shadow: 0 8px 24px #05173d25; }
-    html[dir="rtl"] .quick-action-panel { left: 50%; right: auto; }
-    .quick-action-btn { width: 44px; height: 44px; border-radius: 50%; }
+    /* Bottom-corner pill (not centred) so it never sits over hero inputs or CTAs. */
+    .quick-action-panel { top: auto; bottom: calc(12px + env(safe-area-inset-bottom)); right: 12px; left: auto; transform: none; flex-direction: row; gap: 8px; padding: 6px; background: #fffffff2; border: 1px solid #dbe4f5; border-radius: 999px; box-shadow: 0 8px 24px #05173d25; }
+    html[dir="rtl"] .quick-action-panel { left: 12px; right: auto; }
+    .quick-action-btn { width: 42px; height: 42px; border-radius: 50%; }
+    .quick-action-btn:hover, html[dir="rtl"] .quick-action-btn:hover { transform: none; }
     .quick-action-label { display: none; }
-    #back-to-top, html[dir="rtl"] #back-to-top { bottom: 90px; left: 16px; right: auto; width: 44px; height: 44px; }
-    footer.gradient-navy { padding-bottom: 110px; }
+    .lead-pulse::before { display: none; }
+    /* Back-to-top takes the opposite corner from the quick actions. */
+    #back-to-top { bottom: calc(12px + env(safe-area-inset-bottom)); left: 12px; right: auto; width: 42px; height: 42px; }
+    html[dir="rtl"] #back-to-top { left: auto; right: 12px; }
+    footer.gradient-navy { padding-bottom: 90px; }
+    /* Keep the hero copy readable: no 3D tilt/float on touch screens. */
+    .hero-3d, .hero-3d-sub, .hero-proof-chip { animation: none !important; transform: none !important; text-shadow: none; }
+    .vector-hero-title { cursor: default; }
+    .vector-hero-title::after { display: none; }
 }
 @media (max-width: 639px) {
     header .brand-logo { width: 132px; }
@@ -144,7 +153,8 @@ input[aria-invalid="true"] { border-color: #dc2626; background: #fff7f7; }
 @media (max-width: 1023px) {
     /* Product CTAs and the interactive viewer take priority over floating shortcuts. */
     body:not(:has(#page-home:not(.hidden))) .quick-action-panel,
-    body:has(#search-input:focus) .quick-action-panel,
+    body:has(input:focus, textarea:focus, select:focus) .quick-action-panel,
+    body:has(#autocomplete-dropdown:not(.hidden)) .quick-action-panel,
     body.bearing-viewer-active #back-to-top { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
