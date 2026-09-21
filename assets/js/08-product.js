@@ -27,8 +27,8 @@ function showProductDetail(productId) {
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-0">
                 <!-- Product Image -->
-                <div class="product-image-bg p-12 flex items-center justify-center min-h-96">
-                    <i class="fas fa-${product.type === 'bearing' ? 'circle-notch' : product.type === 'linear' ? 'grip-lines' : product.type === 'coupling' ? 'link' : 'cogs'} text-9xl text-gray-300 float-anim"></i>
+                <div class="product-image-bg p-8 sm:p-12 flex items-center justify-center min-h-96">
+                    ${hasProductImage(product) ? `<img src="${product.image}" alt="${product.brand} ${product.code}" class="product-photo max-h-80 w-auto max-w-full object-contain rounded-xl shadow-md">` : `<i class="fas fa-${productTypeIcon(product.type)} text-9xl text-gray-300 float-anim"></i>`}
                 </div>
 
                 <!-- Product Info -->

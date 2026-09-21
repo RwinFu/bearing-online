@@ -28,8 +28,8 @@ const AppState = {
 // Sample Product Database
 const ProductDatabase = [
     // Deep Groove Ball Bearings
-    { id: 'SKF-6205', code: '6205', brand: 'SKF', type: 'bearing', subtype: 'deep-groove', d: 25, D: 52, B: 15, priceUSD: 8.50, speedRating: 13000, loadRating: 14800, weight: 0.115, origin: 'Sweden', seal: 'Open', clearance: 'C0', image: 'bearing' },
-    { id: 'SKF-6205-2RS', code: '6205-2RS', brand: 'SKF', type: 'bearing', subtype: 'deep-groove', d: 25, D: 52, B: 15, priceUSD: 11.20, speedRating: 9500, loadRating: 14800, weight: 0.120, origin: 'Sweden', seal: '2RS', clearance: 'C0', image: 'bearing' },
+    { id: 'SKF-6205', code: '6205', brand: 'SKF', type: 'bearing', subtype: 'deep-groove', d: 25, D: 52, B: 15, priceUSD: 8.50, speedRating: 13000, loadRating: 14800, weight: 0.115, origin: 'Sweden', seal: 'Open', clearance: 'C0', image: 'assets/img/products/skf-6205.jpg' },
+    { id: 'SKF-6205-2RS', code: '6205-2RS', brand: 'SKF', type: 'bearing', subtype: 'deep-groove', d: 25, D: 52, B: 15, priceUSD: 11.20, speedRating: 9500, loadRating: 14800, weight: 0.120, origin: 'Sweden', seal: '2RS', clearance: 'C0', image: 'assets/img/products/skf-6205-2rs.jpg' },
     { id: 'FAG-6205', code: '6205', brand: 'FAG', type: 'bearing', subtype: 'deep-groove', d: 25, D: 52, B: 15, priceUSD: 9.80, speedRating: 13000, loadRating: 14800, weight: 0.115, origin: 'Germany', seal: 'Open', clearance: 'C0', image: 'bearing' },
     { id: 'NSK-6205', code: '6205', brand: 'NSK', type: 'bearing', subtype: 'deep-groove', d: 25, D: 52, B: 15, priceUSD: 7.50, speedRating: 13000, loadRating: 14800, weight: 0.115, origin: 'Japan', seal: 'Open', clearance: 'C0', image: 'bearing' },
     { id: 'ZWZ-6205', code: '6205', brand: 'ZWZ', type: 'bearing', subtype: 'deep-groove', d: 25, D: 52, B: 15, priceUSD: 3.20, speedRating: 11000, loadRating: 13500, weight: 0.115, origin: 'China', seal: 'Open', clearance: 'C0', image: 'bearing' },
@@ -43,6 +43,9 @@ const ProductDatabase = [
     { id: 'FAG-22220', code: '22220E1', brand: 'FAG', type: 'bearing', subtype: 'spherical', d: 100, D: 180, B: 46, priceUSD: 195.00, speedRating: 3600, loadRating: 425000, weight: 4.750, origin: 'Germany', seal: 'Open', clearance: 'C0', image: 'bearing' },
     { id: 'SKF-22320', code: '22320E', brand: 'SKF', type: 'bearing', subtype: 'spherical', d: 100, D: 215, B: 73, priceUSD: 345.00, speedRating: 2800, loadRating: 690000, weight: 11.800, origin: 'Sweden', seal: 'Open', clearance: 'C0', image: 'bearing' },
     { id: 'NTN-22220', code: '22220BD1', brand: 'NTN', type: 'bearing', subtype: 'spherical', d: 100, D: 180, B: 46, priceUSD: 165.00, speedRating: 3600, loadRating: 420000, weight: 4.750, origin: 'Japan', seal: 'Open', clearance: 'C0', image: 'bearing' },
+
+    // SKF Greases
+    { id: 'SKF-LGMT3-04', code: 'LGMT 3/0.4', brand: 'SKF', type: 'grease', subtype: 'general-purpose', d: 0, D: 0, B: 0, dimensionsLabel: 'NLGI 3 · 420 ml cartridge', priceUSD: 13.90, speedRating: 0, loadRating: 0, weight: 0.42, origin: 'Sweden', seal: 'N/A', clearance: 'N/A', image: 'assets/img/products/skf-lgmt3-04.jpg' },
 
     // Linear Guides
     { id: 'HIWIN-MGN12H', code: 'MGN12H', brand: 'HIWIN', type: 'linear', subtype: 'miniature', d: 12, D: 27, B: 10, priceUSD: 28.00, speedRating: 3000, loadRating: 3900, weight: 0.045, origin: 'Taiwan', seal: 'Sealed', clearance: 'Standard', image: 'linear' },
@@ -115,7 +118,7 @@ function hydrateProductDatabase() {
         const accuracyOptions = ['P0', 'P6', 'P5', 'P4'];
         product.cageType = product.type === 'bearing' ? cageOptions[index % cageOptions.length] : 'N/A';
         product.sealType = product.seal || 'Open';
-        product.lubrication = product.type === 'bearing' || product.type === 'linear' ? lubricationOptions[index % lubricationOptions.length] : 'N/A';
+        product.lubrication = product.type === 'grease' ? 'Grease' : (product.type === 'bearing' || product.type === 'linear' ? lubricationOptions[index % lubricationOptions.length] : 'N/A');
         product.internalClearance = product.clearance || 'C0';
         product.accuracyClass = product.type === 'bearing' || product.type === 'linear' ? accuracyOptions[index % accuracyOptions.length] : 'N/A';
         product.leadTimeFa = stockPlan[2];

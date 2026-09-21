@@ -33,11 +33,12 @@ function toggleLanguage() {
     applyLanguage();
 }
 
-const TYPE_FA = { bearing: 'برینگ', linear: 'گاید خطی', coupling: 'کوپلینگ', gearbox: 'گیربکس' };
+const TYPE_FA = { bearing: 'برینگ', linear: 'گاید خطی', coupling: 'کوپلینگ', gearbox: 'گیربکس', grease: 'گریس' };
 const SUBTYPE_FA = {
     'deep-groove': 'شیار عمیق', spherical: 'بشکه‌ای', tapered: 'مخروطی', 'pillow-block': 'یاتاقان',
     miniature: 'مینیاتوری', standard: 'استاندارد', bushing: 'بوش', jaw: 'فکی', oldham: 'اولدهام',
-    bellows: 'آکاردئونی', chain: 'زنجیری', freewheel: 'فری‌ویل', planetary: 'خورشیدی', worm: 'حل‌زونی', bevel: 'کرانویل'
+    bellows: 'آکاردئونی', chain: 'زنجیری', freewheel: 'فری‌ویل', planetary: 'خورشیدی', worm: 'حل‌زونی', bevel: 'کرانویل',
+    'general-purpose': 'عمومی'
 };
 const ORIGIN_FA = { Germany: 'آلمان', Japan: 'ژاپن', Sweden: 'سوئد', China: 'چین', Korea: 'کره', Taiwan: 'تایوان', France: 'فرانسه', USA: 'آمریکا', Italy: 'ایتالیا' };
 const SEAL_FA = { Open: 'باز', '2RS': 'دو طرف سیل', '2RS1': 'دو طرف سیل', ZZ: 'دو طرف شیلد', '2Z': 'دو طرف شیلد', Sealed: 'آب‌بندی‌شده', 'N/A': '—' };

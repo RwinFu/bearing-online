@@ -143,7 +143,7 @@ async function waitFor(fn, ms = 2000) {
     });
     check('ProductDatabase hydrated (fix #1: hydrateProductDatabase)', () => {
         const DB = G('ProductDatabase'), AS = G('AppState');
-        assert(AS && DB.length === 33, 'expected 33 products, got ' + DB.length);
+        assert(AS && DB.length === 34, 'expected 34 products, got ' + DB.length);
         const p = DB[0];
         assert(p.code === '6205', 'code not normalized: ' + p.code);
         assert(p.stockStatus && typeof p.unit_price_toman === 'number', 'derived fields missing');
@@ -151,7 +151,7 @@ async function waitFor(fn, ms = 2000) {
     });
     check('DOMContentLoaded ran: home stats + brand ring rendered', () => {
         assert($('#brandRing').children.length === 9, 'brand ring slots: ' + $('#brandRing').children.length);
-        assert(G('AppState').searchResults.length === 33, 'searchResults not initialized');
+        assert(G('AppState').searchResults.length === 34, 'searchResults not initialized');
         return $('#brandRing').children.length + ' brand slots';
     });
     check('Hero copy + vector wordmark fallbacks are present', () => {
@@ -327,7 +327,7 @@ async function waitFor(fn, ms = 2000) {
         const cards = $$('.stat-vector-card');
         assert(cards.length === 4, 'stats cards: ' + cards.length);
         assert(cards.every(card => card.querySelector('.stat-label[data-fa]') && card.querySelector('.stat-sub[data-en]')), 'metric copy is not bilingual');
-        assert($('#indexed-product-counter').getAttribute('data-count') === '33', 'indexed product counter target is stale');
+        assert($('#indexed-product-counter').getAttribute('data-count') === '34', 'indexed product counter target is stale');
         return cards.length + ' localized metrics';
     });
     check('Premium brands directory renders, localizes and filters 9 brands', () => {
@@ -438,7 +438,7 @@ async function waitFor(fn, ms = 2000) {
         window.applyFilters();
         assert(AS.searchResults.every(p => p.brand === 'SKF'), 'brand filter failed');
         window.clearFilters();
-        assert(AS.searchResults.length === 33, 'clearFilters failed: ' + AS.searchResults.length);
+        assert(AS.searchResults.length === 34, 'clearFilters failed: ' + AS.searchResults.length);
         doc.getElementById('filter-d-min').value = '25';
         doc.getElementById('filter-d-max').value = '25';
         window.applyFilters();

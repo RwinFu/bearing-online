@@ -14,6 +14,16 @@ function formatNumber(num) {
     return new Intl.NumberFormat('en-US').format(num);
 }
 
+// Product photos: real catalogue images live in assets/img/products/. Legacy
+// products keep a generic image key ('bearing', ...) which has no file behind it.
+function hasProductImage(product) {
+    return !!product && typeof product.image === 'string' && product.image.startsWith('assets/');
+}
+
+function productTypeIcon(type) {
+    return type === 'bearing' ? 'circle-notch' : type === 'linear' ? 'grip-lines' : type === 'coupling' ? 'link' : type === 'grease' ? 'droplet' : 'cogs';
+}
+
 function showNotification(message, type = 'success') {
     const container = document.getElementById('notification-container');
     const notification = document.createElement('div');
