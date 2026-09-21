@@ -2,31 +2,54 @@
 // =============================================
 // CART SYSTEM
 // =============================================
-function addToCart(productId) {
-    const existingItem = AppState.cart.find(item => item.id === productId);
+function addToCart(productId, supplierId) {
+    const product = ProductDatabase.find(p => p.id === productId);
+    if (!product) return;
+    const suppliers = productSupplierNames(product) || [];
+    // When a product has several suppliers, the chosen supplier must be recorded
+    // on the cart line; otherwise it defaults to the first (or own warehouse).
+    const ext = suppliers.filter(name => name !== 'انبار خودمان');
+    const chosen = supplierId && [...ext].includes(supplierId) ? supplierId : (ext[0] || 'انبار خودمان');
+    const existingItem = AppState.cart.find(item => item.id === productId && (item.supplier || 'انبار خودمان') === chosen);
     if (existingItem) {
         existingItem.quantity++;
     } else {
-        AppState.cart.push({ id: productId, quantity: 1 });
+        AppState.cart.push({ id: productId, quantity: 1, supplier: chosen });
     }
     updateCartCount();
     persistState();
     showNotification(AppState.language === 'en' ? 'Added to cart!' : 'به سبد اضافه شد!', 'success');
 }
 
-function removeFromCart(productId) {
-    AppState.cart = AppState.cart.filter(item => item.id !== productId);
+function setCartSupplier(productId, supplier) {
+    const item = AppState.cart.find(i => i.id === productId);
+    if (!item) return;
+    const next = supplier || 'انبار خودمان';
+    const twin = AppState.cart.find(i => i.id === productId && i !== item && (i.supplier || 'انبار خودمان') === next);
+    if (twin) {
+        // Same part under the target supplier already exists → merge this line into it.
+        twin.quantity += item.quantity;
+        AppState.cart = AppState.cart.filter(i => i !== item);
+    } else {
+        item.supplier = next;
+    }
+    persistState();
+    renderCart();
+}
+
+function removeFromCart(productId, supplier) {
+    AppState.cart = AppState.cart.filter(item => item.id !== productId || (supplier !== undefined && (item.supplier || 'انبار خودمان') !== supplier));
     updateCartCount();
     persistState();
     renderCart();
 }
 
-function updateCartQuantity(productId, delta) {
-    const item = AppState.cart.find(i => i.id === productId);
+function updateCartQuantity(productId, delta, supplier) {
+    const item = AppState.cart.find(i => i.id === productId && (supplier === undefined || (i.supplier || 'انبار خودمان') === supplier));
     if (item) {
         item.quantity += delta;
         if (item.quantity <= 0) {
-            removeFromCart(productId);
+            removeFromCart(productId, supplier);
         } else {
             persistState();
             renderCart();
@@ -37,6 +60,20 @@ function updateCartQuantity(productId, delta) {
 function updateCartCount() {
     const count = AppState.cart.reduce((sum, item) => sum + item.quantity, 0);
     document.getElementById('cart-count').textContent = count;
+}
+
+// Inline buttons resolve the exact cart line (and its supplier) from the DOM so
+// the same product code can sit in the cart under two different suppliers.
+function updateCartLine(productId, delta, btn) {
+    const line = btn && btn.closest ? btn.closest('.cart-line') : null;
+    const supplier = line ? (line.dataset.supplier || 'انبار خودمان') : undefined;
+    updateCartQuantity(productId, delta, supplier);
+}
+
+function removeCartLine(productId, btn) {
+    const line = btn && btn.closest ? btn.closest('.cart-line') : null;
+    const supplier = line ? (line.dataset.supplier || 'انبار خودمان') : undefined;
+    removeFromCart(productId, supplier);
 }
 
 function showCart() {
@@ -64,10 +101,11 @@ function renderCart() {
     let totalPrice = 0;
     const cartItems = AppState.cart.map(item => {
         const product = ProductDatabase.find(p => p.id === item.id);
+        if (!product) return null;
         const itemTotal = product.sell_mode === 'instant' ? product.priceUSD * item.quantity : 0;
         if (product.sell_mode === 'instant') totalPrice += itemTotal;
-        return { ...product, quantity: item.quantity, itemTotal };
-    });
+        return { ...product, quantity: item.quantity, itemTotal, supplier: item.supplier };
+    }).filter(Boolean);
 
     container.innerHTML = `
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -77,32 +115,41 @@ function renderCart() {
                         <h3 class="font-bold text-lg" data-en="Cart Items" data-fa="اقلام سبد">Cart Items</h3>
                     </div>
                     <div class="divide-y divide-gray-100">
-                        ${cartItems.map(item => `
-                            <div class="p-6 flex items-center gap-6 cart-line">
+                        ${cartItems.map(item => {
+                            const src = productSupplierNames(item) || [];
+                            const ext = src.filter(name => name !== 'انبار خودمان');
+                            const supplierSelect = ext.length > 0 ? `
+                                <select onchange="setCartSupplier('${item.id}', this.value)" class="compact-input mt-1 text-xs" aria-label="تامین‌کننده">
+                                    ${src.map(name => `<option value="${name}" ${(item.supplier || 'انبار خودمان') === name ? 'selected' : ''}>${name}</option>`).join('')}
+                                </select>` : '';
+                            return `
+                            <div class="p-6 flex items-center gap-6 cart-line" data-supplier="${escapeHTML(item.supplier || 'انبار خودمان')}">
                                 <div class="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
                                     ${hasProductImage(item) ? `<img src="${item.image}" alt="" class="w-full h-full object-contain">` : `<i class="fas fa-${productTypeIcon(item.type)} text-2xl text-gray-300"></i>`}
                                 </div>
                                 <div class="flex-1">
                                     <h4 class="font-bold text-gray-800">${item.brand} ${item.code}</h4>
-                                    <p class="text-sm text-gray-500" dir="ltr">${item.type === 'grease' ? (item.dimensionsLabel || '') : `${item.d}×${item.D}×${item.B} mm`}</p>
+                                    <p class="text-sm text-gray-500" dir="ltr">${productSizeLabel(item)}</p>
+                                    <div class="text-xs text-gray-500 mt-1">تامین‌کننده: <b class="text-gray-700">${escapeHTML(item.supplier || 'انبار خودمان')}</b>${supplierSelect}</div>
                                 </div>
                                 <div class="flex items-center gap-3 cart-line-controls">
-                                    <button onclick="updateCartQuantity('${item.id}', -1)" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">
+                                    <button onclick="updateCartLine('${item.id}', -1, this)" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">
                                         <i class="fas fa-minus text-xs"></i>
                                     </button>
                                     <span class="w-8 text-center font-medium">${item.quantity}</span>
-                                    <button onclick="updateCartQuantity('${item.id}', 1)" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">
+                                    <button onclick="updateCartLine('${item.id}', 1, this)" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">
                                         <i class="fas fa-plus text-xs"></i>
                                     </button>
                                 </div>
                                 <div class="text-right w-32">
                                     <div class="font-bold text-gray-800">${item.sell_mode === 'instant' ? `${formatPrice(item.itemTotal)} <span class="text-xs text-gray-500">تومان</span>` : '<span class="text-orange-600">استعلام</span>'}</div>
                                 </div>
-                                <button onclick="removeFromCart('${item.id}')" class="text-gray-400 hover:text-red-500 transition">
+                                <button onclick="removeCartLine('${item.id}', this)" class="text-gray-400 hover:text-red-500 transition">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
-                        `).join('')}
+                        `;
+                        }).join('')}
                     </div>
                 </div>
             </div>

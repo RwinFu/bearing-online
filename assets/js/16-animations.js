@@ -345,35 +345,39 @@ function initVectorWordmarks() {
             textRows((text, x, y) => ctx.strokeText(text, x, y));
             ctx.setLineDash([]);
 
-            // Three drifting handles and their construction triangle.
-            const spread = isHero ? Math.min(66, width * .09) : Math.min(23, width * .16);
-            const drift = reduced ? 0 : Math.sin(now / 760) * (isHero ? 4 : 1.5);
-            const points = [
-                [pointer.x - spread, pointer.y + spread * .34 + drift],
-                [pointer.x + spread * .83, pointer.y - spread * .42 - drift],
-                [pointer.x + spread * .58, pointer.y + spread * .55 + drift * .5]
-            ];
-            ctx.strokeStyle = isHero ? 'rgba(19,72,200,.48)' : 'rgba(19,72,200,.42)';
-            ctx.lineWidth = 1;
-            ctx.setLineDash(isHero ? [4, 5] : [2, 3]);
-            ctx.beginPath();
-            ctx.moveTo(points[0][0], points[0][1]);
-            ctx.lineTo(points[1][0], points[1][1]);
-            ctx.lineTo(points[2][0], points[2][1]);
-            ctx.closePath();
-            ctx.stroke();
-            ctx.setLineDash([]);
-            points.forEach((p, index) => {
-                const size = isHero ? 7 : 3.5;
-                ctx.strokeRect(p[0] - size, p[1] - size, size * 2, size * 2);
-                if (isHero && width > 520) {
-                    ctx.fillStyle = 'rgba(11,37,96,.58)';
-                    ctx.font = '9px Inter, monospace';
-                    ctx.direction = 'ltr';
-                    ctx.textAlign = 'left';
-                    ctx.fillText(`${Math.round(p[0] / width * 100)}, ${Math.round(p[1] / height * 100)}`, p[0] + 10, p[1] - 8 - index * 2);
-                }
-            });
+            // The drift handles + construction triangle stay on the first-page
+            // hero title only; header/footer wordmarks keep just the glow so
+            // the mark never gets a triangle over it on other pages.
+            if (isHero) {
+                const spread = Math.min(66, width * .09);
+                const drift = reduced ? 0 : Math.sin(now / 760) * 4;
+                const points = [
+                    [pointer.x - spread, pointer.y + spread * .34 + drift],
+                    [pointer.x + spread * .83, pointer.y - spread * .42 - drift],
+                    [pointer.x + spread * .58, pointer.y + spread * .55 + drift * .5]
+                ];
+                ctx.strokeStyle = 'rgba(19,72,200,.48)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 5]);
+                ctx.beginPath();
+                ctx.moveTo(points[0][0], points[0][1]);
+                ctx.lineTo(points[1][0], points[1][1]);
+                ctx.lineTo(points[2][0], points[2][1]);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.setLineDash([]);
+                points.forEach((p, index) => {
+                    const size = 7;
+                    ctx.strokeRect(p[0] - size, p[1] - size, size * 2, size * 2);
+                    if (width > 520) {
+                        ctx.fillStyle = 'rgba(11,37,96,.58)';
+                        ctx.font = '9px Inter, monospace';
+                        ctx.direction = 'ltr';
+                        ctx.textAlign = 'left';
+                        ctx.fillText(`${Math.round(p[0] / width * 100)}, ${Math.round(p[1] / height * 100)}`, p[0] + 10, p[1] - 8 - index * 2);
+                    }
+                });
+            }
             ctx.restore();
         }
 
@@ -426,11 +430,12 @@ function initEngineeringPanels() {
 // -----------------------------------------------------------------------------
 // Full-page vector motion layer (first page) — spreads the hero wordmark
 // motion across every [data-vector-page] text block: soft blueprint body,
-// gold dotted contour, a radial glow that follows the pointer (or an ambient
-// sweep when idle) and an always-on construction triangle that rides the
-// glow across the whole page (hovered block if any, else the nearest one).
-// The DOM text stays in the tree (readable without JS); it is only faded out
-// while the layer is live. No canvas / reduced-motion / jsdom → plain text.
+// gold dotted contour and a radial glow that follows the pointer (or an ambient
+// sweep when idle). The construction triangle that used to ride the glow was
+// removed so it never covers the written words outside the hero; the hero
+// wordmark itself keeps its small handles. The DOM text stays in the tree
+// (readable without JS); it is only faded out while the layer is live.
+// No canvas / reduced-motion / jsdom → plain text.
 // -----------------------------------------------------------------------------
 function initPageVectorLayer() {
     if (/jsdom/i.test(navigator.userAgent || '') || !window.HTMLCanvasElement) return;
@@ -554,31 +559,6 @@ function initPageVectorLayer() {
         return alpha;
     }
 
-    function drawHandles(x, y, now, item) {
-        const c = S.ctx;
-        const spread = Math.min(26, Math.max(10, item.size * 0.5));
-        const drift = Math.sin(now / 760) * 2;
-        const pts = [
-            [x - spread, y + spread * 0.34 + drift],
-            [x + spread * 0.83, y - spread * 0.42 - drift],
-            [x + spread * 0.58, y + spread * 0.55 + drift * 0.5]
-        ];
-        c.save();
-        c.strokeStyle = 'rgba(19,72,200,0.48)';
-        c.lineWidth = 1;
-        c.setLineDash([4, 5]);
-        c.beginPath();
-        c.moveTo(pts[0][0], pts[0][1]);
-        c.lineTo(pts[1][0], pts[1][1]);
-        c.lineTo(pts[2][0], pts[2][1]);
-        c.closePath();
-        c.stroke();
-        c.setLineDash([]);
-        const s = Math.max(3.5, Math.min(6.5, item.size * 0.16));
-        pts.forEach(p => c.strokeRect(p[0] - s, p[1] - s, s * 2, s * 2));
-        c.restore();
-    }
-
     function frame(now) {
         S.raf = requestAnimationFrame(frame);
         const dt = S.last ? Math.min(0.05, (now - S.last) / 1000) : 0.016;
@@ -599,12 +579,9 @@ function initPageVectorLayer() {
             gy = S.vh * (0.5 + 0.38 * Math.sin(S.idleT / 6.5));
         }
 
-        // The construction triangle is always on: it sits on the hovered text
-        // while the pointer is over one, otherwise it rides the glow point on
-        // the nearest visible block — so the vector rig roams the whole first
-        // page even when idle (and on touch devices, which have no hover).
-        let active = null;
-        let nearest = null, nearestDist = Infinity;
+        // (The roaming construction triangle was removed per request: it stayed
+        // pinned over all first-page headlines and hid the written words. Only
+        // the live wordmark keeps its handles, on the first page alone.)
         for (const item of S.items) {
             const rect = item.el.getBoundingClientRect();
             if (!rect.width || !rect.height) continue;
@@ -635,27 +612,7 @@ function initPageVectorLayer() {
                 c.shadowBlur = 0;
             }
             c.restore();
-
-            if (S.pointer.active &&
-                gx >= rect.left - 14 && gx <= rect.right + 14 &&
-                gy >= rect.top - 14 && gy <= rect.bottom + 14) {
-                active = { item, x: gx, y: gy };
-            } else {
-                const dd = Math.hypot(gx - cx, gy - cy);
-                if (dd < nearestDist) { nearestDist = dd; nearest = { item, rect }; }
-            }
         }
-        if (!active && nearest) {
-            // Clamp the roaming anchor onto the nearest block so the triangle
-            // always reads as a handle on live text, never floating in empty space.
-            const r = nearest.rect;
-            active = {
-                item: nearest.item,
-                x: Math.max(r.left, Math.min(gx, r.right)),
-                y: Math.max(r.top, Math.min(gy, r.bottom))
-            };
-        }
-        if (active) drawHandles(active.x, active.y, now, active.item);
     }
 
     // Pointer tracking across the whole first page (canvas is click-through).

@@ -123,6 +123,12 @@ function hydrateProductDatabase() {
         product.accuracyClass = product.type === 'bearing' || product.type === 'linear' ? accuracyOptions[index % accuracyOptions.length] : 'N/A';
         product.leadTimeFa = stockPlan[2];
         product.searchMeta = { equivalent: false, suffixMatch: '' };
+        // Supplier bookkeeping: suppliers is the canonical list in MockDB; a
+        // product can be sourced from MORE THAN ONE supplier via supplierIds.
+        if (!Array.isArray(product.supplierIds)) product.supplierIds = [];
+        if (typeof product.stockSource === 'undefined') product.stockSource = 'own';
+        // Bind the maker's real datasheet for this exact part number (08-product.js).
+        if (typeof productDatasheetUrl === 'function') product.datasheet_url = productDatasheetUrl(product).url;
     });
 }
 

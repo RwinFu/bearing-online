@@ -36,7 +36,11 @@ function getStockBadge(product) {
         inquiry: { icon: 'fa-circle-question', cls: 'inquiry', fa: 'نیازمند استعلام', en: 'Inquiry' }
     };
     const item = map[product.stockStatus] || map.inquiry;
-    return `<span class="stock-badge ${item.cls}"><i class="fas ${item.icon}"></i>${AppState.language === 'fa' ? item.fa : item.en}</span>`;
+    const suppliers = productSupplierNames(product);
+    const source = suppliers && suppliers.indexOf('انبار خودمان') === -1
+        ? `<span class="stock-source-chip"><i class="fas fa-store"></i>${suppliers.join('، ')}</span>`
+        : '';
+    return `<span class="stock-badge ${item.cls}"><i class="fas ${item.icon}"></i>${AppState.language === 'fa' ? item.fa : item.en}</span>${source}`;
 }
 
 function toInchFraction(mm) {

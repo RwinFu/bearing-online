@@ -1329,15 +1329,17 @@
     <!-- Operations Backend (role-based, prototype without password) -->
     <div id="admin-modal" class="fixed inset-0 z-50 hidden modal-overlay overflow-y-auto">
         <div class="min-h-screen flex items-start justify-center p-4 py-8">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl p-6 md:p-8 animate-slide-up">
-                <div class="flex items-start justify-between gap-4 mb-4">
-                    <div>
-                        <h3 class="text-2xl font-extrabold text-gray-900">پنل عملیات / بک‌اند</h3>
-                        <p class="text-sm text-gray-500 mt-1">فعلاً بدون رمز است. نقش را انتخاب کنید؛ هر نقش فقط به بخش خودش دسترسی دارد. این ساختار آماده اتصال به بک‌اند واقعی است.</p>
+            <div id="ops-panel-card" class="w-full max-w-5xl p-6 md:p-8 animate-slide-up">
+                <div id="ops-panel-top">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h3 class="text-2xl font-extrabold">پنل عملیات / بک‌اند</h3>
+                            <p class="ops-sub text-sm mt-1">فعلاً بدون رمز است. نقش را انتخاب کنید؛ هر نقش فقط به بخش خودش دسترسی دارد. این ساختار آماده اتصال به بک‌اند واقعی است.</p>
+                        </div>
+                        <button onclick="closeAdminPanel()" class="text-white/70 hover:text-white" aria-label="Close">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
                     </div>
-                    <button onclick="closeAdminPanel()" class="text-gray-400 hover:text-gray-600" aria-label="Close">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
                 </div>
 
                 <div class="grid md:grid-cols-3 gap-3 mb-4">
@@ -1362,19 +1364,21 @@
                     </div>
                 </div>
 
-                <div id="ops-permission-note" class="mb-4 text-sm rounded-xl p-3 bg-blue-50 text-blue-800"></div>
+                <div id="ops-permission-note" class="mb-4 text-sm rounded-xl p-3"></div>
 
                 <div class="flex flex-wrap gap-2 mb-5">
-                    <button data-ops-tab="overview" onclick="switchOpsTab('overview')" class="quick-filter-chip">نمای کلی</button>
-                    <button data-ops-tab="pricing" onclick="switchOpsTab('pricing')" class="quick-filter-chip">نرخ دلار و سود</button>
-                    <button data-ops-tab="staff" onclick="switchOpsTab('staff')" class="quick-filter-chip">نقش‌ها و دسترسی</button>
-                    <button data-ops-tab="stock" onclick="switchOpsTab('stock')" class="quick-filter-chip">انبار و موجودی</button>
-                    <button data-ops-tab="tech" onclick="switchOpsTab('tech')" class="quick-filter-chip">مشاوره فنی / لیدها <span id="ops-count-tech" class="ops-badge" hidden></span></button>
-                    <button data-ops-tab="rfq" onclick="switchOpsTab('rfq')" class="quick-filter-chip">استعلام‌ها / RFQ <span id="ops-count-rfq" class="ops-badge" hidden></span></button>
-                    <button data-ops-tab="suppliers" onclick="switchOpsTab('suppliers')" class="quick-filter-chip">تامین‌کنندگان انبار</button>
-                    <button data-ops-tab="complaints" onclick="switchOpsTab('complaints')" class="quick-filter-chip">شکایات <span id="ops-count-complaints" class="ops-badge" hidden></span></button>
-                    <button data-ops-tab="orders" onclick="switchOpsTab('orders')" class="quick-filter-chip">سفارش‌ها <span id="ops-count-orders" class="ops-badge" hidden></span></button>
-                    <button data-ops-tab="activity" onclick="switchOpsTab('activity')" class="quick-filter-chip">گزارش فعالیت</button>
+                    <button data-ops-tab="overview" onclick="switchOpsTab('overview')">نمای کلی</button>
+                    <button data-ops-tab="pricing" onclick="switchOpsTab('pricing')">نرخ دلار و سود</button>
+                    <button data-ops-tab="staff" onclick="switchOpsTab('staff')">نقش‌ها و دسترسی</button>
+                    <button data-ops-tab="stock" onclick="switchOpsTab('stock')">انبار و موجودی</button>
+                    <button data-ops-tab="tech" onclick="switchOpsTab('tech')">مشاوره فنی / لیدها <span id="ops-count-tech" class="ops-badge" hidden></span></button>
+                    <button data-ops-tab="rfq" onclick="switchOpsTab('rfq')">استعلام‌ها / RFQ <span id="ops-count-rfq" class="ops-badge" hidden></span></button>
+                    <button data-ops-tab="suppliers" onclick="switchOpsTab('suppliers')">تامین‌کنندگان انبار</button>
+                    <button data-ops-tab="complaints" onclick="switchOpsTab('complaints')">شکایات <span id="ops-count-complaints" class="ops-badge" hidden></span></button>
+                    <button data-ops-tab="orders" onclick="switchOpsTab('orders')">سفارش‌ها <span id="ops-count-orders" class="ops-badge" hidden></span></button>
+                    <button data-ops-tab="activity" onclick="switchOpsTab('activity')">گزارش فعالیت</button>
+                    <button data-ops-tab="club" onclick="switchOpsTab('club')">باشگاه مشتریان</button>
+                    <button data-ops-tab="daily" onclick="switchOpsTab('daily')">گزارش روز / اکسل</button>
                 </div>
 
                 <section id="ops-overview" class="ops-panel space-y-4">
@@ -1452,7 +1456,8 @@
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">عرض B</label><input id="ops-new-B" type="number" min="0" step="any" class="compact-input" placeholder="15"></div>
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">قیمت دلاری *</label><input id="ops-new-price" type="number" min="0" step="any" class="compact-input" placeholder="8.5"></div>
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">موجودی اولیه</label><input id="ops-new-stock" type="number" min="0" step="1" class="compact-input" placeholder="0"></div>
-                            <div class="md:col-span-3 flex items-end"><button onclick="addProduct()" class="btn-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm w-full md:w-auto">ثبت کالا در کاتالوگ</button></div>
+                            <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-500 mb-1">تامین‌کننده‌ها (چندتایی مجاز)</label><select id="ops-new-suppliers" class="compact-input" multiple size="3"><option value="">— انبار خودمان (خالی بماند) —</option></select></div>
+                            <div class="md:col-span-2 flex items-end"><button onclick="addProduct()" class="btn-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm w-full md:w-auto">ثبت کالا در کاتالوگ</button></div>
                         </div>
                     </details>
                     <div id="ops-stock-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
@@ -1506,6 +1511,31 @@
                         <button onclick="clearOpsActivity()" class="px-4 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-bold whitespace-nowrap">پاک کردن گزارش</button>
                     </div>
                     <div id="ops-activity-list" class="space-y-2 max-h-96 overflow-y-auto text-sm text-gray-600"></div>
+                </section>
+
+                <section id="ops-club" class="ops-panel hidden">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
+                        <div>
+                            <h4 class="font-bold text-gray-800">باشگاه مشتریان</h4>
+                            <p class="text-xs text-gray-400 mt-1">هر خریدارِ دارای سفارش پرداخت‌شده خودکار عضو می‌شود؛ سطح بر اساس تعداد سفارش‌ها بالا می‌رود.</p>
+                        </div>
+                        <button onclick="exportCustomerClub()" class="btn-primary text-white px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap"><i class="fas fa-file-excel mr-2"></i>خروجی اکسل</button>
+                    </div>
+                    <div id="club-stats" class="text-xs text-gray-500 mb-3"></div>
+                    <div id="club-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                </section>
+
+                <section id="ops-daily" class="ops-panel hidden">
+                    <div class="grid md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">تاریخ را انتخاب کنید</label>
+                            <input type="date" id="dailyDay" class="compact-input">
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="exportDailyReport()" class="btn-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm whitespace-nowrap"><i class="fas fa-file-excel mr-2"></i>خروجی اکسل روز</button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-400 leading-5">فایل اکسل شامل سه شیت است: <b>خلاصه فروش</b> (از کجا فروختیم)، <b>اقلام فروش</b> و <b>باشگاه مشتریان</b>. با اکسل یا LibreOffice باز می‌شود.</p>
                 </section>
             </div>
         </div>
