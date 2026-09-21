@@ -846,6 +846,8 @@ html[dir="rtl"] .filter-row:hover { transform: translateX(2px); }
 .stock-badge.in-stock { background: #dcfce7; color: #166534; }
 .stock-badge.on-order { background: #ffedd5; color: #9a3412; }
 .stock-badge.inquiry { background: #f1f5f9; color: #475569; }
+/* Request states on the customer's Orders page ("درخواست‌های من") */
+.stock-badge.rejected { background: #fee2e2; color: #991b1b; }
 .stock-source-chip {
     display: inline-flex;
     align-items: center;

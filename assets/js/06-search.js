@@ -29,14 +29,17 @@ function normalizePartCodeDisplay(code) {
     return normalizeLoose(code).replace(/\s+/g, '').toUpperCase();
 }
 
-function getStockBadge(product) {
+// `hideSource` is for the customer-facing purchase screens (cart / checkout):
+// which supplier a line is sourced from is internal information and must not be
+// shown to the buyer. Catalogue screens keep the chip.
+function getStockBadge(product, hideSource = false) {
     const map = {
         'in-stock': { icon: 'fa-check-circle', cls: 'in-stock', fa: `موجود تهران (${product.stock})`, en: `Tehran stock (${product.stock})` },
         'on-order': { icon: 'fa-clock', cls: 'on-order', fa: product.leadTimeFa || 'در راه', en: 'On order' },
         inquiry: { icon: 'fa-circle-question', cls: 'inquiry', fa: 'نیازمند استعلام', en: 'Inquiry' }
     };
     const item = map[product.stockStatus] || map.inquiry;
-    const suppliers = productSupplierNames(product);
+    const suppliers = hideSource ? null : productSupplierNames(product);
     const source = suppliers && suppliers.indexOf('انبار خودمان') === -1
         ? `<span class="stock-source-chip"><i class="fas fa-store"></i>${suppliers.join('، ')}</span>`
         : '';

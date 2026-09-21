@@ -99,6 +99,9 @@ function hydrateProductDatabase() {
             ['in-stock', 8, 'ارسال امروز'], ['on-order', 0, '۲ تا ۴ هفته'], ['inquiry', 0, 'استعلام'],
             ['in-stock', 3, 'ارسال امروز'], ['on-order', 0, '۳ تا ۵ هفته']
         ][index % 5];
+        // Keep the maker's own designation ("6205-2RS", "LGMT 3/0.4") for the
+        // datasheet lookup; `code` becomes the normalized search key.
+        if (!product.codeOriginal) product.codeOriginal = product.code;
         product.code = normalizePartCodeDisplay(product.code);
         product.stockStatus = stockPlan[0];
         product.stock = stockPlan[1];

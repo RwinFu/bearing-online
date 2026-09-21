@@ -33,6 +33,10 @@ function openLeadModal(source = 'manual', prefill = '') {
             : 'Enter the exact code, photo/spec notes, or application. If unsure, engineering will validate the selection.';
     }
 
+    // Always open on the form: a previous submit may have left the success card.
+    document.getElementById('lead-success')?.classList.add('hidden');
+    document.getElementById('lead-form')?.classList.remove('hidden');
+
     modal.classList.remove('hidden');
     setTimeout(() => partInput.focus(), 100);
     initRipple();
@@ -41,12 +45,28 @@ function openLeadModal(source = 'manual', prefill = '') {
 
 function closeLeadModal() {
     document.getElementById('lead-modal').classList.add('hidden');
+    document.getElementById('lead-success')?.classList.add('hidden');
+    document.getElementById('lead-form')?.classList.remove('hidden');
+}
+
+// Tracking code shown to the customer right after submitting a request
+// (price quote, engineering consultation, fast part registration).
+function newLeadTrackingCode() {
+    const base = 'REQ-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-6);
+    let code = base, n = 1;
+    while (AppState.leads.some(item => item.id === code)) code = base + '-' + (++n);
+    return code;
+}
+
+// The mobile number in international form, for the WhatsApp follow-up link.
+function leadWhatsappNumber(phone) {
+    return String(phone || '').replace(/[^0-9]/g, '').replace(/^0/, '98');
 }
 
 function submitLead(event) {
     event.preventDefault();
     const lead = {
-        id: `LEAD-${Date.now()}`,
+        id: newLeadTrackingCode(),
         source: document.getElementById('lead-source').value,
         part: document.getElementById('lead-part').value.trim(),
         quantity: parseInt(document.getElementById('lead-qty').value) || 1,
@@ -60,16 +80,41 @@ function submitLead(event) {
         notes: document.getElementById('lead-notes').value.trim(),
         fileName: document.getElementById('lead-file').files[0]?.name || '',
         status: 'new',
-        createdAt: new Date().toLocaleString()
+        createdAt: new Date().toLocaleString('fa-IR')
     };
 
     AppState.leads.unshift(lead);
     persistState();
-    closeLeadModal();
-    document.querySelector('#lead-modal form').reset();
+    document.getElementById('lead-form').reset();
     document.getElementById('lead-qty').value = 1;
-    showNotification(AppState.language === 'en' ? 'Request saved. Engineering will contact you fast.' : 'درخواست ثبت شد. تیم مهندسی سریع با شما تماس می‌گیرد.', 'success');
+    showLeadSuccess(lead);
     renderAdminLeads();
+    renderAccountLeads();
+    showNotification(
+        AppState.language === 'en'
+            ? `Request ${lead.id} saved. We call/WhatsApp you and the answer appears in Orders → My requests.`
+            : `درخواست با کد ${lead.id} ثبت شد. پاسخ از طریق تماس/واتس‌اپ و در «سفارش‌ها ← درخواست‌های من» اعلام می‌شود.`,
+        'success'
+    );
+}
+
+// Success card inside the lead modal: tracking code + the exact channels the
+// answer comes back through, so the customer never has to guess.
+function showLeadSuccess(lead) {
+    const form = document.getElementById('lead-form');
+    const success = document.getElementById('lead-success');
+    if (!form || !success) { closeLeadModal(); return; }
+    const en = AppState.language === 'en';
+    document.getElementById('lead-success-code').textContent = lead.id;
+    document.getElementById('lead-success-part').textContent =
+        `${lead.part} × ${lead.quantity} — ${leadSourceLabel(lead.source)}`;
+    document.getElementById('lead-success-channels').innerHTML = [
+        `<i class="fas fa-phone-volume ml-1 text-blue-600"></i>${en ? 'Call on ' : 'تماس با '}<b dir="ltr">${escapeHTML(lead.phone)}</b>${en ? ' (usually under 2 working hours)' : ' (معمولاً کمتر از ۲ ساعت کاری)'}`,
+        `<i class="fab fa-whatsapp ml-1 text-green-600"></i>${en ? 'WhatsApp reply on the same number' : 'پاسخ واتس‌اپ روی همین شماره'}`,
+        `<i class="fas fa-user-gear ml-1 text-blue-600"></i>${en ? 'Written answer from the engineering desk in Orders → My requests' : 'پاسخ کتبی میز مهندسی در «سفارش‌ها ← درخواست‌های من»'}`
+    ].join('<br>');
+    form.classList.add('hidden');
+    success.classList.remove('hidden');
 }
 
 function setLeadNote(leadId, value) {
@@ -79,6 +124,9 @@ function setLeadNote(leadId, value) {
     lead.techNote = value.trim();
     opsLog('lead.note', `${lead.part}`);
     persistState();
+    renderAdminLeads();
+    // The engineering answer is shown to the customer on the Orders page.
+    renderAccountLeads();
     showNotification('یادداشت فنی ذخیره شد.', 'success');
 }
 
@@ -88,6 +136,7 @@ function deleteLead(leadId) {
     opsLog('lead.delete', leadId);
     persistState();
     renderAdminLeads();
+    renderAccountLeads();
     updateOpsBadges();
     showNotification('لید حذف شد.', 'success');
 }
@@ -138,4 +187,101 @@ function renderAdminLeads() {
         </div>`;
     }).join('');
     list.scrollTop = st;
+}
+
+// -----------------------------------------------------------------------------
+// Customer-facing side of the sourcing desk: every price request, engineering
+// consultation and fast part registration gets a visible home in the Orders
+// page ("درخواست‌های من") showing its status and the engineer's written answer,
+// so the customer always knows where the reply shows up.
+// -----------------------------------------------------------------------------
+const LEAD_SOURCE_FA = {
+    manual: 'ثبت سریع قطعه',
+    'quick-order': 'ثبت سریع قطعه',
+    'product-quote': 'درخواست قیمت',
+    'cart-quote': 'پیش‌فاکتور سبد خرید',
+    consultation: 'مشاوره مهندسی',
+    'failed-search': 'درخواست تامین (جستجوی ناموفق)'
+};
+const LEAD_SOURCE_EN = {
+    manual: 'Fast part request',
+    'quick-order': 'Fast part request',
+    'product-quote': 'Price request',
+    'cart-quote': 'Cart proforma request',
+    consultation: 'Engineering consultation',
+    'failed-search': 'Sourcing request'
+};
+const LEAD_STATUS_FA = {
+    new: 'ثبت شد — در صف بررسی',
+    'in-progress': 'بررسی مهندسی در جریان است',
+    done: 'پاسخ داده شد',
+    rejected: 'امکان تامین ندارد'
+};
+const LEAD_STATUS_EN = { new: 'Received', 'in-progress': 'Under review', done: 'Answered', rejected: 'Cannot source' };
+
+function leadSourceLabel(source, en = AppState.language === 'en') {
+    const map = en ? LEAD_SOURCE_EN : LEAD_SOURCE_FA;
+    return map[source] || map.manual;
+}
+
+function leadStatusLabel(status) {
+    const en = AppState.language === 'en';
+    const map = en ? LEAD_STATUS_EN : LEAD_STATUS_FA;
+    return map[status] || (en ? 'Received' : 'ثبت شد — در صف بررسی');
+}
+
+function leadStatusClass(status) {
+    return status === 'done' ? 'in-stock' : status === 'rejected' ? 'rejected' : status === 'in-progress' ? 'on-order' : 'inquiry';
+}
+
+function renderAccountLeads() {
+    const container = document.getElementById('account-requests');
+    if (!container) return;
+    const en = AppState.language === 'en';
+    if (!AppState.leads.length) {
+        container.innerHTML = `<div class="bg-white rounded-2xl p-8 text-center text-gray-500 text-sm leading-7">
+            ${en
+                ? 'No request yet. Use "Request Quote" or "Ask Engineer" on a product page, the buttons in the cart, or the fast sourcing desk — every request is listed here with its status and our answer.'
+                : 'هنوز درخواستی ثبت نشده است. از صفحه محصول («درخواست قیمت» یا «مشاوره مهندسی»)، دکمه‌های سبد خرید یا «میز تامین سریع» درخواست بدهید؛ هر درخواست با وضعیت و پاسخ ما همین‌جا فهرست می‌شود.'}
+        </div>`;
+        return;
+    }
+    container.innerHTML = AppState.leads.map(lead => {
+        const wa = leadWhatsappNumber(lead.phone);
+        const waText = encodeURIComponent((en ? 'Follow up on request ' : 'پیگیری درخواست ') + lead.id + ' — ' + lead.part);
+        const dims = lead.dimensions && (lead.dimensions.d || lead.dimensions.D || lead.dimensions.B)
+            ? ` <span class="text-xs text-gray-400" dir="ltr">${escapeHTML(lead.dimensions.d) || '-'}×${escapeHTML(lead.dimensions.D) || '-'}×${escapeHTML(lead.dimensions.B) || '-'} mm</span>` : '';
+        return `
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex flex-col md:flex-row md:items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <b dir="ltr" class="text-gray-900">${escapeHTML(lead.id)}</b>
+                        <span class="stock-badge ${leadStatusClass(lead.status)}">${escapeHTML(leadStatusLabel(lead.status))}</span>
+                        <span class="text-xs text-gray-400">${escapeHTML(leadSourceLabel(lead.source, en))}</span>
+                    </div>
+                    <p class="text-sm text-gray-700 mt-2">${escapeHTML(lead.part)} <span class="text-xs text-gray-400">× ${escapeHTML(lead.quantity || 1)}</span>${dims}</p>
+                    <p class="text-xs text-gray-400 mt-1">${en ? 'Submitted' : 'ثبت'}: ${escapeHTML(lead.createdAt)} | ${en ? 'Answer goes to' : 'پاسخ به'} <b dir="ltr">${escapeHTML(lead.phone)}</b> ${en ? '(call + WhatsApp)' : '(تماس و واتس‌اپ)'}</p>
+                    ${lead.notes ? `<p class="text-xs text-gray-500 mt-1">${en ? 'Your note' : 'توضیح شما'}: ${escapeHTML(lead.notes)}</p>` : ''}
+                    ${lead.techNote
+                        ? `<div class="text-xs text-green-800 bg-green-50 border border-green-100 rounded-lg p-2 mt-2"><b>${en ? 'Engineering answer' : 'پاسخ تیم مهندسی'}:</b> ${escapeHTML(lead.techNote)}</div>`
+                        : `<div class="text-xs text-gray-400 bg-gray-50 rounded-lg p-2 mt-2">${en ? 'The written answer appears here as soon as engineering reviews it; we also call/WhatsApp you.' : 'پاسخ کتبی به‌محض بررسی کارشناس همین‌جا نوشته می‌شود؛ هم‌زمان با شما تماس یا پیام واتس‌اپ می‌گیریم.'}</div>`}
+                </div>
+                <div class="flex md:flex-col gap-2 shrink-0">
+                    ${wa ? `<a href="https://wa.me/${wa}?text=${waText}" target="_blank" rel="noopener" class="px-3 py-2 rounded-xl bg-green-50 border border-green-100 text-green-700 text-xs font-bold whitespace-nowrap"><i class="fab fa-whatsapp ml-1"></i>${en ? 'Follow up on WhatsApp' : 'پیگیری در واتس‌اپ'}</a>` : ''}
+                    <a href="tel:+982188709158" class="px-3 py-2 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold whitespace-nowrap"><i class="fas fa-phone ml-1"></i>${en ? 'Call the desk' : 'تماس با میز تامین'}</a>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// "My requests" entry point used by the lead modal (info block + success card).
+function showMyRequests() {
+    closeLeadModal();
+    showAccount();
+    setTimeout(() => {
+        const el = document.getElementById('account-requests');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 350);
 }
