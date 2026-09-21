@@ -6,18 +6,18 @@ const Bearing3D = {
     outer: null, inner: null,
     targetRX: -0.32, targetRY: 0.5, rotX: -0.32, rotY: 0.5,
     velX: 0, velY: 0, dragging: false, lastX: 0, lastY: 0,
-    hovering: false, autoSpeed: 0.55, direction: 1, paused: false,
-    explode: 1, explodeTarget: 1, zoom: 6.4, zoomTarget: 6.4,
+    hovering: false, autoSpeed: 0.18, direction: 1, paused: false,
+    explode: 0, explodeTarget: 0, zoom: 10, zoomTarget: 10, view: 'open', onScreen: true, time: 0,
     raf: 0, last: 0, rollAngle: 0, introDone: false
 };
 
 function ensureBearing3D() {
     const stage = document.getElementById('bearingStage');
-    if (!stage) return;
+    if (!stage || Bearing3D.failed) return;
     const fb = document.getElementById('bearingFallback');
     if (typeof THREE === 'undefined') {
         if (fb) { fb.style.display = 'flex'; }
-        setTimeout(() => { if (typeof THREE !== 'undefined') ensureBearing3D(); }, 800);
+        showBearingFallback();
         return;
     }
     if (!Bearing3D.inited) {
@@ -28,26 +28,27 @@ function ensureBearing3D() {
             // keep the CSS fallback visible instead of breaking the page.
             Bearing3D.failed = true;
             console.warn('3D bearing disabled — WebGL unavailable:', err);
-            if (fb) { fb.style.display = 'flex'; }
+            showBearingFallback();
             return;
         }
     } else if (!Bearing3D.failed) {
         resizeBearing3D();
+        updateBearingVisibility();
     }
 }
 
 function initBearing3D() {
-    const stage = document.getElementById('bearingStage');
+    const stage = document.getElementById('bearingViewport');
     if (!stage || Bearing3D.inited) return;
     const W = stage.clientWidth || 600, H = stage.clientHeight || 520;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(W, H);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, window.innerWidth < 768 ? 1.5 : 2));
     if (THREE.sRGBEncoding !== undefined) renderer.outputEncoding = THREE.sRGBEncoding;
     if (THREE.ACESFilmicToneMapping !== undefined) {
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.12;
+        renderer.toneMappingExposure = 1.05;
     }
     stage.insertBefore(renderer.domElement, stage.firstChild);
 
@@ -73,11 +74,11 @@ function initBearing3D() {
 
     /* ---- natural studio environment for true metal reflections ---- */
     function makeStudioEnv() {
-        const s = 64;
+        const s = 128;
         function face(draw) {
             const c = document.createElement('canvas'); c.width = c.height = s;
             const x = c.getContext('2d');
-            x.fillStyle = '#101725'; x.fillRect(0, 0, s, s); draw(x); return c;
+            x.fillStyle = '#1c2738'; x.fillRect(0, 0, s, s); x.scale(2, 2); draw(x); return c;
         }
         function soft(x, px, py, w, h, a) {
             const g = x.createLinearGradient(px, 0, px + w, 0);
@@ -101,10 +102,10 @@ function initBearing3D() {
     const studioEnv = makeStudioEnv();
 
     /* ---- natural material palette: chrome steel, brass, NBR rubber ---- */
-    const steel = new THREE.MeshStandardMaterial({ color: 0xd6dce6, metalness: 1.0, roughness: 0.24, envMap: studioEnv, envMapIntensity: 1.25 });
+    const steel = new THREE.MeshStandardMaterial({ color: 0xd6dce6, metalness: 1.0, roughness: 0.2, envMap: studioEnv, envMapIntensity: 1.25 });
     const steelRace = new THREE.MeshStandardMaterial({ color: 0xb9c2d2, metalness: 1.0, roughness: 0.16, envMap: studioEnv, envMapIntensity: 1.35 });
     const chrome = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1.0, roughness: 0.06, envMap: studioEnv, envMapIntensity: 1.5 });
-    const brass = new THREE.MeshStandardMaterial({ color: 0xa9853c, metalness: 1.0, roughness: 0.38, envMap: studioEnv, envMapIntensity: 1.0 });
+    const brass = new THREE.MeshStandardMaterial({ color: 0xcba453, metalness: 1.0, roughness: 0.38, envMap: studioEnv, envMapIntensity: 1.0 });
     const brassDark = new THREE.MeshStandardMaterial({ color: 0x8a6c2c, metalness: 1.0, roughness: 0.48, envMap: studioEnv, envMapIntensity: 0.8 });
     const rubber = new THREE.MeshStandardMaterial({ color: 0x1e2126, metalness: 0.05, roughness: 0.62 });
     const cyan = new THREE.MeshBasicMaterial({ color: 0x00f7ff });
@@ -117,7 +118,7 @@ function initBearing3D() {
         x.strokeStyle = 'rgba(255,255,255,0.10)'; x.lineWidth = 3;
         x.beginPath(); x.arc(256, 256, 200, 0, Math.PI * 2); x.stroke();
         x.beginPath(); x.arc(256, 256, 118, 0, Math.PI * 2); x.stroke();
-        const txt = 'SKF · 6205-2RS · 25×52×15 · SWEDEN · ';
+        const txt = '6205 · 25×52×15 · BEARING ONLINE · ';
         x.fillStyle = '#c9d1de'; x.font = 'bold 30px Arial'; x.textAlign = 'center'; x.textBaseline = 'middle';
         let ang = -Math.PI / 2;
         const step = (Math.PI * 2) / txt.length;
@@ -143,52 +144,49 @@ function initBearing3D() {
         return m;
     }
     const outerProfile = [
-        [1.90, -0.55], [2.30, -0.55], [2.58, -0.55],
-        [2.72, -0.42], [2.76, -0.28], [2.765, 0], [2.76, 0.28],
-        [2.72, 0.42], [2.58, 0.55], [2.30, 0.55], [1.90, 0.55],
-        [1.90, 0.34], [1.925, 0.22], [1.955, 0.10], [1.968, 0],
-        [1.955, -0.10], [1.925, -0.22], [1.90, -0.34], [1.90, -0.55]
+        [2.13, -0.75], [2.49, -0.75], [2.60, -0.64], [2.60, 0.64],
+        [2.49, 0.75], [2.13, 0.75], [2.10, 0.58], [2.10, 0.32],
+        [2.15, 0.16], [2.18, 0], [2.15, -0.16], [2.10, -0.32], [2.10, -0.58], [2.13, -0.75]
     ];
     const outer = new THREE.Group();
     outer.add(lathe(outerProfile, steel));
-    const outerGrooveRing = new THREE.Mesh(new THREE.TorusGeometry(1.945, 0.075, 14, 140), steelRace);
+    const outerGrooveRing = new THREE.Mesh(new THREE.TorusGeometry(2.16, 0.025, 14, 140), steelRace);
     outer.add(outerGrooveRing);
     bearing.add(outer);
 
     /* ---- inner ring: lathed with groove + chamfers ---- */
     const innerProfile = [
-        [0.62, -0.50], [1.06, -0.50], [1.20, -0.44], [1.27, -0.32],
-        [1.295, -0.20], [1.283, -0.10], [1.272, 0],
-        [1.283, 0.10], [1.295, 0.20], [1.27, 0.32],
-        [1.20, 0.44], [1.06, 0.50], [0.62, 0.50], [0.62, -0.50]
+        [1.25, -0.64], [1.34, -0.75], [1.57, -0.75], [1.62, -0.60],
+        [1.62, -0.32], [1.56, -0.16], [1.53, 0], [1.56, 0.16],
+        [1.62, 0.32], [1.62, 0.60], [1.57, 0.75], [1.34, 0.75], [1.25, 0.64], [1.25, -0.64]
     ];
     const inner = new THREE.Group();
     inner.add(lathe(innerProfile, steel));
-    const innerGrooveRing = new THREE.Mesh(new THREE.TorusGeometry(1.285, 0.06, 12, 120), steelRace);
+    const innerGrooveRing = new THREE.Mesh(new THREE.TorusGeometry(1.54, 0.025, 12, 120), steelRace);
     inner.add(innerGrooveRing);
     bearing.add(inner);
 
     /* ---- rubber seals: front etched, steel insert lips ---- */
-    const sealGeo = new THREE.RingGeometry(1.30, 2.30, 96);
-    const sealMarked = new THREE.MeshStandardMaterial({ map: makeSealMarking(), metalness: 0.05, roughness: 0.62 });
+    const sealGeo = new THREE.RingGeometry(1.61, 2.14, 96);
+    const sealMarked = new THREE.MeshStandardMaterial({ map: makeSealMarking(), metalness: 0.05, roughness: 0.62, side: THREE.DoubleSide });
     const sealF = new THREE.Mesh(sealGeo, sealMarked);
     sealF.position.z = 0.52;
     const sealB = new THREE.Mesh(sealGeo, rubber);
     sealB.position.z = -0.52; sealB.rotation.y = Math.PI;
-    const insertGeo = new THREE.TorusGeometry(2.31, 0.035, 10, 120);
+    const insertGeo = new THREE.TorusGeometry(2.14, 0.025, 10, 120);
     const steelInsert = new THREE.MeshStandardMaterial({ color: 0x6d7789, metalness: 1.0, roughness: 0.35, envMap: studioEnv, envMapIntensity: 1.0 });
     const lipF = new THREE.Mesh(insertGeo, steelInsert);
     lipF.position.z = 0.52;
     const lipB = new THREE.Mesh(insertGeo, lipF.material); lipB.position.z = -0.52;
-    const dustLipGeo = new THREE.TorusGeometry(1.33, 0.03, 8, 110);
+    const dustLipGeo = new THREE.TorusGeometry(1.62, 0.025, 8, 110);
     const dustF = new THREE.Mesh(dustLipGeo, rubber); dustF.position.z = 0.52;
     const dustB = new THREE.Mesh(dustLipGeo, rubber); dustB.position.z = -0.52;
     bearing.add(sealF); bearing.add(sealB); bearing.add(lipF); bearing.add(lipB); bearing.add(dustF); bearing.add(dustB);
 
     /* ---- riveted brass cage: side rings + pillars + rivet heads ---- */
     const cageF = new THREE.Group(), cageB = new THREE.Group();
-    const cageRingGeo = new THREE.RingGeometry(1.30, 1.94, 110);
-    const cageSide = new THREE.MeshStandardMaterial({ color: 0xa9853c, metalness: 1.0, roughness: 0.4, envMap: studioEnv, envMapIntensity: 1.0, side: THREE.DoubleSide });
+    const cageRingGeo = new THREE.TorusGeometry(1.85, 0.045, 8, 96);
+    const cageSide = new THREE.MeshStandardMaterial({ color: 0xcba453, metalness: 1.0, roughness: 0.4, envMap: studioEnv, envMapIntensity: 1.0, side: THREE.DoubleSide });
     const cf = new THREE.Mesh(cageRingGeo, cageSide); cf.position.z = 0.26; cageF.add(cf);
     const cb = new THREE.Mesh(cageRingGeo, cageSide); cb.position.z = -0.26; cageB.add(cb);
     const pillarGeo = new THREE.CylinderGeometry(0.062, 0.062, 0.52, 12);
@@ -196,7 +194,7 @@ function initBearing3D() {
     const N = 9;
     for (let i = 0; i < N; i++) {
         const a = ((i + 0.5) / N) * Math.PI * 2;
-        const px = Math.cos(a) * 1.62, py = Math.sin(a) * 1.62;
+        const px = Math.cos(a) * 1.85, py = Math.sin(a) * 1.85;
         const pillar = new THREE.Mesh(pillarGeo, brass);
         pillar.rotation.x = Math.PI / 2; pillar.position.set(px, py, 0);
         cageF.add(pillar);
@@ -207,7 +205,7 @@ function initBearing3D() {
 
     /* ---- chrome balls ---- */
     const balls = [];
-    const ballGeo = new THREE.SphereGeometry(0.34, 32, 32);
+    const ballGeo = new THREE.SphereGeometry(0.30, 32, 24);
     for (let i = 0; i < N; i++) {
         const m = new THREE.Mesh(ballGeo, chrome);
         m.userData.angle = (i / N) * Math.PI * 2;
@@ -218,11 +216,11 @@ function initBearing3D() {
     [0.5, 2.6, 4.7].forEach(a => {
         const mk = new THREE.Mesh(markerGeo, cyan);
         mk.userData.angle = a;
-        markers.push(mk); bearing.add(mk);
+        mk.visible = false; markers.push(mk); bearing.add(mk);
     });
 
     const dustGeo = new THREE.BufferGeometry();
-    const dustCount = 320;
+    const dustCount = 70;
     const pos = new Float32Array(dustCount * 3);
     for (let i = 0; i < dustCount; i++) {
         const r = 3.4 + Math.random() * 3.2;
@@ -269,7 +267,7 @@ function initBearing3D() {
     const sweep = new THREE.PointLight(0xffffff, 1.5, 26);
     scene.add(sweep);
     const sparkGeo = new THREE.BufferGeometry();
-    const sparkCount = 130;
+    const sparkCount = 36;
     const spos = new Float32Array(sparkCount * 3);
     for (let i = 0; i < sparkCount; i++) {
         const r = 2.6 + Math.random() * 3.4;
@@ -289,9 +287,13 @@ function initBearing3D() {
     scene.add(bearing);
 
     Object.assign(Bearing3D, { renderer, scene, camera, bearing, balls, markers, dust, sparks, floor, glowRing, orbit, orbit2, sweep, grid, sideX, outer, inner, seals: [sealF, sealB, lipF, lipB, dustF, dustB], cage: [cageF, cageB], inited: true });
-    syncExplodeSlider();
+    Bearing3D.paused = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setBearingView('open');
 
     stage.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        stage.focus({ preventScroll: true });
+        wakeBearing3D();
         Bearing3D.dragging = true;
         Bearing3D.lastX = e.clientX; Bearing3D.lastY = e.clientY;
         Bearing3D.velX = 0; Bearing3D.velY = 0;
@@ -299,6 +301,7 @@ function initBearing3D() {
     });
     stage.addEventListener('pointermove', (e) => {
         if (!Bearing3D.dragging) return;
+        wakeBearing3D();
         const dx = e.clientX - Bearing3D.lastX;
         const dy = e.clientY - Bearing3D.lastY;
         Bearing3D.lastX = e.clientX; Bearing3D.lastY = e.clientY;
@@ -309,19 +312,33 @@ function initBearing3D() {
         Bearing3D.velY = dx * s * 0.35;
         Bearing3D.velX = dy * s * 0.35;
     });
-    const endDrag = () => { Bearing3D.dragging = false; };
+    const endDrag = () => { Bearing3D.dragging = false; wakeBearing3D(); };
     stage.addEventListener('pointerup', endDrag);
     stage.addEventListener('pointercancel', endDrag);
+    stage.addEventListener('lostpointercapture', endDrag);
     stage.addEventListener('mouseenter', () => { Bearing3D.hovering = true; });
     stage.addEventListener('mouseleave', () => { Bearing3D.hovering = false; });
-    stage.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        Bearing3D.zoomTarget = Math.max(4.2, Math.min(11, Bearing3D.zoomTarget + (e.deltaY > 0 ? 0.6 : -0.6)));
-    }, { passive: false });
-    stage.addEventListener('dblclick', () => {
-        Bearing3D.targetRX = -0.32; Bearing3D.targetRY = 0.5;
-        Bearing3D.zoomTarget = 6.4; Bearing3D.explodeTarget = 0;
-        syncBearingButtons(); syncExplodeSlider();
+    // Never trap the page's normal scroll gesture inside the viewer.
+    stage.addEventListener('dblclick', resetBearingView);
+    stage.addEventListener('keydown', event => {
+        const moves = { ArrowLeft: [0, -0.15], ArrowRight: [0, 0.15], ArrowUp: [-0.15, 0], ArrowDown: [0.15, 0] };
+        if (moves[event.key]) {
+            event.preventDefault();
+            Bearing3D.targetRX = Math.max(-1.1, Math.min(1.1, Bearing3D.targetRX + moves[event.key][0]));
+            Bearing3D.targetRY += moves[event.key][1];
+        } else if (['+', '=', '-'].includes(event.key)) {
+            event.preventDefault();
+            Bearing3D.zoomTarget = Math.max(7, Math.min(15, Bearing3D.zoomTarget + (event.key === '-' ? 0.8 : -0.8)));
+        } else if (event.key === 'Home') { event.preventDefault(); resetBearingView(); }
+        else return;
+        wakeBearing3D();
+    });
+    renderer.domElement.addEventListener('webglcontextlost', event => {
+        event.preventDefault();
+        Bearing3D.failed = true;
+        cancelAnimationFrame(Bearing3D.raf);
+        Bearing3D.raf = 0;
+        showBearingFallback();
     });
 
     const dirBtn = document.getElementById('bearingDirBtn');
@@ -329,54 +346,111 @@ function initBearing3D() {
     const expBtn = document.getElementById('bearingExplodeBtn');
     const zin = document.getElementById('bearingZoomIn');
     const zout = document.getElementById('bearingZoomOut');
-    if (dirBtn) dirBtn.onclick = (e) => { e.stopPropagation(); Bearing3D.direction *= -1; dirBtn.classList.toggle('on'); };
+    if (dirBtn) dirBtn.onclick = (e) => { e.stopPropagation(); Bearing3D.direction *= -1; dirBtn.classList.toggle('on'); wakeBearing3D(); };
     if (pauseBtn) pauseBtn.onclick = (e) => {
         e.stopPropagation();
         Bearing3D.paused = !Bearing3D.paused;
         pauseBtn.innerHTML = Bearing3D.paused ? '<i class="fas fa-play"></i>' : '<i class="fas fa-pause"></i>';
-        pauseBtn.classList.toggle('on', Bearing3D.paused);
+        syncBearingButtons();
+        wakeBearing3D();
     };
     if (expBtn) expBtn.onclick = (e) => {
         e.stopPropagation();
-        Bearing3D.explodeTarget = Bearing3D.explodeTarget > 0.5 ? 0 : 1;
-        expBtn.classList.toggle('on', Bearing3D.explodeTarget > 0.5);
-        syncExplodeSlider();
+        setBearingView(Bearing3D.explodeTarget > 0.5 ? 'open' : 'exploded');
     };
-    if (zin) zin.onclick = (e) => { e.stopPropagation(); Bearing3D.zoomTarget = Math.max(4.2, Bearing3D.zoomTarget - 0.8); };
-    if (zout) zout.onclick = (e) => { e.stopPropagation(); Bearing3D.zoomTarget = Math.min(11, Bearing3D.zoomTarget + 0.8); };
+    if (zin) zin.onclick = (e) => { e.stopPropagation(); Bearing3D.zoomTarget = Math.max(7, Bearing3D.zoomTarget - 0.8); wakeBearing3D(); };
+    if (zout) zout.onclick = (e) => { e.stopPropagation(); Bearing3D.zoomTarget = Math.min(15, Bearing3D.zoomTarget + 0.8); wakeBearing3D(); };
+    document.getElementById('bearingResetBtn').onclick = resetBearingView;
     const expRange = document.getElementById('bearingExplodeRange');
     if (expRange) expRange.oninput = () => {
         Bearing3D.explodeTarget = (parseFloat(expRange.value) || 0) / 100;
+        Bearing3D.view = Bearing3D.explodeTarget > 0 ? 'exploded' : 'open';
+        Bearing3D.seals.forEach(seal => seal.visible = Bearing3D.explodeTarget > 0);
         syncBearingButtons();
-    };
-    /* cinematic intro: starts fully open, assembles itself */
-    if (!Bearing3D.introDone) {
-        Bearing3D.introDone = true;
-        Bearing3D.explode = 1; Bearing3D.explodeTarget = 1;
-        Bearing3D.targetRY = 0.5 + Math.PI * 1.5; Bearing3D.rotY = 0.5 - Math.PI * 0.5;
         syncExplodeSlider();
-        setTimeout(() => { Bearing3D.explodeTarget = 0; syncBearingButtons(); syncExplodeSlider(); }, 1500);
-    }
-
+        wakeBearing3D();
+    };
+    // A calm open view shows the raceways immediately; no timer overrides user input.
+    syncBearingButtons();
+    new IntersectionObserver(entries => {
+        Bearing3D.onScreen = entries[0].isIntersecting;
+        updateBearingVisibility();
+    }, { rootMargin: '80px' }).observe(stage);
+    document.addEventListener('visibilitychange', updateBearingVisibility);
     new ResizeObserver(() => resizeBearing3D()).observe(stage);
     const fb = document.getElementById('bearingFallback');
     if (fb) fb.style.display = 'none';
     Bearing3D.last = performance.now();
-    requestAnimationFrame(bearingLoop);
+    wakeBearing3D();
+}
+
+function showBearingFallback() {
+    document.getElementById('bearingFallback').style.display = 'flex';
+    document.getElementById('bearingStage').classList.add('is-fallback');
+    document.querySelectorAll('.bearing-controls button, .bearing-presets button, #bearingExplodeRange').forEach(control => { control.disabled = true; });
+}
+
+function setBearingView(view) {
+    if (!Bearing3D.inited || Bearing3D.failed) return;
+    Bearing3D.view = view;
+    Bearing3D.explodeTarget = view === 'exploded' ? 1 : 0;
+    Bearing3D.seals.forEach(seal => { seal.visible = view !== 'open'; });
+    Bearing3D.targetRX = -0.25;
+    Bearing3D.targetRY = view === 'exploded' ? 0.85 : 0.42;
+    Bearing3D.velX = Bearing3D.velY = 0;
+    syncBearingButtons(); syncExplodeSlider(); wakeBearing3D();
+}
+
+function resetBearingView() {
+    Bearing3D.zoomTarget = 10;
+    setBearingView('open');
 }
 
 function syncBearingButtons() {
     const expBtn = document.getElementById('bearingExplodeBtn');
-    if (expBtn) expBtn.classList.toggle('on', Bearing3D.explodeTarget > 0.5);
+    if (expBtn) {
+        expBtn.classList.toggle('on', Bearing3D.explodeTarget > 0.5);
+        expBtn.setAttribute('aria-pressed', String(Bearing3D.explodeTarget > 0.5));
+    }
+    const pause = document.getElementById('bearingPauseBtn');
+    if (pause) {
+        pause.innerHTML = Bearing3D.paused ? '<i class="fas fa-play"></i>' : '<i class="fas fa-pause"></i>';
+        pause.classList.toggle('on', Bearing3D.paused);
+        pause.setAttribute('aria-pressed', String(Bearing3D.paused));
+    }
+    document.querySelectorAll('[data-bearing-view]').forEach(button => {
+        button.setAttribute('aria-pressed', String(button.dataset.bearingView === Bearing3D.view));
+    });
 }
 
 function syncExplodeSlider() {
+    const value = Math.round((Bearing3D.explodeTarget || 0) * 100);
     const r = document.getElementById('bearingExplodeRange');
-    if (r) r.value = Math.round((Bearing3D.explodeTarget || 0) * 100);
+    if (r) r.value = value;
+    document.getElementById('bearingExplodeValue').textContent = value + '%';
+}
+
+function bearingIsVisible() {
+    return Bearing3D.inited && !Bearing3D.failed && Bearing3D.onScreen && !document.hidden && !document.getElementById('page-about').classList.contains('hidden');
+}
+
+function wakeBearing3D() {
+    if (!Bearing3D.raf && bearingIsVisible()) {
+        Bearing3D.last = performance.now();
+        Bearing3D.raf = requestAnimationFrame(bearingLoop);
+    }
+}
+
+function updateBearingVisibility() {
+    document.body.classList.toggle('bearing-viewer-active', bearingIsVisible());
+    if (!bearingIsVisible()) {
+        cancelAnimationFrame(Bearing3D.raf);
+        Bearing3D.raf = 0;
+    } else wakeBearing3D();
 }
 
 function resizeBearing3D() {
-    const stage = document.getElementById('bearingStage');
+    const stage = document.getElementById('bearingViewport');
     if (!stage || !Bearing3D.renderer) return;
     const W = stage.clientWidth || 600, H = stage.clientHeight || 520;
     Bearing3D.renderer.setSize(W, H);
@@ -384,17 +458,19 @@ function resizeBearing3D() {
     Bearing3D.camera.updateProjectionMatrix();
     Bearing3D.sideX = 0;
     if (Bearing3D.bearing) Bearing3D.bearing.position.x = 0;
+    wakeBearing3D();
 }
 
 function bearingLoop(now) {
-    requestAnimationFrame(bearingLoop);
-    if (!Bearing3D.inited) return;
+    Bearing3D.raf = 0;
+    if (!bearingIsVisible()) return;
     const stage = document.getElementById('bearingStage');
     if (!stage || stage.closest('.page-section.hidden')) return;
     const dt = Math.min((now - Bearing3D.last) / 1000, 0.1) || 0.016;
     Bearing3D.last = now;
 
     if (!Bearing3D.dragging) {
+        Bearing3D.targetRX = Math.max(-1.1, Math.min(1.1, Bearing3D.targetRX));
         if (Math.abs(Bearing3D.velY) > 0.0004 || Math.abs(Bearing3D.velX) > 0.0004) {
             Bearing3D.targetRY += Bearing3D.velY;
             Bearing3D.targetRX += Bearing3D.velX;
@@ -412,11 +488,11 @@ function bearingLoop(now) {
     if (!Bearing3D.paused) Bearing3D.rollAngle += dt * 1.4 * Bearing3D.direction;
     const ex = Bearing3D.explode + (Bearing3D.explodeTarget - Bearing3D.explode) * Math.min(1, dt * 4);
     Bearing3D.explode = ex;
-    const spread = 1.62 + ex * 0.9;
+    const spread = 1.85 + ex * 0.55;
     Bearing3D.balls.forEach((b) => {
         const a = b.userData.angle + Bearing3D.rollAngle * 0.55;
         b.position.set(Math.cos(a) * spread, Math.sin(a) * spread, ex * 0.15);
-        b.rotation.y += dt * 2; b.rotation.x += dt;
+        if (!Bearing3D.paused) { b.rotation.y += dt * 2; b.rotation.x += dt; }
     });
     Bearing3D.markers.forEach((m) => {
         const a = m.userData.angle + Bearing3D.rollAngle * 0.55;
@@ -425,40 +501,46 @@ function bearingLoop(now) {
     if (Bearing3D.outer) Bearing3D.outer.position.z = ex * 1.8;
     if (Bearing3D.inner) Bearing3D.inner.position.z = -ex * 1.8;
     if (Bearing3D.seals.length >= 6) {
-        Bearing3D.seals[0].position.z = 0.52 + ex * 2.7;
-        Bearing3D.seals[2].position.z = 0.52 + ex * 2.7;
-        Bearing3D.seals[4].position.z = 0.52 + ex * 2.7;
-        Bearing3D.seals[1].position.z = -0.52 - ex * 2.7;
-        Bearing3D.seals[3].position.z = -0.52 - ex * 2.7;
-        Bearing3D.seals[5].position.z = -0.52 - ex * 2.7;
+        Bearing3D.seals[0].position.z = 0.70 + ex * 2.7;
+        Bearing3D.seals[2].position.z = 0.70 + ex * 2.7;
+        Bearing3D.seals[4].position.z = 0.70 + ex * 2.7;
+        Bearing3D.seals[1].position.z = -0.70 - ex * 2.7;
+        Bearing3D.seals[3].position.z = -0.70 - ex * 2.7;
+        Bearing3D.seals[5].position.z = -0.70 - ex * 2.7;
     }
     Bearing3D.cage.forEach((c, i) => { c.position.z = (i === 0 ? ex * 0.85 : -ex * 0.85); c.rotation.z = Bearing3D.rollAngle * 0.55; });
-    if (Bearing3D.dust) Bearing3D.dust.rotation.y += dt * 0.03;
+    if (Bearing3D.dust && !Bearing3D.paused) Bearing3D.dust.rotation.y += dt * 0.03;
 
     /* ---- cinematic showroom motion ---- */
-    const t = now / 1000;
+    if (!Bearing3D.paused) Bearing3D.time += dt;
+    const t = Bearing3D.time;
     if (Bearing3D.bearing && Bearing3D.sideX !== undefined) {
         Bearing3D.bearing.position.x += (Bearing3D.sideX - Bearing3D.bearing.position.x) * Math.min(1, dt * 3);
         Bearing3D.bearing.position.y = Math.sin(t * 0.55) * 0.09;
     }
     if (Bearing3D.glowRing) {
-        Bearing3D.glowRing.rotation.z += dt * 0.25;
+        Bearing3D.glowRing.rotation.z = t * 0.25;
         Bearing3D.glowRing.material.opacity = 0.38 + Math.sin(t * 1.6) * 0.14;
     }
-    if (Bearing3D.orbit) Bearing3D.orbit.rotation.z -= dt * 0.12;
-    if (Bearing3D.orbit2) Bearing3D.orbit2.rotation.z += dt * 0.08;
+    if (Bearing3D.orbit) Bearing3D.orbit.rotation.z = -t * 0.12;
+    if (Bearing3D.orbit2) Bearing3D.orbit2.rotation.z = t * 0.08;
     if (Bearing3D.sweep) {
         Bearing3D.sweep.position.set(Math.cos(t * 0.7) * 6.5, 2.5 + Math.sin(t * 0.9) * 2, Math.sin(t * 0.7) * 6.5);
     }
     if (Bearing3D.sparks) {
-        Bearing3D.sparks.rotation.y -= dt * 0.05;
+        Bearing3D.sparks.rotation.y = -t * 0.05;
         Bearing3D.sparks.position.y = Math.sin(t * 0.4) * 0.15;
     }
     if (Bearing3D.grid) Bearing3D.grid.material.opacity = 0.22 + Math.sin(t * 0.8) * 0.06;
 
     Bearing3D.zoom += (Bearing3D.zoomTarget - Bearing3D.zoom) * Math.min(1, dt * 5);
-    Bearing3D.camera.position.z = Bearing3D.zoom;
+    // Fit the entire assembly to both portrait and landscape canvases, including explode depth.
+    const fit = (3.2 + ex * 1.65) / Math.tan(THREE.MathUtils.degToRad(21)) / Math.min(1, Bearing3D.camera.aspect);
+    Bearing3D.camera.position.z = fit * Bearing3D.zoom / 10;
     Bearing3D.camera.position.y = 0.4 + Math.sin(t * 0.5) * 0.12;
     Bearing3D.camera.lookAt(0, 0, 0);
     Bearing3D.renderer.render(Bearing3D.scene, Bearing3D.camera);
+    const settling = Math.abs(Bearing3D.rotX - Bearing3D.targetRX) + Math.abs(Bearing3D.rotY - Bearing3D.targetRY) +
+        Math.abs(Bearing3D.explode - Bearing3D.explodeTarget) + Math.abs(Bearing3D.zoom - Bearing3D.zoomTarget) > 0.001;
+    if (!Bearing3D.paused || Bearing3D.dragging || settling) Bearing3D.raf = requestAnimationFrame(bearingLoop);
 }
