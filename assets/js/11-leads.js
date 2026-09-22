@@ -33,10 +33,34 @@ function openLeadModal(source = 'manual', prefill = '') {
             : 'Enter the exact code, photo/spec notes, or application. If unsure, engineering will validate the selection.';
     }
 
+    applyLeadAutofill();
+
     modal.classList.remove('hidden');
+    // اگر نام و موبایل خودکار پر شده‌اند، فوکوس مستقیم روی شماره قطعه می‌رود
     setTimeout(() => partInput.focus(), 100);
     initRipple();
     initMagnetic();
+}
+
+// مشتریِ واردشده نباید دوباره نام و موبایل بزند؛ همان اطلاعات حساب استفاده می‌شود.
+function applyLeadAutofill() {
+    const holder = document.getElementById('lead-autofill');
+    if (holder) holder.innerHTML = '';
+    const contact = typeof customerContact === 'function' ? customerContact() : null;
+    if (!contact) {
+        // کاربر خارج شده: مقادیری که قبلاً از حساب آمده بودند پاک شوند
+        clearAutofilled(['lead-name', 'lead-phone']);
+        return;
+    }
+
+    fillIfEmpty('lead-name', contact.name);
+    fillIfEmpty('lead-phone', contact.phone);
+    markAutofilled(['lead-name', 'lead-phone']);
+
+    if (holder) {
+        const extra = contact.company ? `شرکت: ${escapeHTML(contact.company)}.` : '';
+        holder.innerHTML = autofillNoticeHTML(contact, extra);
+    }
 }
 
 function closeLeadModal() {
@@ -62,12 +86,23 @@ function submitLead(event) {
         status: 'new',
         createdAt: new Date().toLocaleString()
     };
+    // اگر کاربر وارد حساب است، لید به حساب او گره می‌خورد
+    const contact = typeof customerContact === 'function' ? customerContact() : null;
+    if (contact) {
+        lead.accountPhone = contact.phone;
+        if (contact.company) lead.company = contact.company;
+    }
 
     AppState.leads.unshift(lead);
     persistState();
     closeLeadModal();
     document.querySelector('#lead-modal form').reset();
     document.getElementById('lead-qty').value = 1;
+    document.querySelectorAll('#lead-modal .is-autofilled').forEach(el => {
+        el.classList.remove('is-autofilled');
+        el.removeAttribute('data-autofilled');
+        el.removeAttribute('data-autofill-first');
+    });
     showNotification(AppState.language === 'en' ? 'Request saved. Engineering will contact you fast.' : 'درخواست ثبت شد. تیم مهندسی سریع با شما تماس می‌گیرد.', 'success');
     renderAdminLeads();
 }

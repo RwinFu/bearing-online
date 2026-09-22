@@ -86,7 +86,7 @@ function routeFromHash() {
             const tab = segs[1] || '';
             const highlight = segs[2] || '';
             // legacy: #/account/orders/PRM-xxx  OR #/account/PRM-xxx
-            const KNOWN_TABS = ['overview','orders','addresses','profile','security'];
+            const KNOWN_TABS = ['overview','orders','saved','addresses','profile','security'];
             if (tab && !KNOWN_TABS.includes(tab)) {
                 // treat as highlight for orders (old links)
                 showAccount('orders', tab);
