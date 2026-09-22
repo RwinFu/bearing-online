@@ -180,6 +180,64 @@ function validateInstantStock(items) {
     return '';
 }
 
+// مشتریِ واردشده: اطلاعات خریدار و آدرس پیش‌فرض خودکار پر می‌شود.
+function applyCheckoutAutofill() {
+    const holder = document.getElementById('checkout-autofill');
+    if (holder) holder.innerHTML = '';
+    const contact = typeof customerContact === 'function' ? customerContact() : null;
+    if (!contact) {
+        clearAutofilled(['co-name', 'co-mobile', 'co-company', 'co-email', 'co-postal', 'co-address']);
+        return;
+    }
+
+    fillIfEmpty('co-name', contact.name);
+    fillIfEmpty('co-mobile', contact.phone);
+    fillIfEmpty('co-company', contact.company);
+    fillIfEmpty('co-email', contact.email);
+
+    const addr = contact.address;
+    if (addr) {
+        // استان/شهر پیش‌فرض «تهران» است؛ اگر آدرس ذخیره‌شده شهر دارد جایگزین می‌شود.
+        const cityEl = document.getElementById('co-city');
+        const provEl = document.getElementById('co-province');
+        const parts = String(addr.city || '').split(/[\/،,-]/).map(x => x.trim()).filter(Boolean);
+        if (parts.length && provEl) provEl.value = parts[0];
+        if (cityEl) cityEl.value = parts[1] || parts[0] || cityEl.value;
+        fillIfEmpty('co-address', addr.details);
+        fillIfEmpty('co-postal', addr.postalCode);
+        if (addr.recipient) { const n = document.getElementById('co-name'); if (n && !n.value.trim()) n.value = addr.recipient; }
+    }
+
+    markAutofilled(['co-name', 'co-mobile', 'co-company', 'co-email', 'co-province', 'co-city', 'co-postal', 'co-address']);
+
+    if (holder) {
+        const list = (CustomerAuth.customer?.addresses || []);
+        const picker = list.length > 1
+            ? `<div class="acct-autofill-addresses">${list.map(a => `<button type="button" class="acct-chip ${a.isDefault ? 'active' : ''}" onclick="useSavedAddress('${a.id}')">${escapeHTML(a.title)}${a.city ? ' — ' + escapeHTML(a.city) : ''}</button>`).join('')}</div>`
+            : '';
+        const extra = addr
+            ? `آدرس «${escapeHTML(addr.title)}» انتخاب شد.`
+            : 'برای دفعه بعد می‌توانید آدرس را در حساب خود ذخیره کنید.';
+        holder.innerHTML = autofillNoticeHTML(contact, extra) + picker;
+    }
+}
+
+// انتخاب یکی دیگر از آدرس‌های ذخیره‌شده در حساب
+function useSavedAddress(addressId) {
+    const a = (CustomerAuth.customer?.addresses || []).find(x => x.id === addressId);
+    if (!a) return;
+    const set = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.value = v; };
+    const parts = String(a.city || '').split(/[\/،,-]/).map(x => x.trim()).filter(Boolean);
+    if (parts.length) { set('co-province', parts[0]); set('co-city', parts[1] || parts[0]); }
+    set('co-address', a.details || '');
+    set('co-postal', a.postalCode || '');
+    if (a.recipient) set('co-name', a.recipient);
+    if (a.phone) set('co-mobile', a.phone);
+    document.querySelectorAll('#checkout-autofill .acct-chip').forEach(b => b.classList.remove('active'));
+    event?.currentTarget?.classList.add('active');
+    showNotification(`آدرس «${a.title}» اعمال شد.`, 'success');
+}
+
 function getCheckoutAddress() {
     return {
         recipient_name: document.getElementById('co-name')?.value.trim() || '',
@@ -246,6 +304,7 @@ function renderCheckout() {
                 ${quote.length ? `<div class="bg-orange-50 border border-orange-100 rounded-2xl p-5"><b>RFQ جداگانه</b><p class="text-sm text-orange-800 mt-2">${quote.length} قلم استعلامی از پرداخت فوری جدا شد و به پیش‌فاکتور/تأیید فروش متصل می‌شود. برای این اقلام قیمت حدس زده نمی‌شود.</p><button onclick="createRFQFromQuoteItems()" class="mt-4 btn-accent text-white px-5 py-3 rounded-xl font-bold">ثبت RFQ اقلام استعلامی</button></div>` : ''}
                 <div class="checkout-step-card p-5">
                     <div class="flex items-center gap-3 mb-5"><span class="step-dot">۲</span><h3 class="font-extrabold">اطلاعات خریدار و تحویل</h3></div>
+                    <div id="checkout-autofill"></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input id="co-name" class="compact-input" placeholder="نام و نام خانوادگی">
                         <input id="co-company" class="compact-input" placeholder="نام شرکت (اختیاری)">
@@ -272,6 +331,7 @@ function renderCheckout() {
                 <button onclick="downloadLatestProforma()" class="w-full mt-3 border border-gray-200 py-3 rounded-xl font-bold text-gray-700">دانلود پیش‌فاکتور</button>
             </aside>
         </div>`;
+    applyCheckoutAutofill();
     showPage('checkout');
 }
 
@@ -496,6 +556,8 @@ function renderAccountComplaints() {
     const container = ordersPanel || content;
     document.getElementById('account-complaints')?.remove();
     const orders = MockDB.orders.map(o => `<option value="${o.orderNumber}">${o.orderNumber}</option>`).join('');
+    // کاربر واردشده نام و موبایل را دوباره وارد نمی‌کند
+    const cmpContact = typeof customerContact === 'function' ? customerContact() : null;
     const div = document.createElement('div');
     div.id = 'account-complaints';
     div.className = ordersPanel ? 'grid gap-4 mt-8' : 'grid gap-4 mt-8';
@@ -503,11 +565,14 @@ function renderAccountComplaints() {
     div.innerHTML = `
         <div class="${ordersPanel ? 'acct-panel' : 'bg-white rounded-2xl p-5 shadow-sm border border-gray-100'}">
             <h3 class="font-extrabold text-xl ${ordersPanel ? 'acct-panel-title' : 'mb-4'}">${ordersPanel ? '<i class="fas fa-triangle-exclamation"></i>' : ''}ثبت و پیگیری شکایت</h3>
+            ${cmpContact ? `<div class="md:col-span-2">${autofillNoticeHTML(cmpContact, 'پاسخ پشتیبانی به همین شماره اطلاع داده می‌شود.').replace('<button type="button" class="acct-autofill-edit" onclick="unlockAutofill(this)">ویرایش</button>', '')}</div>` : ''}
             <form id="complaint-form" onsubmit="submitComplaint(event)" class="grid md:grid-cols-2 gap-3 ${ordersPanel ? '' : 'mt-4'}">
                 <select id="cmp-order" class="compact-input ${ordersPanel ? 'acct-input' : ''}"><option value="">بدون شماره سفارش</option>${orders}</select>
                 <select id="cmp-subject" class="compact-input ${ordersPanel ? 'acct-input' : ''}"><option>مغایرت کالا</option><option>خرابی / ایراد فنی</option><option>آسیب حین حمل</option><option>تاخیر در تحویل</option><option>سایر</option></select>
-                <input id="cmp-name" class="compact-input ${ordersPanel ? 'acct-input' : ''}" placeholder="نام شما" value="${(typeof CustomerAuth !== 'undefined' && CustomerAuth.customer) ? escapeHTML(CustomerAuth.customer.name||'') : ''}">
-                <input id="cmp-phone" class="compact-input ${ordersPanel ? 'acct-input' : ''}" dir="ltr" placeholder="موبایل" value="${(typeof CustomerAuth !== 'undefined' && CustomerAuth.session) ? escapeHTML(CustomerAuth.session) : ''}">
+                ${cmpContact
+                    ? `<input type="hidden" id="cmp-name" value="${escapeHTML(cmpContact.name)}"><input type="hidden" id="cmp-phone" value="${escapeHTML(cmpContact.phone)}">`
+                    : `<input id="cmp-name" class="compact-input ${ordersPanel ? 'acct-input' : ''}" placeholder="نام شما">
+                       <input id="cmp-phone" class="compact-input ${ordersPanel ? 'acct-input' : ''}" dir="ltr" placeholder="موبایل">`}
                 <textarea id="cmp-message" class="compact-input ${ordersPanel ? 'acct-input' : ''} md:col-span-2" rows="3" placeholder="شرح شکایت..."></textarea>
                 <button class="${ordersPanel ? 'acct-btn-primary' : 'btn-accent text-white px-5 py-3 rounded-xl font-bold'} md:col-span-2">${ordersPanel ? '<i class=\"fas fa-paper-plane\"></i>ثبت شکایت' : 'ثبت شکایت'}</button>
             </form>

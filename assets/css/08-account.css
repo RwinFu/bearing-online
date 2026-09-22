@@ -558,6 +558,80 @@ html[dir="ltr"] .acct-float > label { transform-origin: top left; }
 
 .acct-trust span i { color: var(--acct-blue); }
 
+/* ---------- نوار «اطلاعات از حساب شما پر شد» ---------- */
+.acct-autofill-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+    border: 1px solid #c7ddf7;
+    border-radius: 14px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    font-size: 12.5px;
+    line-height: 1.9;
+    color: #1e293b;
+}
+
+.acct-autofill-avatar {
+    width: 30px;
+    height: 30px;
+    flex: none;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #ffe08a, #e8a81d);
+    color: var(--acct-navy);
+    font-weight: 900;
+    font-size: 12px;
+}
+
+.acct-autofill-text { flex: 1; min-width: 0; }
+.acct-autofill-text b { color: var(--acct-navy); }
+.acct-autofill-text span[dir="ltr"] { color: #475569; font-weight: 700; }
+
+.acct-autofill-edit {
+    flex: none;
+    border: 1px solid #c7ddf7;
+    background: #fff;
+    color: var(--acct-blue);
+    border-radius: 10px;
+    padding: 6px 12px;
+    font: inherit;
+    font-size: 11.5px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+}
+
+.acct-autofill-edit:hover { background: #eff6ff; border-color: var(--acct-blue); }
+
+/* فیلدهایی که خودکار پر شده‌اند */
+.is-autofilled {
+    background: #f6fbff !important;
+    border-color: #bcd9f7 !important;
+}
+
+/* انتخاب سریع بین آدرس‌های ذخیره‌شده */
+.acct-autofill-addresses {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin: -4px 0 14px;
+}
+
+@media (max-width: 767px) {
+    .acct-autofill-note { flex-wrap: wrap; font-size: 12px; }
+    .acct-autofill-edit { min-height: 36px; }
+    .acct-autofill-addresses {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+    .acct-autofill-addresses::-webkit-scrollbar { display: none; }
+    .acct-autofill-addresses .acct-chip { flex: none; }
+}
+
 /* ---------- رمز عبور ---------- */
 .acct-pw-wrap { position: relative; }
 

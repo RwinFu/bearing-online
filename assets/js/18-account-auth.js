@@ -870,6 +870,86 @@ function logoutCustomer() {
     renderAccountLogin('phone', '');
 }
 
+// ---------- پُر کردن خودکار فرم‌ها از روی حساب کاربری ----------
+// هر فرمی که نام/موبایل/آدرس می‌خواهد از این‌جا مقدار می‌گیرد تا کاربرِ واردشده
+// مجبور نباشد دوباره اطلاعاتش را تایپ کند.
+function customerContact() {
+    if (typeof CustomerAuth === 'undefined' || !CustomerAuth.isLoggedIn()) return null;
+    const c = CustomerAuth.customer || {};
+    const addresses = c.addresses || [];
+    const addr = addresses.find(a => a.isDefault) || addresses[0] || null;
+    return {
+        name: c.name || '',
+        phone: CustomerAuth.session || '',
+        company: c.company || '',
+        email: c.email || '',
+        address: addr
+    };
+}
+
+// فقط فیلدهای خالی را پر می‌کند تا چیزی که کاربر خودش نوشته بازنویسی نشود.
+function fillIfEmpty(elementId, value) {
+    const el = document.getElementById(elementId);
+    if (!el || !value) return false;
+    if (String(el.value || '').trim()) return false;
+    el.value = value;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    return true;
+}
+
+// پاک کردن مقادیری که قبلاً خودکار پر شده بودند (مثلاً پس از خروج از حساب)
+function clearAutofilled(ids) {
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el || el.getAttribute('data-autofilled') !== '1') return;
+        el.value = '';
+        el.removeAttribute('data-autofilled');
+        el.removeAttribute('data-autofill-first');
+        el.classList.remove('is-autofilled');
+    });
+}
+
+// نوار «به‌نام ... ثبت می‌شود» بالای فرم‌های پرشده
+function autofillNoticeHTML(contact, extra = '') {
+    if (!contact) return '';
+    return `
+    <div class="acct-autofill-note" role="status">
+        <span class="acct-autofill-avatar">${escapeHTML(getInitials(contact.name) || '؟')}</span>
+        <span class="acct-autofill-text">
+            به‌نام <b>${escapeHTML(contact.name || 'حساب شما')}</b>
+            <span dir="ltr">${escapeHTML(maskPhone(contact.phone))}</span> ثبت می‌شود.
+            ${extra}
+        </span>
+        <button type="button" class="acct-autofill-edit" onclick="unlockAutofill(this)">ویرایش</button>
+    </div>`;
+}
+
+// کاربر می‌خواهد اطلاعات دیگری وارد کند → فیلدهای پرشده را خالی و قابل ویرایش کن
+function unlockAutofill(btn) {
+    const note = btn.closest('.acct-autofill-note');
+    if (!note) return;
+    const scope = note.closest('form') || document;
+    scope.querySelectorAll('[data-autofilled="1"]').forEach(el => {
+        el.value = '';
+        el.removeAttribute('data-autofilled');
+        el.classList.remove('is-autofilled');
+    });
+    note.remove();
+    scope.querySelector('[data-autofill-first]')?.focus();
+}
+
+// علامت‌گذاری فیلدهایی که خودکار پر شده‌اند
+function markAutofilled(ids) {
+    let first = true;
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el || !String(el.value || '').trim()) return;
+        el.setAttribute('data-autofilled', '1');
+        el.classList.add('is-autofilled');
+        if (first) { el.setAttribute('data-autofill-first', '1'); first = false; }
+    });
+}
+
 // ---------- دکمه حساب در نوار بالا ----------
 function updateAccountNav() {
     const btn = document.getElementById('account-nav-button');
