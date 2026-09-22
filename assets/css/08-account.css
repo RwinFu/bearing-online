@@ -320,8 +320,24 @@
 }
 
 .otp-box:focus { border-color: #2f6bff; background: #fff; box-shadow: 0 0 0 4px rgba(47, 107, 255, .15); }
-.otp-box.otp-error { border-color: #ef4444; box-shadow: 0 0 0 4px rgba(239, 68, 68, .12); }
-.otp-box.otp-ok { border-color: #16a34a; background: #f0fdf4; }
+.otp-box.otp-error { border-color: #ef4444; background: #fef2f2; color: #b91c1c; box-shadow: 0 0 0 4px rgba(239, 68, 68, .12); }
+.otp-box.otp-ok { border-color: #16a34a; background: #f0fdf4; color: #15803d; animation: otp-pop .4s ease; }
+
+/* لرزش هنگام کد اشتباه */
+@keyframes otp-shake {
+    10%, 90% { transform: translateX(-2px); }
+    20%, 80% { transform: translateX(4px); }
+    30%, 50%, 70% { transform: translateX(-6px); }
+    40%, 60% { transform: translateX(6px); }
+}
+
+#otp-row.shake { animation: otp-shake .55s cubic-bezier(.36, .07, .19, .97); }
+
+@keyframes otp-pop {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+}
 
 .otp-meta {
     display: flex;
@@ -387,6 +403,13 @@
 
 .sms-sim-body { padding: 14px 16px 16px; font-size: 13px; color: #1f2937; line-height: 2.1; }
 
+.sms-sim-code-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
 .sms-sim-code {
     display: inline-block;
     direction: ltr;
@@ -398,8 +421,23 @@
     border: 1.5px dashed #9db8ef;
     border-radius: 11px;
     padding: 5px 14px 5px 9px;
-    margin-top: 4px;
 }
+
+.sms-sim-copy {
+    width: 34px;
+    height: 34px;
+    flex: none;
+    border: none;
+    border-radius: 10px;
+    background: #eef2fa;
+    color: #123a92;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background .15s ease, transform .15s ease;
+}
+
+.sms-sim-copy:hover { background: #dbe4f7; }
+.sms-sim-copy:active { transform: scale(.92); }
 
 /* ---------- داشبورد ---------- */
 .acct-banner {
