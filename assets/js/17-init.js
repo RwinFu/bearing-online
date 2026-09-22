@@ -7,7 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     hydrateProductDatabase();
 
     // Initialize search results
+    try { if (typeof CustomerAuth !== 'undefined' && CustomerAuth.hydrate) CustomerAuth.hydrate(); } catch(e){}
     hydrateState();
+    try { if (typeof CustomerAuth !== 'undefined' && CustomerAuth.hydrate) CustomerAuth.hydrate(); } catch(e){}
+    try { if (typeof updateAccountNav === 'function') updateAccountNav(); } catch(e){}
     AppState.searchResults = [...ProductDatabase];
     updateHomeStats();
     renderHomeBrands();

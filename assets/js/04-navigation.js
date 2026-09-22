@@ -8,9 +8,16 @@ function showPage(pageId) {
     closeMobileMenu();
     clearTimeout(pageTransitionTimer);
     if (!AppState.routing && ['home','search','cart','compare','wishlist','brands','services','about','contact','checkout','account'].includes(pageId)) {
-        const simple = { home:'#/home', search:'#/search', cart:'#/cart', compare:'#/compare', wishlist:'#/wishlist', brands:'#/brands', services:'#/services', about:'#/about', contact:'#/contact', checkout:'#/checkout', account:'#/account/orders' };
+        const simple = { home:'#/home', search:'#/search', cart:'#/cart', compare:'#/compare', wishlist:'#/wishlist', brands:'#/brands', services:'#/services', about:'#/about', contact:'#/contact', checkout:'#/checkout', account:'#/account' };
         if (pageId === 'search') simple.search = getSearchRoute();
-        if (simple[pageId] && location.hash !== simple[pageId]) history.pushState(null, '', simple[pageId]);
+        if (pageId === 'account') {
+            // keep current account tab in hash if already on account
+            if (!location.hash.startsWith('#/account')) {
+                if (simple[pageId] && location.hash !== simple[pageId]) history.pushState(null, '', simple[pageId]);
+            }
+        } else {
+            if (simple[pageId] && location.hash !== simple[pageId]) history.pushState(null, '', simple[pageId]);
+        }
     }
     const transition = document.getElementById('page-transition');
     transition.classList.add('active');
@@ -37,7 +44,7 @@ function showPage(pageId) {
 
 function updateHashRoute(page, payload = '') {
     const routes = {
-        home: '#/home', search: '#/search', cart: '#/cart', compare: '#/compare', wishlist: '#/wishlist', brands: '#/brands', services: '#/services', about: '#/about', contact: '#/contact', checkout: '#/checkout', account: '#/account/orders'
+        home: '#/home', search: '#/search', cart: '#/cart', compare: '#/compare', wishlist: '#/wishlist', brands: '#/brands', services: '#/services', about: '#/about', contact: '#/contact', checkout: '#/checkout', account: '#/account'
     };
     let hash = routes[page] || '#/home';
     if (page === 'search') {
@@ -74,8 +81,18 @@ function routeFromHash() {
         }
         else if (route === 'checkout') renderCheckout();
         else if (route.startsWith('account')) {
-            const segs = route.split('/');
-            showAccount(segs.length > 2 ? decodeURIComponent(segs.slice(2).join('/')) : '');
+            const segs = route.split('/').map(s=>{ try { return decodeURIComponent(s); } catch(e){ return s; } });
+            // segs: ['account', 'orders'|'addresses'|'profile'|'overview', 'PRM-...']
+            const tab = segs[1] || '';
+            const highlight = segs[2] || '';
+            // legacy: #/account/orders/PRM-xxx  OR #/account/PRM-xxx
+            const KNOWN_TABS = ['overview','orders','addresses','profile','security'];
+            if (tab && !KNOWN_TABS.includes(tab)) {
+                // treat as highlight for orders (old links)
+                showAccount('orders', tab);
+            } else {
+                showAccount(tab, highlight);
+            }
         }
         else showPage('home');
     } catch (error) {

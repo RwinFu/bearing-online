@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="assets/css/05-brand-carousel.css">
     <link rel="stylesheet" href="assets/css/06-hero-3d.css">
     <link rel="stylesheet" href="assets/css/07-mobile.css">
+    <link rel="stylesheet" href="assets/css/08-account.css">
 </head>
 <body class="min-h-screen">
 
@@ -162,7 +163,7 @@
                     <a href="#" onclick="showPage('services')" class="nav-link text-white/80 hover:text-white transition font-medium" data-en="Services" data-fa="خدمات">Services</a>
                     <a href="#" onclick="showPage('about')" class="nav-link text-white/80 hover:text-white transition font-medium" data-en="About" data-fa="درباره ما">About</a>
                     <a href="#" onclick="showPage('contact')" class="nav-link text-white/80 hover:text-white transition font-medium" data-en="Contact" data-fa="تماس">Contact</a>
-                    <a href="#" onclick="showAccount()" class="nav-link text-white/80 hover:text-white transition font-medium" data-en="Orders" data-fa="سفارش‌ها">سفارش‌ها</a>
+                    <a href="#" onclick="showAccount()" class="nav-link text-white/80 hover:text-white transition font-medium" data-en="Account" data-fa="حساب کاربری">حساب کاربری</a>
                 </div>
 
                 <div class="flex items-center gap-4">
@@ -178,8 +179,8 @@
                         <i class="fas fa-balance-scale text-xl"></i>
                         <span id="compare-count" class="absolute -top-2 -right-2 bg-blue-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
                     </button>
-                    <button onclick="showAccount()" class="nav-icon-account relative text-white hover:text-white/80 transition" aria-label="Orders">
-                        <i class="fas fa-receipt text-xl"></i>
+                    <button id="account-nav-button" onclick="showAccount()" class="nav-icon-account relative text-white hover:text-white/80 transition flex items-center justify-center" aria-label="ورود / حساب کاربری" title="ورود / حساب کاربری">
+                        <i class="fas fa-user text-xl"></i>
                     </button>
                     <button onclick="toggleMobileMenu()" id="mobile-menu-toggle" class="lg:hidden text-white" aria-label="باز کردن منو" aria-controls="mobile-menu" aria-expanded="false">
                         <i class="fas fa-bars text-xl"></i>
@@ -205,7 +206,7 @@
             <a href="#" class="mnav" onclick="closeMobileMenu();showPage('services')"><i class="fas fa-gears w-6 text-center" style="color:#1348c8"></i><span data-en="Services" data-fa="خدمات">خدمات</span></a>
             <a href="#" class="mnav" onclick="closeMobileMenu();showPage('about')"><i class="fas fa-circle-info w-6 text-center" style="color:#1348c8"></i><span data-en="About" data-fa="درباره ما">درباره ما</span></a>
             <a href="#" class="mnav" onclick="closeMobileMenu();showPage('contact')"><i class="fas fa-phone w-6 text-center" style="color:#1348c8"></i><span data-en="Contact" data-fa="تماس">تماس</span></a>
-            <a href="#" class="mnav" onclick="closeMobileMenu();showAccount()"><i class="fas fa-receipt w-6 text-center" style="color:#1348c8"></i><span data-en="Orders" data-fa="سفارش‌ها">سفارش‌ها</span></a>
+            <a href="#" class="mnav" onclick="closeMobileMenu();showAccount()"><i class="fas fa-user w-6 text-center" style="color:#1348c8"></i><span data-en="Account" data-fa="حساب کاربری">حساب کاربری</span></a>
             <a href="#" class="mnav" onclick="closeMobileMenu();showWishlist()"><i class="fas fa-heart w-6 text-center" style="color:#1348c8"></i><span data-en="Saved Products" data-fa="محصولات نشان‌شده">محصولات نشان‌شده</span></a>
             <a href="#" class="mnav" onclick="closeMobileMenu();showCompare()"><i class="fas fa-balance-scale w-6 text-center" style="color:#1348c8"></i><span data-en="Compare Products" data-fa="مقایسه محصولات">مقایسه محصولات</span></a>
         </nav>
@@ -907,12 +908,9 @@
             </div>
         </section>
 
-        <!-- ACCOUNT ORDERS PAGE -->
+        <!-- ACCOUNT PAGE — ورود با کد پیامکی + داشبورد مشتری -->
         <section id="page-account" class="page-section hidden">
-            <div class="max-w-7xl mx-auto px-4 py-8">
-                <h2 class="text-3xl font-extrabold text-gray-900 mb-8" data-en="My orders" data-fa="سفارش‌ها و پیش‌فاکتورها">سفارش‌ها و پیش‌فاکتورها</h2>
-                <div id="account-content"></div>
-            </div>
+            <div id="account-content"></div>
         </section>
 
         <!-- BRANDS PAGE -->
@@ -1569,5 +1567,7 @@
     <script src="assets/js/15-mobile-ui.js"></script>
     <script src="assets/js/16-animations.js"></script>
     <script src="assets/js/17-init.js"></script>
+    <script src="assets/js/18-account-auth.js"></script>
+    <script src="assets/js/19-account-dashboard.js"></script>
 </body>
 </html>
