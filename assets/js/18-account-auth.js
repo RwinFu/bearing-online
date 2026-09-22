@@ -5,6 +5,7 @@
 const CustomerAuth = {
     accounts: {},          // { '09123456789': { name, email, company, joinedAt, addresses: [] } }
     session: null,         // phone number of the logged-in customer
+    lastPhone: '',         // آخرین شماره استفاده‌شده (برای پیش‌پر کردن ورودی)
     otp: null,             // { phone, code, expiresAt, attempts, sentAt }
     pendingTab: '',
     pendingHighlight: '',
@@ -35,16 +36,28 @@ const CustomerAuth = {
 };
 
 // ---------- ابزارهای شماره موبایل ----------
-function normalizePhoneInput(raw) {
+function toLatinDigits(s) {
     const FA = '۰۱۲۳۴۵۶۷۸۹', AR = '٠١٢٣٤٥٦٧٨٩';
-    let s = String(raw || '').trim();
-    s = s.replace(/[۰-۹]/g, d => FA.indexOf(d)).replace(/[٠-٩]/g, d => AR.indexOf(d));
+    return String(s == null ? '' : s).replace(/[۰-۹]/g, d => FA.indexOf(d)).replace(/[٠-٩]/g, d => AR.indexOf(d));
+}
+
+function normalizePhoneInput(raw) {
+    let s = toLatinDigits(String(raw || '').trim());
     s = s.replace(/[\s\-().]/g, '');
     if (s.startsWith('+98')) s = '0' + s.slice(3);
     else if (/^0098/.test(s)) s = '0' + s.slice(4);
     else if (/^98\d{10}$/.test(s)) s = '0' + s.slice(2);
     else if (/^9\d{9}$/.test(s)) s = '0' + s;
     return s;
+}
+
+// فیلتر زنده فیلد شماره: فقط ارقام؛ پیشوند +98 / 0098 هنگام پیست حذف می‌شود (پیشوند +98 ثابت است)
+function filterPhoneInput(input) {
+    if (!input) return;
+    let digits = toLatinDigits(input.value).replace(/\D/g, '');
+    if (digits.startsWith('0098')) digits = digits.slice(4);
+    else if (digits.startsWith('98') && digits.length > 10) digits = digits.slice(2);
+    input.value = digits.slice(0, 11);
 }
 
 function isValidIranPhone(s) { return /^09\d{9}$/.test(s); }
@@ -59,7 +72,7 @@ function getInitials(name) {
 
 // ---------- چرخه ورود با پیامک ----------
 function clearAccountTimers() {
-    Object.values(CustomerAuth.timers).forEach(t => clearInterval(t));
+    Object.values(CustomerAuth.timers).forEach(t => { clearInterval(t); clearTimeout(t); });
     CustomerAuth.timers = {};
 }
 
@@ -82,7 +95,10 @@ function simulateIncomingSms(phone, code) {
             <div class="sms-sim-body">
                 کاربر گرامی، کد تأیید شما:
                 <br>
-                <span class="sms-sim-code" dir="ltr">${code}</span>
+                <span class="sms-sim-code-wrap" dir="ltr">
+                    <span class="sms-sim-code">${code}</span>
+                    <button class="sms-sim-copy" onclick="copySmsCode('${code}')" title="کپی کد" aria-label="کپی کد تأیید"><i class="fas fa-copy"></i></button>
+                </span>
                 <br>
                 <span class="text-xs text-gray-400">برای <span dir="ltr">${maskPhone(phone)}</span> ارسال شد.</span>
             </div>
@@ -90,7 +106,25 @@ function simulateIncomingSms(phone, code) {
     document.body.appendChild(holder);
 }
 
+function copySmsCode(code) {
+    const done = () => showNotification('کد کپی شد؛ کافی است در خانه اول پیست کنید.', 'success');
+    const fallback = () => {
+        const ta = document.createElement('textarea');
+        ta.value = code;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) {}
+        ta.remove();
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(done).catch(fallback);
+    } else fallback();
+}
+
 function sendOtp(phone) {
+    CustomerAuth.lastPhone = phone;
     const code = String(Math.floor(10000 + Math.random() * 90000));
     CustomerAuth.otp = { phone, code, expiresAt: Date.now() + 120000, attempts: 0, sentAt: Date.now() };
     CustomerAuth.resendAt = Date.now() + 90000;
@@ -196,6 +230,9 @@ function renderAccountLogin(step, phone, message = '') {
     const container = document.getElementById('account-content');
     if (!container) return;
 
+    // شماره برای پیش‌پر: بدون صفر ابتدایی تا با پسوند +98 همخوان باشد
+    const prefillPhone = (phone || CustomerAuth.lastPhone || '9121234567').replace(/^0(?=9)/, '');
+
     let formHTML = '';
 
     if (step === 'phone') {
@@ -208,7 +245,8 @@ function renderAccountLogin(step, phone, message = '') {
                 <label class="block text-sm font-bold text-gray-600 mb-2" for="login-phone">شماره موبایل</label>
                 <div class="acct-phone-field" id="login-phone-field">
                     <input id="login-phone" type="tel" inputmode="numeric" autocomplete="tel" dir="ltr"
-                           placeholder="9123456789" value="${escapeHTML(phone || '')}"
+                           placeholder="9123456789" value="${escapeHTML(prefillPhone)}"
+                           oninput="filterPhoneInput(this)"
                            onkeydown="if(event.key==='Enter'){event.preventDefault();submitPhoneForm(event);}">
                     <span class="acct-phone-prefix"><i class="fas fa-mobile-screen ml-1"></i> +98</span>
                 </div>
@@ -220,7 +258,7 @@ function renderAccountLogin(step, phone, message = '') {
             </form>
             <div class="acct-demo-note mt-5">
                 <i class="fas fa-flask mt-1"></i>
-                <span>نسخه نمایشی: پیامک واقعی ارسال نمی‌شود؛ کد تأیید به‌صورت شبیه‌سازی‌شده در یک پیامک روی صفحه نمایش داده می‌شود.</span>
+                <span>نسخه نمایشی: پیامک واقعی ارسال نمی‌شود؛ کد تأیید به‌صورت شبیه‌سازی‌شده در یک پیامک روی صفحه نمایش داده می‌شود. شماره پیش‌فرض برای تست است؛ می‌توانید شماره خود را جایگزین کنید.</span>
             </div>
             <p class="text-[11.5px] leading-6 text-gray-400 mt-5">
                 ورود شما به معنای پذیرش شرایط استفاده و حریم خصوصی برینگ آنلاین است.
@@ -235,14 +273,16 @@ function renderAccountLogin(step, phone, message = '') {
                 <i class="fas fa-pen ml-1"></i>ویرایش شماره
             </button>
             ${message ? `<div class="acct-msg-error mb-1 mt-4"><i class="fas fa-circle-exclamation"></i><span>${message}</span></div>` : ''}
+            <div id="otp-error-msg" class="hidden acct-msg-error mt-4"><i class="fas fa-circle-exclamation"></i><span></span></div>
             <div class="otp-row" id="otp-row">
-                ${[0, 1, 2, 3, 4].map(i => `<input class="otp-box" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="رقم ${i + 1} کد تأیید">`).join('')}
+                ${[0, 1, 2, 3, 4].map(i => `<input class="otp-box" inputmode="numeric" maxlength="1" autocomplete="${i === 0 ? 'one-time-code' : 'off'}" aria-label="رقم ${i + 1} کد تأیید">`).join('')}
             </div>
+            <p class="text-[11.5px] text-gray-400 text-center mt-1">کد را می‌توانید مستقیم در خانه اول پیست کنید؛ به‌محض تکمیل ۵ رقم، خودکار بررسی می‌شود.</p>
             <div class="otp-meta">
                 <span><i class="fas fa-stopwatch ml-1"></i>اعتبار کد: <b id="otp-expiry">۲:۰۰</b></span>
                 <button id="otp-resend" class="otp-resend" onclick="resendOtp()" disabled>ارسال مجدد کد</button>
             </div>
-            <button onclick="verifyOtp()" class="acct-btn-primary w-full mt-5"><i class="fas fa-shield-halved"></i>تأیید کد و ورود</button>
+            <button id="otp-verify-btn" onclick="verifyOtp()" class="acct-btn-primary w-full mt-5"><i class="fas fa-shield-halved"></i>تأیید کد و ورود</button>
             <div class="acct-demo-note mt-5">
                 <i class="fas fa-flask mt-1"></i>
                 <span>پیامک شبیه‌سازی‌شده حاوی کد، پایین صفحه نمایش داده شده است.</span>
@@ -305,25 +345,88 @@ function submitPhoneForm(event) {
 }
 
 // ---------- گام ۲: کد تأیید ----------
+function hideOtpError() {
+    const box = document.getElementById('otp-error-msg');
+    if (box) { box.classList.add('hidden'); box.querySelector('span').textContent = ''; }
+}
+
+function showOtpError(msg, clearBoxes) {
+    const box = document.getElementById('otp-error-msg');
+    if (box) { box.querySelector('span').textContent = msg; box.classList.remove('hidden'); }
+    const row = document.getElementById('otp-row');
+    if (row) {
+        row.classList.remove('shake');
+        void row.offsetWidth; // ری‌استارت انیمیشن
+        row.classList.add('shake');
+    }
+    document.querySelectorAll('#otp-row .otp-box').forEach(b => b.classList.add('otp-error'));
+    if (clearBoxes) {
+        setTimeout(() => {
+            const bs = [...document.querySelectorAll('#otp-row .otp-box')];
+            // اگر کاربر دوباره تایپ کرده باشد (کلاس otp-error حذف شده) پاک نکنیم
+            if (!bs.length || bs.some(b => !b.classList.contains('otp-error'))) return;
+            bs.forEach(b => { b.value = ''; b.classList.remove('otp-error'); });
+            bs[0].focus();
+        }, 750);
+    }
+}
+
+function scheduleOtpAutoVerify() {
+    if (CustomerAuth.timers.otpAuto) { clearTimeout(CustomerAuth.timers.otpAuto); CustomerAuth.timers.otpAuto = null; }
+    CustomerAuth.timers.otpAuto = setTimeout(() => {
+        CustomerAuth.timers.otpAuto = null;
+        if (readOtpCode().length === 5) verifyOtp();
+    }, 320);
+}
+
+function cancelOtpAutoVerify() {
+    if (CustomerAuth.timers.otpAuto) { clearTimeout(CustomerAuth.timers.otpAuto); CustomerAuth.timers.otpAuto = null; }
+}
+
 function initOtpInputs() {
     const boxes = [...document.querySelectorAll('#otp-row .otp-box')];
     if (!boxes.length) return;
 
+    const digitsOf = v => toLatinDigits(v).replace(/\D/g, '');
+
+    // پخش یک کد کامل (پست یا اتوفیل مرورگر) از خانه‌ای که وارد شده به همه خانه‌ها
+    const distribute = (digits, start = 0) => {
+        digits.split('').forEach((d, j) => {
+            const t = boxes[start + j];
+            if (t) { t.value = d; t.classList.remove('otp-error'); }
+        });
+        boxes[Math.min(start + digits.length, boxes.length - 1)].focus();
+        if (readOtpCode().length === boxes.length) scheduleOtpAutoVerify();
+    };
+
     boxes.forEach((box, i) => {
         box.addEventListener('input', () => {
-            box.value = box.value.replace(/\D/g, '').slice(-1);
+            const v = digitsOf(box.value);
+            hideOtpError();
+            if (v.length > 1) { distribute(v, i); return; } // کل کد پست/اتوفیل شد
             box.classList.remove('otp-error');
-            if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+            box.value = v;
+            if (box.value) {
+                if (i < boxes.length - 1) boxes[i + 1].focus();
+                else if (readOtpCode().length === boxes.length) scheduleOtpAutoVerify();
+            } else {
+                cancelOtpAutoVerify();
+            }
         });
         box.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
-            if (e.key === 'Enter') { e.preventDefault(); verifyOtp(); }
+            if (e.key === 'Backspace' && !box.value && i > 0) { boxes[i - 1].focus(); boxes[i - 1].select(); }
+            if (e.key === 'ArrowLeft' && i > 0) { e.preventDefault(); boxes[i - 1].focus(); }
+            if (e.key === 'ArrowRight' && i < boxes.length - 1) { e.preventDefault(); boxes[i + 1].focus(); }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (readOtpCode().length === boxes.length) verifyOtp();
+                else boxes.find(b => !b.value)?.focus();
+            }
         });
         box.addEventListener('paste', (e) => {
             e.preventDefault();
-            const digits = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 5);
-            digits.split('').forEach((d, j) => { if (boxes[j]) boxes[j].value = d; });
-            boxes[Math.min(digits.length, 4)]?.focus();
+            const digits = digitsOf(e.clipboardData.getData('text')).slice(0, boxes.length);
+            if (digits) distribute(digits, i);
         });
     });
 
@@ -359,14 +462,11 @@ function resendOtp() {
 function verifyOtp() {
     const otp = CustomerAuth.otp;
     if (!otp) return renderAccountLogin('phone', '');
+    if (CustomerAuth.timers.otpVerifying) return;
     const boxes = [...document.querySelectorAll('#otp-row .otp-box')];
     const entered = readOtpCode();
-    const fail = msg => {
-        boxes.forEach(b => b.classList.add('otp-error'));
-        renderAccountLogin('otp', otp.phone, msg);
-    };
-    if (entered.length < 5) return fail('کد ۵ رقمی را کامل وارد کنید.');
-    if (Date.now() > otp.expiresAt) return fail('کد تأیید منقضی شده است؛ کد جدید دریافت کنید.');
+    if (entered.length < 5) return showOtpError('کد ۵ رقمی را کامل وارد کنید.', false);
+    if (Date.now() > otp.expiresAt) return showOtpError('کد تأیید منقضی شده است؛ کد جدید دریافت کنید.', false);
     if (entered !== otp.code) {
         otp.attempts += 1;
         const remain = 5 - otp.attempts;
@@ -375,19 +475,26 @@ function verifyOtp() {
             removeSmsSimulator();
             return renderAccountLogin('phone', otp.phone, 'تعداد تلاش‌ها بیش از حد مجاز بود؛ دوباره کد دریافت کنید.');
         }
-        return fail(`کد وارد شده درست نیست. ${remain} تلاش باقی مانده است.`);
+        return showOtpError(`کد وارد شده درست نیست. ${remain} تلاش باقی مانده است.`, true);
     }
-    // موفق
-    boxes.forEach(b => { b.classList.remove('otp-error'); b.classList.add('otp-ok'); });
-    clearAccountTimers();
-    removeSmsSimulator();
-    const account = CustomerAuth.accountFor(otp.phone);
-    CustomerAuth.session = otp.phone;
-    CustomerAuth.otp = null;
-    CustomerAuth.persist();
-    updateAccountNav();
-    if (!account.name) return renderAccountLogin('name', otp.phone);
-    finishLogin();
+    // موفق: تأیید خودکار — نمایش کوتاه «در حال ورود» و سپس ادامه
+    CustomerAuth.timers.otpVerifying = true;
+    cancelOtpAutoVerify();
+    boxes.forEach(b => { b.classList.remove('otp-error'); b.classList.add('otp-ok'); b.readOnly = true; });
+    const btn = document.getElementById('otp-verify-btn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>در حال تأیید…'; }
+    setTimeout(() => {
+        CustomerAuth.timers.otpVerifying = false;
+        clearAccountTimers();
+        removeSmsSimulator();
+        const account = CustomerAuth.accountFor(otp.phone);
+        CustomerAuth.session = otp.phone;
+        CustomerAuth.otp = null;
+        CustomerAuth.persist();
+        updateAccountNav();
+        if (!account.name) return renderAccountLogin('name', otp.phone);
+        finishLogin();
+    }, 450);
 }
 
 // ---------- گام ۳: نام (اولین ورود) ----------
