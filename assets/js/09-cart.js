@@ -2,23 +2,24 @@
 // =============================================
 // CART SYSTEM
 // =============================================
-function addToCart(productId, supplierId) {
+function addToCart(productId, supplierId, quantity = 1, silent = false) {
     const product = ProductDatabase.find(p => p.id === productId);
     if (!product) return;
+    const qty = Math.max(1, Math.min(999, parseInt(quantity, 10) || 1));
     const suppliers = productSupplierNames(product) || [];
     // When a product has several suppliers, the chosen supplier must be recorded
     // on the cart line; otherwise it defaults to the first (or own warehouse).
     const ext = suppliers.filter(name => name !== 'انبار خودمان');
-    const chosen = supplierId && [...ext].includes(supplierId) ? supplierId : (ext[0] || 'انبار خودمان');
+    const chosen = supplierId && ext.includes(supplierId) ? supplierId : (ext[0] || 'انبار خودمان');
     const existingItem = AppState.cart.find(item => item.id === productId && (item.supplier || 'انبار خودمان') === chosen);
     if (existingItem) {
-        existingItem.quantity++;
+        existingItem.quantity = Math.min(999, existingItem.quantity + qty);
     } else {
-        AppState.cart.push({ id: productId, quantity: 1, supplier: chosen });
+        AppState.cart.push({ id: productId, quantity: qty, supplier: chosen });
     }
     updateCartCount();
     persistState();
-    showNotification(AppState.language === 'en' ? 'Added to cart!' : 'به سبد اضافه شد!', 'success');
+    if (!silent) showNotification(AppState.language === 'en' ? 'Added to cart!' : 'به سبد اضافه شد!', 'success');
 }
 
 function setCartSupplier(productId, supplier) {
@@ -120,7 +121,7 @@ function renderCart() {
                             const ext = src.filter(name => name !== 'انبار خودمان');
                             const supplierSelect = ext.length > 0 ? `
                                 <select onchange="setCartSupplier('${item.id}', this.value)" class="compact-input mt-1 text-xs" aria-label="تامین‌کننده">
-                                    ${src.map(name => `<option value="${name}" ${(item.supplier || 'انبار خودمان') === name ? 'selected' : ''}>${name}</option>`).join('')}
+                                    ${src.map(name => `<option value="${escapeHTML(name)}" ${(item.supplier || 'انبار خودمان') === name ? 'selected' : ''}>${escapeHTML(name)}</option>`).join('')}
                                 </select>` : '';
                             return `
                             <div class="p-6 flex items-center gap-6 cart-line" data-supplier="${escapeHTML(item.supplier || 'انبار خودمان')}">
@@ -133,11 +134,11 @@ function renderCart() {
                                     <div class="text-xs text-gray-500 mt-1">تامین‌کننده: <b class="text-gray-700">${escapeHTML(item.supplier || 'انبار خودمان')}</b>${supplierSelect}</div>
                                 </div>
                                 <div class="flex items-center gap-3 cart-line-controls">
-                                    <button onclick="updateCartLine('${item.id}', -1, this)" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">
+                                    <button onclick="updateCartLine('${item.id}', -1, this)" aria-label="${AppState.language === 'fa' ? 'کم کردن تعداد' : 'Decrease quantity'}" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">
                                         <i class="fas fa-minus text-xs"></i>
                                     </button>
                                     <span class="w-8 text-center font-medium">${item.quantity}</span>
-                                    <button onclick="updateCartLine('${item.id}', 1, this)" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">
+                                    <button onclick="updateCartLine('${item.id}', 1, this)" aria-label="${AppState.language === 'fa' ? 'زیاد کردن تعداد' : 'Increase quantity'}" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">
                                         <i class="fas fa-plus text-xs"></i>
                                     </button>
                                 </div>

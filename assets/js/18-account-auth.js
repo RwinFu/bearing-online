@@ -20,12 +20,18 @@ const CustomerAuth = {
     persist() {
         saveJSON('prm_customer_accounts', this.accounts);
         saveJSON('prm_customer_session', this.session);
+        saveJSON('prm_customer_pwfails', this.pwFails);
     },
 
     hydrate() {
         this.accounts = loadJSON('prm_customer_accounts', {}) || {};
         this.session = loadJSON('prm_customer_session', null);
         if (this.session && !this.accounts[this.session]) this.session = null;
+        // The brute-force lockout survives reloads; drop expired locks.
+        this.pwFails = loadJSON('prm_customer_pwfails', {}) || {};
+        Object.keys(this.pwFails).forEach(phone => {
+            if (!this.pwFails[phone] || (this.pwFails[phone].lockedUntil || 0) < Date.now()) delete this.pwFails[phone];
+        });
     },
 
     accountFor(phone) {
@@ -164,7 +170,9 @@ function maskPhone(p) { return p ? p.slice(0, 4) + '***' + p.slice(7) : ''; }
 function getInitials(name) {
     const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
     if (!parts.length) return '';
-    return parts.length > 1 ? parts[0][0] + '‌' + parts[1][0] : parts[0][0];
+    // Spread by code point so emoji/surrogate pairs never split in half.
+    const first = c => [...c][0] || '';
+    return parts.length > 1 ? first(parts[0]) + '‌' + first(parts[1]) : first(parts[0]);
 }
 
 // ---------- چرخه ورود با پیامک ----------
@@ -237,7 +245,9 @@ function sendOtp(phone, intent = '') {
     CustomerAuth.lastPhone = phone;
     CustomerAuth.pwIntent = intent; // 'reset' → پس از تأیید، حتماً رمز تازه بگیر
     const code = String(Math.floor(10000 + Math.random() * 90000));
-    CustomerAuth.otp = { phone, code, expiresAt: Date.now() + 120000, attempts: 0, sentAt: Date.now() };
+    // Resending must not reset the brute-force counter for the same number.
+    const keptAttempts = CustomerAuth.otp && CustomerAuth.otp.phone === phone ? CustomerAuth.otp.attempts : 0;
+    CustomerAuth.otp = { phone, code, expiresAt: Date.now() + 120000, attempts: keptAttempts, sentAt: Date.now() };
     CustomerAuth.resendAt = Date.now() + 90000;
     simulateIncomingSms(phone, code);
     showNotification('کد تأیید پیامک شد (شبیه‌سازی).', 'success');
@@ -867,6 +877,7 @@ function logoutCustomer() {
     removeSmsSimulator();
     updateAccountNav();
     showNotification(name ? `${name} عزیز، از حساب خارج شدید.` : 'از حساب خارج شدید.', 'info');
+    try { history.replaceState(null, '', '#/account'); } catch (e) {}
     renderAccountLogin('phone', '');
 }
 

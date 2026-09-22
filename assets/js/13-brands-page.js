@@ -27,7 +27,7 @@ function renderBrandsPage() {
     container.innerHTML = brands.map(([name, info], index) => {
         const logoSrc = BRAND_LOGOS[name];
         const logo = logoSrc
-            ? `<img src="${logoSrc}" alt="${name}" loading="lazy" onerror="this.parentNode.innerHTML='<span class=brand-card-wordmark>${name}</span>'">`
+            ? `<img src="${logoSrc}" alt="${name}" loading="lazy" onerror="this.outerHTML='<span class=&quot;brand-card-wordmark&quot;>${name}</span>'">`
             : `<span class="brand-card-wordmark">${info.logo || name}</span>`;
         const countryFa = BRAND_COUNTRY_FA[info.country] || info.country;
         const descriptionFa = BRAND_DESCRIPTION_FA[name] || 'برند معتبر قابل تأمین با تضمین اصالت و پشتیبانی فنی.';

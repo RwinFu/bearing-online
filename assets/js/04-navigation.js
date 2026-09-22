@@ -19,9 +19,9 @@ function showPage(pageId) {
             if (simple[pageId] && location.hash !== simple[pageId]) history.pushState(null, '', simple[pageId]);
         }
     }
+    const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const transition = document.getElementById('page-transition');
-    transition.classList.add('active');
-    pageTransitionTimer = setTimeout(() => {
+    const swap = () => {
         document.querySelectorAll('.page-section').forEach(section => {
             section.classList.add('hidden');
         });
@@ -39,7 +39,15 @@ function showPage(pageId) {
         if (pageId === 'about' && typeof ensureBearing3D === 'function') {
             setTimeout(() => ensureBearing3D(), 60);
         }
-    }, 250);
+    };
+    // Reduced-motion users get an instant page swap: no overlay flash, no
+    // artificial 250ms wait on every navigation.
+    if (reducedMotion) {
+        swap();
+    } else {
+        transition.classList.add('active');
+        pageTransitionTimer = setTimeout(swap, 250);
+    }
 }
 
 function updateHashRoute(page, payload = '') {

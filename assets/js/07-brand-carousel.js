@@ -3,8 +3,9 @@
 const BrandCarousel = {
     rotY: 0, vel: 0, last: 0, raf: 0,
     dragging: false, dragX: 0, moved: 0,
-    speed: 0, direction: 1, paused: false, target: null,
-    angle: 0, radius: 400, count: 0, built: false
+    // Medium auto-rotate (~18°/s); forced to 0 for reduced motion (see init).
+    speed: 3, direction: 1, paused: false, target: null,
+    angle: 0, radius: 400, count: 0, built: false, onScreen: true
 };
 
 /* Official brand logos (exact user-provided artwork, text fallback if any fails) */
@@ -211,9 +212,14 @@ function brandCarouselApply() {
 }
 
 function brandCarouselLoop(now) {
+    BrandCarousel.raf = 0;
+    // Park the loop while the ring is offscreen or the tab is hidden; the
+    // IntersectionObserver in initBrandCarousel wakes it back up.
+    if (!BrandCarousel.onScreen || document.hidden) return;
     const dt = BrandCarousel.last ? (now - BrandCarousel.last) / 1000 : 0;
     BrandCarousel.last = now;
     const f = Math.min(dt, 0.1);
+    const before = BrandCarousel.rotY;
     if (!BrandCarousel.dragging && !BrandCarousel.paused) {
         const degPerSec = BrandCarousel.speed * 6 * BrandCarousel.direction;
         if (BrandCarousel.target !== null && BrandCarousel.target !== undefined) {
@@ -228,14 +234,31 @@ function brandCarouselLoop(now) {
             BrandCarousel.rotY += degPerSec * f;
         }
     }
-    brandCarouselApply();
-    if (!window.__rcCaptionTick) window.__rcCaptionTick = 0;
-    if (now - window.__rcCaptionTick > 180) { window.__rcCaptionTick = now; updateBrandCarouselCaption(); }
-    BrandCarousel.raf = requestAnimationFrame(brandCarouselLoop);
+    // Skip the DOM write when nothing moved (static ring, paused tab, ...).
+    if (BrandCarousel.rotY !== before) {
+        brandCarouselApply();
+        if (!window.__rcCaptionTick) window.__rcCaptionTick = 0;
+        if (now - window.__rcCaptionTick > 180) { window.__rcCaptionTick = now; updateBrandCarouselCaption(); }
+    }
+    // A settled, non-rotating ring parks its loop entirely (reduced motion,
+    // paused, fully dragged to rest); any interaction wakes it via
+    // wakeBrandCarousel(). Auto-rotate keeps a live ring ticking by design.
+    const live = BrandCarousel.dragging || Math.abs(BrandCarousel.vel) > 0.5 ||
+        (BrandCarousel.target !== null && BrandCarousel.target !== undefined) ||
+        (BrandCarousel.speed !== 0 && !BrandCarousel.paused);
+    if (live) BrandCarousel.raf = requestAnimationFrame(brandCarouselLoop);
+}
+
+function wakeBrandCarousel() {
+    if (!BrandCarousel.raf && BrandCarousel.onScreen && !document.hidden && BrandCarousel.built) {
+        BrandCarousel.last = 0;
+        BrandCarousel.raf = requestAnimationFrame(brandCarouselLoop);
+    }
 }
 
 function rotateToBrand(i) {
     if (!BrandCarousel.count || !BrandCarousel.angle) return;
+    wakeBrandCarousel();
     const base = -i * BrandCarousel.angle;
     const cur = BrandCarousel.rotY;
     const turns = Math.round((cur - base) / 360);
@@ -247,11 +270,22 @@ function initBrandCarousel() {
     const stage = document.getElementById('brandRoundStage');
     const ring = document.getElementById('brandRing');
     if (!stage || !ring) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) BrandCarousel.speed = 0;
     cancelAnimationFrame(BrandCarousel.raf);
     BrandCarousel.last = 0;
     brandCarouselApply();
     BrandCarousel.raf = requestAnimationFrame(brandCarouselLoop);
+    // Pause the loop while the home page / ring is offscreen.
+    if ('IntersectionObserver' in window && !BrandCarousel.ioBound) {
+        BrandCarousel.ioBound = true;
+        new IntersectionObserver(entries => {
+            BrandCarousel.onScreen = entries[0].isIntersecting;
+            if (BrandCarousel.onScreen) wakeBrandCarousel();
+        }, { rootMargin: '60px' }).observe(stage);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) wakeBrandCarousel(); });
+    }
     stage.onpointerdown = (e) => {
+        wakeBrandCarousel();
         BrandCarousel.dragging = true;
         BrandCarousel.dragX = e.clientX;
         BrandCarousel.moved = 0;
@@ -279,8 +313,8 @@ function initBrandCarousel() {
 
     const prev = document.getElementById('rcPrev');
     const next = document.getElementById('rcNext');
-    if (prev) prev.onclick = (e) => { e.stopPropagation(); BrandCarousel.vel = -260; };
-    if (next) next.onclick = (e) => { e.stopPropagation(); BrandCarousel.vel = 260; };
+    if (prev) prev.onclick = (e) => { e.stopPropagation(); wakeBrandCarousel(); BrandCarousel.vel = -260; };
+    if (next) next.onclick = (e) => { e.stopPropagation(); wakeBrandCarousel(); BrandCarousel.vel = 260; };
     /* fixed medium auto-rotate — no manual controls */
 
     let rsz;

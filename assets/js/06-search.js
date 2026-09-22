@@ -10,7 +10,7 @@ function setSearchMode(mode) {
     document.querySelectorAll('.search-panel').forEach(panel => {
         panel.classList.add('hidden');
     });
-    document.getElementById(`search-${mode}`).classList.remove('hidden');
+    document.getElementById(`search-${mode}`)?.classList.remove('hidden');
 }
 
 function normalizeSearchValue(value) {
@@ -38,7 +38,7 @@ function getStockBadge(product) {
     const item = map[product.stockStatus] || map.inquiry;
     const suppliers = productSupplierNames(product);
     const source = suppliers && suppliers.indexOf('انبار خودمان') === -1
-        ? `<span class="stock-source-chip"><i class="fas fa-store"></i>${suppliers.join('، ')}</span>`
+        ? `<span class="stock-source-chip"><i class="fas fa-store"></i>${suppliers.map(escapeHTML).join('، ')}</span>`
         : '';
     return `<span class="stock-badge ${item.cls}"><i class="fas ${item.icon}"></i>${AppState.language === 'fa' ? item.fa : item.en}</span>${source}`;
 }
@@ -66,9 +66,12 @@ function getSuffixGroup(suffix) {
     return SUFFIX_EQUIVALENTS.find(group => group.values.includes(normalized));
 }
 
+// Suffix candidates, longest first — computed once instead of on every call.
+const SUFFIX_VALUES_DESC = SUFFIX_EQUIVALENTS.flatMap(group => group.values).sort((a, b) => b.length - a.length);
+
 function extractCodeParts(value) {
     const compact = normalizePartCodeDisplay(value).replace(/[^A-Z0-9]/g, '');
-    const suffixValues = SUFFIX_EQUIVALENTS.flatMap(group => group.values).sort((a, b) => b.length - a.length);
+    const suffixValues = SUFFIX_VALUES_DESC;
     // The suffix is only accepted when it follows the numeric part of the code,
     // so brand names ending in a suffix letter (ZWZ, NTN, Timken, ...) are never split.
     const foundSuffix = suffixValues.find(suffix => compact.endsWith(suffix) && compact.length > suffix.length && /\d$/.test(compact.slice(0, -suffix.length)));
@@ -225,7 +228,10 @@ function normalizeSearchQuery(query) {
     // Split maker references, e.g. SKF-6205 and HIWIN-MGN12H, without splitting PL60-5.
     const brands = [...new Set(ProductDatabase.map(p => p.brand.toLowerCase()))];
     brands.forEach(brand => {
-        text = text.replace(new RegExp('\\b' + brand + '(?=[\\s_-]*[a-z]*[0-9])', 'g'), brand + ' ');
+        // Brand names come from the catalogue (staff-entered), so escape regex
+        // metacharacters — otherwise one crafted brand breaks every search.
+        const safe = brand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        text = text.replace(new RegExp('\\b' + safe + '(?=[\\s_-]*[a-z]*[0-9])', 'g'), brand + ' ');
     });
     return text;
 }
@@ -550,7 +556,8 @@ function filterByBrand(brand) {
 }
 
 function toggleFilterGroup(button) {
-    button.closest('.filter-group').classList.toggle('collapsed');
+    const collapsed = button.closest('.filter-group').classList.toggle('collapsed');
+    button.setAttribute('aria-expanded', String(!collapsed));
 }
 
 function setQuickFilter(kind, value) {
@@ -629,14 +636,34 @@ function renderActiveFilters() {
 }
 
 function updateFilterCounts() {
-    // The catalogue includes more brands than the initial featured-brand list.
+    // The catalogue includes more brands/origins than the initial static list.
     const list = document.querySelector('.brand-filter')?.closest('.filter-content');
     const shown = [...document.querySelectorAll('.brand-filter')].map(input => input.value);
     [...new Set(ProductDatabase.map(product => product.brand))].filter(brand => !shown.includes(brand)).sort().forEach(brand => {
         const row = document.createElement('label');
         row.className = 'filter-row';
+        row.dataset.dynamic = 'brand';
         row.innerHTML = `<span class="flex items-center gap-2"><input type="checkbox" class="brand-filter" value="${escapeHTML(brand)}" onchange="applyFilters()"><span>${escapeHTML(brand)}</span></span><span class="filter-count"></span>`;
         list?.appendChild(row);
+    });
+    const originList = document.querySelector('.origin-filter')?.closest('.filter-content');
+    const shownOrigins = [...document.querySelectorAll('.origin-filter')].map(input => input.value);
+    [...new Set(ProductDatabase.map(product => product.origin).filter(Boolean))].filter(origin => !shownOrigins.includes(origin)).sort().forEach(origin => {
+        const row = document.createElement('label');
+        row.className = 'filter-row';
+        row.dataset.dynamic = 'origin';
+        row.innerHTML = `<span class="flex items-center gap-2"><input type="checkbox" class="origin-filter" value="${escapeHTML(origin)}" onchange="applyFilters()"><span>${escapeHTML(faOrigin(origin))}</span></span><span class="filter-count"></span>`;
+        originList?.appendChild(row);
+    });
+    // Prune dynamically added rows whose option vanished from the catalogue
+    // (e.g. after the manager deletes the last product of a brand).
+    document.querySelectorAll('.filter-row[data-dynamic]').forEach(row => {
+        const input = row.querySelector('input');
+        if (!input) return;
+        const alive = row.dataset.dynamic === 'origin'
+            ? ProductDatabase.some(p => p.origin === input.value)
+            : ProductDatabase.some(p => p.brand === input.value);
+        if (!alive) row.remove();
     });
     document.querySelectorAll('.filter-row input').forEach(input => {
         const row = input.closest('.filter-row');

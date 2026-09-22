@@ -88,7 +88,7 @@ function showProductDetail(productId) {
                     <h1 class="text-3xl font-bold text-gray-800 mb-2">${product.code}</h1>
                     <p class="text-gray-500 mb-6">${faSubtype(product.subtype)} ${faType(product.type)}</p>
                     <div class="mb-5">${getStockBadge(product)}</div>
-                    ${productSupplierNames(product) ? `<div class="mb-5 text-sm text-gray-500">منابع تامین: <b class="text-gray-700">${productSupplierNames(product).join('، ')}</b></div>` : ''}
+                    ${productSupplierNames(product) ? `<div class="mb-5 text-sm text-gray-500">منابع تامین: <b class="text-gray-700">${productSupplierNames(product).map(escapeHTML).join('، ')}</b></div>` : ''}
 
                     <div class="grid grid-cols-2 gap-3 mb-6 text-sm">
                         <div class="bg-blue-50 rounded-xl p-3"><div class="text-gray-500">${getIdentifierLabel('reference')}</div><div class="font-bold text-gray-800">${getProductIdentifiers(product).reference}</div></div>

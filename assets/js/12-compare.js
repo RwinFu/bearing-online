@@ -14,7 +14,14 @@ function toggleCompare(productId) {
     }
     updateCompareCount();
     persistState();
-    renderSearchResults();
+    refreshSearchCardsIfVisible();
+}
+
+// Toggling from the compare/wishlist/product pages must not pay for a full
+// re-render of the hidden search grid; returning to search re-renders anyway.
+function refreshSearchCardsIfVisible() {
+    const page = document.getElementById('page-search');
+    if (page && !page.classList.contains('hidden')) renderSearchResults();
 }
 
 function updateCompareCount() {
@@ -27,7 +34,7 @@ function toggleWishlist(productId) {
     else AppState.wishlist.push(productId);
     updateWishlistCount();
     persistState();
-    renderSearchResults();
+    refreshSearchCardsIfVisible();
     showNotification(AppState.language === 'fa' ? 'لیست نشان‌شده‌ها به‌روزرسانی شد' : 'Saved products updated', 'success');
 }
 
@@ -71,7 +78,20 @@ function renderCompare() {
         return;
     }
 
-    const products = AppState.compareList.map(id => ProductDatabase.find(p => p.id === id));
+    // The manager can delete catalogue products; stale ids must neither crash
+    // the table nor linger in the list.
+    AppState.compareList = AppState.compareList.filter(id => ProductDatabase.some(p => p.id === id));
+    const products = AppState.compareList.map(id => ProductDatabase.find(p => p.id === id)).filter(Boolean);
+    if (!products.length) {
+        container.innerHTML = `
+            <div class="bg-white rounded-2xl shadow-lg p-12 text-center">
+                <i class="fas fa-balance-scale text-6xl text-gray-200 mb-6"></i>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2" data-en="No products to compare" data-fa="محصولی برای مقایسه وجود ندارد">No products to compare</h3>
+                <p class="text-gray-500 mb-6" data-en="Add products to compare by clicking the compare button" data-fa="با کلیک روی دکمه مقایسه، محصولات را اضافه کنید">Add products to compare by clicking the compare button</p>
+            </div>
+        `;
+        return;
+    }
 
     container.innerHTML = `
         <div class="bg-white rounded-2xl shadow-lg overflow-x-auto">
@@ -129,7 +149,7 @@ function renderCompare() {
                     </tr>
                     <tr class="border-b border-gray-100 bg-blue-50">
                         <td class="p-4 font-bold text-gray-800" data-en="Price" data-fa="قیمت">Price</td>
-                        ${products.map(p => `<td class="p-4 text-center font-bold text-blue-600 text-lg">${formatPrice(p.priceUSD)} تومان</td>`).join('')}
+                        ${products.map(p => `<td class="p-4 text-center font-bold text-lg ${p.sell_mode === 'instant' ? 'text-blue-600' : 'text-orange-600'}">${p.sell_mode === 'instant' ? formatPrice(p.priceUSD) + ' تومان' : 'استعلام'}</td>`).join('')}
                     </tr>
                     <tr>
                         <td class="p-4"></td>
