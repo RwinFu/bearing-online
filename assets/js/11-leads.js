@@ -73,7 +73,7 @@ function submitLead(event) {
         id: `LEAD-${Date.now()}`,
         source: document.getElementById('lead-source').value,
         part: document.getElementById('lead-part').value.trim(),
-        quantity: parseInt(document.getElementById('lead-qty').value) || 1,
+        quantity: Math.max(1, parseInt(document.getElementById('lead-qty').value, 10) || 1),
         dimensions: {
             d: document.getElementById('lead-d').value,
             D: document.getElementById('lead-D').value,
@@ -104,6 +104,39 @@ function submitLead(event) {
         el.removeAttribute('data-autofill-first');
     });
     showNotification(AppState.language === 'en' ? 'Request saved. Engineering will contact you fast.' : 'درخواست ثبت شد. تیم مهندسی سریع با شما تماس می‌گیرد.', 'success');
+    renderAdminLeads();
+}
+
+// Contact-page form: previously dead (a plain submit reloaded the page and
+// dropped the message). Now it lands in the same lead pipeline as the modal.
+function submitContactForm(event) {
+    event.preventDefault();
+    const name = document.getElementById('contact-name')?.value.trim() || '';
+    const phone = document.getElementById('contact-phone')?.value.trim() || '';
+    const subject = document.getElementById('contact-subject')?.value || '';
+    const message = document.getElementById('contact-message')?.value.trim() || '';
+    if (!name || !message) {
+        showNotification(AppState.language === 'fa' ? 'نام و متن پیام الزامی است.' : 'Name and message are required.', 'error');
+        return;
+    }
+    const contact = typeof customerContact === 'function' ? customerContact() : null;
+    AppState.leads.unshift({
+        id: `LEAD-${Date.now()}`,
+        source: 'contact',
+        part: subject || 'contact',
+        quantity: 1,
+        dimensions: { d: '', D: '', B: '' },
+        name,
+        phone: phone || (contact ? contact.phone : ''),
+        notes: message,
+        fileName: '',
+        status: 'new',
+        createdAt: new Date().toLocaleString(),
+        accountPhone: contact ? contact.phone : undefined
+    });
+    persistState();
+    document.getElementById('contact-form')?.reset();
+    showNotification(AppState.language === 'fa' ? 'پیام شما ثبت شد؛ به‌زودی پاسخ می‌دهیم.' : 'Message received. We will reply soon.', 'success');
     renderAdminLeads();
 }
 

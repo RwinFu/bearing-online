@@ -111,7 +111,17 @@ function refreshProductAvailability(p) {
     p.stock = p.stock_on_hand;
     p.available_to_sell = Math.max(0, (p.stock_on_hand || 0) - (p.stock_reserved || 0));
     p.sell_mode = p.available_to_sell > 0 ? 'instant' : 'quote';
-    p.stockStatus = p.available_to_sell > 0 ? 'in-stock' : 'inquiry';
+    // A zero-stock product that is on order must keep its 'on-order' badge
+    // (with the lead-time text) instead of degrading to a generic inquiry.
+    p.stockStatus = p.available_to_sell > 0 ? 'in-stock' : (p.stockStatus === 'on-order' ? 'on-order' : 'inquiry');
+}
+
+// Debounced persist for high-frequency writers (per-keystroke inputs): writing
+// the whole state to localStorage on every keystroke janks typing.
+let persistStateSoonTimer = 0;
+function persistStateSoon(delay = 400) {
+    clearTimeout(persistStateSoonTimer);
+    persistStateSoonTimer = setTimeout(persistState, delay);
 }
 
 function hydrateState() {
@@ -128,6 +138,7 @@ function hydrateState() {
     MockDB.complaints = loadJSON('prm_complaints', []);
     MockDB.customProducts = loadJSON('prm_custom_products', []);
     MockDB.deletedProducts = loadJSON('prm_deleted_products', []);
+    sanitizeStoredState();
     try {
         if (typeof CustomerAuth !== 'undefined' && CustomerAuth.hydrate) CustomerAuth.hydrate();
     } catch (e) {}
@@ -140,8 +151,12 @@ function hydrateState() {
     }
     const rates = loadJSON('prm_rates', null);
     if (rates) {
-        AppState.exchangeRate = rates.exchangeRate || 52000;
-        AppState.profitMargin = rates.profitMargin ?? 25;
+        // Stored rates can be tampered with (or from an older schema); never
+        // let a non-number slip in or every price on the site becomes NaN.
+        const rate = Number(rates.exchangeRate);
+        const margin = Number(rates.profitMargin);
+        AppState.exchangeRate = Number.isFinite(rate) && rate > 0 ? rate : 52000;
+        AppState.profitMargin = Number.isFinite(margin) && margin >= 0 ? margin : 25;
         ProductDatabase.forEach(product => {
             product.unit_price_toman = Math.round(product.priceUSD * AppState.exchangeRate * (1 + AppState.profitMargin / 100));
         });
@@ -149,6 +164,40 @@ function hydrateState() {
     updateCartCount();
     updateCompareCount();
     updateWishlistCount();
+}
+
+// localStorage is user-tamperable: coerce stored shapes back to what the
+// renderers expect (numbers stay numbers, machine ids stay identifier-safe)
+// so a hand-edited store can neither break math nor inject markup.
+function sanitizeStoredState() {
+    const cleanId = v => String(v == null ? '' : v).replace(/[^A-Za-z0-9\-.]/g, '').slice(0, 80);
+    if (!Array.isArray(AppState.cart)) AppState.cart = [];
+    AppState.cart = AppState.cart.filter(i => i && typeof i === 'object').map(i => ({
+        id: cleanId(i.id),
+        quantity: Math.max(1, Math.min(999, parseInt(i.quantity, 10) || 1)),
+        supplier: String(i.supplier == null ? '' : i.supplier).slice(0, 120)
+    })).filter(i => i.id);
+    ['compareList', 'wishlist'].forEach(key => {
+        if (!Array.isArray(AppState[key])) AppState[key] = [];
+        AppState[key] = AppState[key].map(cleanId).filter(Boolean).slice(0, 50);
+    });
+    if (!Array.isArray(MockDB.orders)) MockDB.orders = [];
+    MockDB.orders.forEach(o => {
+        if (!o || typeof o !== 'object') return;
+        o.orderNumber = cleanId(o.orderNumber);
+        if (!Array.isArray(o.items)) o.items = [];
+        o.items.forEach(it => { if (it && typeof it === 'object') it.quantity = Math.max(1, parseInt(it.quantity, 10) || 1); });
+    });
+    if (!Array.isArray(MockDB.rfqs)) MockDB.rfqs = [];
+    MockDB.rfqs.forEach(r => { if (r && typeof r === 'object') r.rfqNumber = cleanId(r.rfqNumber); });
+    if (!Array.isArray(MockDB.complaints)) MockDB.complaints = [];
+    MockDB.complaints.forEach(c => { if (c && typeof c === 'object') c.id = cleanId(c.id); });
+    if (!Array.isArray(AppState.leads)) AppState.leads = [];
+    AppState.leads.forEach(l => {
+        if (!l || typeof l !== 'object') return;
+        l.id = cleanId(l.id);
+        l.quantity = Math.max(1, parseInt(l.quantity, 10) || 1);
+    });
 }
 
 function getCartProducts() {
@@ -171,7 +220,7 @@ function moneyTomanFromUSD(priceUSD) {
 }
 
 function formatToman(amount) {
-    return new Intl.NumberFormat('fa-IR').format(Math.round(amount || 0));
+    return cachedNumberFormatter('fa-IR').format(Math.round(amount || 0));
 }
 
 function validateInstantStock(items) {
@@ -213,7 +262,7 @@ function applyCheckoutAutofill() {
     if (holder) {
         const list = (CustomerAuth.customer?.addresses || []);
         const picker = list.length > 1
-            ? `<div class="acct-autofill-addresses">${list.map(a => `<button type="button" class="acct-chip ${a.isDefault ? 'active' : ''}" onclick="useSavedAddress('${a.id}')">${escapeHTML(a.title)}${a.city ? ' — ' + escapeHTML(a.city) : ''}</button>`).join('')}</div>`
+            ? `<div class="acct-autofill-addresses">${list.map(a => `<button type="button" class="acct-chip ${a.isDefault ? 'active' : ''}" onclick="useSavedAddress('${a.id}', this)">${escapeHTML(a.title)}${a.city ? ' — ' + escapeHTML(a.city) : ''}</button>`).join('')}</div>`
             : '';
         const extra = addr
             ? `آدرس «${escapeHTML(addr.title)}» انتخاب شد.`
@@ -223,7 +272,7 @@ function applyCheckoutAutofill() {
 }
 
 // انتخاب یکی دیگر از آدرس‌های ذخیره‌شده در حساب
-function useSavedAddress(addressId) {
+function useSavedAddress(addressId, btn) {
     const a = (CustomerAuth.customer?.addresses || []).find(x => x.id === addressId);
     if (!a) return;
     const set = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.value = v; };
@@ -234,7 +283,9 @@ function useSavedAddress(addressId) {
     if (a.recipient) set('co-name', a.recipient);
     if (a.phone) set('co-mobile', a.phone);
     document.querySelectorAll('#checkout-autofill .acct-chip').forEach(b => b.classList.remove('active'));
-    event?.currentTarget?.classList.add('active');
+    // The clicked chip is passed explicitly; the legacy global `event` is
+    // unreliable (and undefined when called programmatically).
+    if (btn && btn.classList) btn.classList.add('active');
     showNotification(`آدرس «${a.title}» اعمال شد.`, 'success');
 }
 
@@ -278,12 +329,19 @@ function getShippingQuotes(cartItems, address, now = new Date()) {
 }
 
 function showCheckout() {
+    // renderCheckout → showPage('checkout') already pushes the #/checkout hash;
+    // calling updateHashRoute here would re-render the whole checkout twice.
     renderCheckout();
-    updateHashRoute('checkout');
 }
 
 function renderCheckout() {
     const container = document.getElementById('checkout-content');
+    // Rebuilding the form (e.g. after registering the quote-items RFQ) must
+    // not wipe the address the buyer already typed.
+    const typedAddress = (() => {
+        try { return getCheckoutAddress(); } catch (e) { return null; }
+    })();
+    const hadTypedAddress = typedAddress && Object.values(typedAddress).some(v => v);
     selectedShippingQuote = null;
     const { instant, quote } = splitCartBySellMode();
     if (!AppState.cart.length) {
@@ -331,6 +389,18 @@ function renderCheckout() {
                 <button onclick="downloadLatestProforma()" class="w-full mt-3 border border-gray-200 py-3 rounded-xl font-bold text-gray-700">دانلود پیش‌فاکتور</button>
             </aside>
         </div>`;
+    if (hadTypedAddress) {
+        const restore = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+        restore('co-name', typedAddress.recipient_name);
+        restore('co-company', typedAddress.company);
+        restore('co-mobile', typedAddress.mobile);
+        restore('co-email', typedAddress.email);
+        restore('co-province', typedAddress.province);
+        restore('co-city', typedAddress.city);
+        restore('co-address', typedAddress.full_address);
+        restore('co-postal', typedAddress.postal_code);
+        restore('co-plaque', typedAddress.plaque);
+    }
     applyCheckoutAutofill();
     showPage('checkout');
 }
@@ -380,7 +450,9 @@ function createOrderAndPay() {
     const subtotal = instant.reduce((sum, item) => sum + moneyTomanFromUSD(item.priceUSD) * item.quantity, 0);
     const tax = Math.round(subtotal * 0.09);
     const grand = Math.round(subtotal + tax + selectedShippingQuote.price);
-    const order = { orderNumber: 'PRM-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-6), status: 'PAID', payment_status: 'paid', shipping_status: 'pending', address, items: instant, subtotal, tax, shipping_fee: Math.round(selectedShippingQuote.price), grand_total: grand, shippingQuote: selectedShippingQuote, paidAt: new Date().toLocaleString('fa-IR'), paidAtISO: new Date().toISOString(), events: [{ type: 'ORDER_PAID', actor: 'mock-gateway', at: new Date().toLocaleString('fa-IR') }] };
+    // Two rapid orders (double-click) must not share one number: 4 time digits
+    // plus 2 random digits keep the PRM-YYYY-NNNNNN shape unique enough.
+    const order = { orderNumber: 'PRM-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-4) + Math.floor(Math.random() * 90 + 10), status: 'PAID', payment_status: 'paid', shipping_status: 'pending', address, items: instant, subtotal, tax, shipping_fee: Math.round(selectedShippingQuote.price), grand_total: grand, shippingQuote: selectedShippingQuote, paidAt: new Date().toLocaleString('fa-IR'), paidAtISO: new Date().toISOString(), events: [{ type: 'ORDER_PAID', actor: 'mock-gateway', at: new Date().toLocaleString('fa-IR') }] };
     // Where did today's sale physically come from? Snapshot each item's supplier
     // onto the order so the daily report can answer "we sold from where".
     order.suppliers = {};
@@ -397,7 +469,7 @@ function createOrderAndPay() {
                     : p.supplierIds.map(id => supplierName(id)).join('، ');
             })();
     });
-    instant.forEach(item => { const p = ProductDatabase.find(product => product.id === item.id); if (p) p.stock_reserved += item.quantity; });
+    instant.forEach(item => { const p = ProductDatabase.find(product => product.id === item.id); if (p) { p.stock_reserved += item.quantity; refreshProductAvailability(p); } });
     MockDB.orders.unshift(order);
     MockDB.payments.unshift({ order_id: order.orderNumber, gateway: 'MockPaymentAdapter', amount: grand, status: 'paid', idempotency_key: order.orderNumber, verified_at: new Date().toISOString() });
     createProforma(order, 'issued');
@@ -409,7 +481,11 @@ function createOrderAndPay() {
     updateCartCount();
     showNotification('پرداخت mock با موفقیت verify شد.', 'success');
     renderCheckoutSuccess(order);
-    location.hash = '#/checkout/success/' + order.orderNumber;
+    // pushState (not location.hash) so the success view renders exactly once;
+    // Back still works because popstate routes through routeFromHash.
+    if (location.hash !== '#/checkout/success/' + order.orderNumber) {
+        history.pushState(null, '', '#/checkout/success/' + order.orderNumber);
+    }
 }
 
 function createProforma(order, status = 'draft') {
@@ -419,26 +495,38 @@ function createProforma(order, status = 'draft') {
 }
 
 function getProformaByOrder(orderNumber) {
-    return MockDB.proformas.find(pf => pf.order_id === orderNumber) || MockDB.proformas[0];
+    // Never fall back to another order's proforma: showing/sending the wrong
+    // invoice is worse than showing an explicit "not found" error.
+    return MockDB.proformas.find(pf => pf.order_id === orderNumber);
 }
 
 function buildProformaHtml(order, pf) {
     const trackUrl = `${location.origin}${location.pathname}#/account/orders/${order.orderNumber}`;
     const boLogoAssets = document.getElementById('boLogoAssets')?.outerHTML || '';
-    const rows = order.items.map((item, i) => {
+    // Everything below is buyer- or staff-entered text rendered into a document
+    // that gets downloaded and opened in a new window: escape it all.
+    const addr = order.address || {};
+    const rows = (order.items || []).map((item, i) => {
         const unit = moneyTomanFromUSD(item.priceUSD);
-        return `<tr><td>${i + 1}</td><td><b>${item.code}</b><small>${item.id || ''}</small></td><td>${item.brand}</td><td>${item.quantity}</td><td>${formatToman(unit)}</td><td>۰</td><td>${formatToman(Math.round(unit * 0.09))}</td><td><b>${formatToman(unit * item.quantity)}</b></td></tr>`;
+        const qty = Math.max(0, Number(item.quantity) || 0);
+        return `<tr><td>${i + 1}</td><td><b>${escapeHTML(item.code)}</b><small>${escapeHTML(item.id || '')}</small></td><td>${escapeHTML(item.brand)}</td><td>${qty}</td><td>${formatToman(unit)}</td><td>۰</td><td>${formatToman(Math.round(unit * 0.09))}</td><td><b>${formatToman(unit * qty)}</b></td></tr>`;
     }).join('');
     return `<!DOCTYPE html><html dir="rtl" lang="fa"><head><meta charset="utf-8"><title>${pf.proforma_number}</title><style>
         @page{size:A4;margin:12mm}*{box-sizing:border-box}body{margin:0;background:#e5e7eb;font-family:Tahoma,Arial,sans-serif;color:#0f172a}.page{width:210mm;min-height:297mm;margin:0 auto;background:#fff;position:relative;overflow:hidden;padding:26px 30px}.topbar{height:10px;background:linear-gradient(90deg,#05173d,#1348c8,#e8a81d);margin:-26px -30px 24px}.header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}.brand{display:flex;gap:14px;align-items:center}.logo{width:76px;height:76px;border:1px solid #e2e8f0;border-radius:18px;padding:8px;object-fit:contain}.print-logo{width:220px;max-width:100%;height:auto;padding:8px 10px;direction:ltr}.logo{direction:ltr}.seller h1{font-size:22px;margin:0 0 6px;color:#071426}.seller p,.muted{color:#64748b;font-size:12px;line-height:1.8;margin:0}.docbox{border:1px solid #dbeafe;background:#eff6ff;border-radius:18px;padding:14px 16px;min-width:210px}.docbox h2{margin:0 0 10px;font-size:24px;color:#1348c8}.badge{display:inline-block;border-radius:999px;padding:5px 10px;background:#dcfce7;color:#166534;font-weight:700;font-size:12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px}.panel{border:1px solid #e2e8f0;border-radius:18px;padding:15px;background:#fff}.panel h3{margin:0 0 10px;font-size:15px;color:#071426}.kv{display:grid;grid-template-columns:120px 1fr;gap:7px;font-size:12px;line-height:1.9}.table-wrap{margin-top:24px;border:1px solid #e2e8f0;border-radius:18px;overflow:hidden}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#071b43;color:#fff;padding:11px 8px;text-align:right}td{padding:10px 8px;border-bottom:1px solid #edf2f7}td small{display:block;color:#94a3b8;margin-top:3px}.totals{width:310px;margin-right:auto;margin-top:20px;border:1px solid #e2e8f0;border-radius:18px;padding:14px}.line{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed #e2e8f0;font-size:13px}.line:last-child{border:0}.grand{font-size:18px;font-weight:900;color:#9d6506}.terms{margin-top:18px;background:#f8fafc;border-radius:18px;padding:14px;font-size:11px;color:#475569;line-height:2}.watermark{position:absolute;top:45%;right:8%;font-size:34px;font-weight:900;color:#0714260d;transform:rotate(-18deg);white-space:nowrap}.footer{position:absolute;bottom:18px;right:30px;left:30px;display:flex;justify-content:space-between;color:#94a3b8;font-size:11px;border-top:1px solid #e2e8f0;padding-top:10px}.qr{width:86px;height:86px;border:1px solid #e2e8f0;border-radius:14px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:10px;color:#64748b;padding:8px}.actions{position:fixed;top:18px;left:18px;display:flex;gap:8px}.actions button{border:0;border-radius:12px;background:#0a5cc4;color:white;padding:10px 14px;font-weight:700}@media print{body{background:#fff}.page{margin:0;box-shadow:none}.actions{display:none}}
     </style></head><body><div class="actions"><button onclick="window.print()">چاپ / ذخیره PDF</button></div><main class="page"><div class="topbar"></div><div class="watermark">این سند پیش‌فاکتور است و فاکتور رسمی نهایی نیست</div><section class="header"><div class="brand"><img src="https://bearingonline.ir/images/thumbs/001/0015751_300x300.webp" alt="برینگ آنلاین" class="logo print-logo" onload="this.style.display='block'" onerror="this.style.display='none';if(this.nextElementSibling){this.nextElementSibling.style.display='block';}"><svg class="logo print-logo" style="display:none" viewBox="0 0 360 116" role="img" aria-label="برینگ آنلاین">${boLogoAssets}<use href="#boLogoLockup"></use></svg><svg class="logo" viewBox="0 0 84 84" style="display:none" role="img" aria-label="برینگ آنلاین"><defs><linearGradient id="boBluePf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#163ca5"></stop><stop offset="1" stop-color="#2f6bff"></stop></linearGradient><linearGradient id="boGoldPf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe08a"></stop><stop offset="0.55" stop-color="#e8a81d"></stop><stop offset="1" stop-color="#8a5a06"></stop></linearGradient><radialGradient id="boSteelPf" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#ffffff"></stop><stop offset="0.55" stop-color="#c9d3e6"></stop><stop offset="1" stop-color="#7c8aa3"></stop></radialGradient></defs><path d="M10 58 A31 31 0 0 1 58 24" fill="none" stroke="url(#boBluePf)" stroke-width="7" stroke-linecap="round"></path><path d="M18 60 A25 25 0 0 1 60 38" fill="none" stroke="url(#boGoldPf)" stroke-width="5" stroke-linecap="round" opacity="0.9"></path><circle cx="42" cy="42" r="24" fill="url(#boSteelPf)"></circle><circle cx="42" cy="42" r="24" fill="none" stroke="#0a2358" stroke-width="2" opacity="0.28"></circle><circle cx="42" cy="42" r="16" fill="#071b43"></circle><circle cx="42" cy="42" r="16" fill="none" stroke="url(#boGoldPf)" stroke-width="2"></circle><g fill="url(#boGoldPf)" stroke="#6d4a05" stroke-width="0.6"><circle cx="53" cy="42" r="3.2"></circle><circle cx="49.8" cy="49.8" r="3.2"></circle><circle cx="42" cy="53" r="3.2"></circle><circle cx="34.2" cy="49.8" r="3.2"></circle><circle cx="31" cy="42" r="3.2"></circle><circle cx="34.2" cy="34.2" r="3.2"></circle><circle cx="42" cy="31" r="3.2"></circle><circle cx="49.8" cy="34.2" r="3.2"></circle></g><circle cx="42" cy="42" r="5.4" fill="#0b2560" stroke="#ffd166" stroke-width="1.6"></circle><path d="M30 31 A17 17 0 0 1 45 27" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.65"></path></svg>
-<div class="seller"><h1>برینگ آنلاین | Bearing Online</h1><p>تامین تجهیزات و قطعات یدکی صنایع سنگین</p><p>021-88709158 | info@persiarobot.com</p><p>تهران، سعدی جنوبی، خیابان اکباتان، مرکز تجاری معصومی</p></div></div><div class="docbox"><h2>پیش‌فاکتور</h2><div class="badge">${pf.status === 'issued' ? 'صادر شده' : 'پیش‌نویس'}</div><div class="kv" style="margin-top:10px"><span>شماره:</span><b>${pf.proforma_number}</b><span>سفارش:</span><b>${order.orderNumber}</b><span>صدور:</span><b>${pf.issued_at}</b><span>اعتبار:</span><b>${pf.valid_until}</b></div></div></section><section class="grid"><div class="panel"><h3>مشخصات خریدار</h3><div class="kv"><span>نام:</span><b>${order.address.recipient_name || '-'}</b><span>شرکت:</span><b>${order.address.company || '-'}</b><span>موبایل:</span><b>${order.address.mobile || '-'}</b><span>ایمیل:</span><b>${order.address.email || '-'}</b></div></div><div class="panel"><h3>آدرس تحویل</h3><p class="muted">${order.address.province || ''}، ${order.address.city || ''}، ${order.address.full_address || ''}</p><p class="muted">کدپستی: ${order.address.postal_code || '-'} | پلاک/واحد: ${order.address.plaque || '-'}</p></div></section><section class="table-wrap"><table><thead><tr><th>ردیف</th><th>کد/SKU</th><th>برند</th><th>تعداد</th><th>قیمت واحد</th><th>تخفیف</th><th>مالیات</th><th>مبلغ</th></tr></thead><tbody>${rows}</tbody></table></section><section class="grid"><div class="panel"><h3>ارسال</h3><div class="kv"><span>روش:</span><b>${order.shippingQuote.title}</b><span>هزینه:</span><b>${formatToman(order.shipping_fee)} تومان</b><span>بازه تحویل:</span><b>${order.shippingQuote.eta}</b><span>منبع نرخ:</span><b>${order.shippingQuote.source === 'rules' ? 'برآورد rule-based' : order.shippingQuote.source}</b></div></div><div class="panel"><h3>پیگیری</h3><div class="qr" style="text-align:center"><img src="https://api.qrserver.com/v1/create-qr-code/?size=170x170&margin=8&color=0b2560&data=${encodeURIComponent(trackUrl)}" alt="QR پیگیری سفارش ${order.orderNumber}" style="width:150px;height:150px;border:1px solid #dbeafe;border-radius:12px;padding:6px;background:#fff" onerror="this.style.display='none'"><div style="font-size:11px;font-weight:800;color:#0b2560;margin-top:6px">با دوربین گوشی اسکن کنید</div><div style="font-size:10px;color:#94a3b8;word-break:break-all;margin-top:2px" dir="ltr">${trackUrl}</div><div style="font-size:11px;color:#475569;margin-top:4px">کد پیگیری: <b>${order.orderNumber}</b></div></div></div></section><section class="panel" style="margin-top:14px"><h3>تعهدنامه مرجوعی کالا</h3><div style="font-size:12px;line-height:2.1;color:#334155">برینگ آنلاین در موارد زیر کالا را پس می‌گیرد:<br>۱. <b>مغایرت کالا:</b> اگر کد، برند یا مشخصات کالای ارسالی با پیش‌فاکتور یکی نباشد.<br>۲. <b>خرابی یا ایراد:</b> کالای دارای ایراد فنی یا ظاهری، پس از تایید کارشناسی، تعویض یا عودت وجه می‌شود.<br>۳. <b>آسیب حین حمل:</b> با صورت‌جلسه مامور حمل و عکس بسته‌بندی، کالا جایگزین می‌شود.<br>مهلت اعلام مرجوعی <b>۴۸ ساعت پس از تحویل</b> است؛ کالا نباید نصب یا مصرف شده باشد و بسته‌بندی آن حفظ شود. پس از تایید، تعویض یا عودت مبلغ حداکثر ظرف <b>۷ روز کاری</b> انجام می‌شود. کالای سفارشی و RFQ خاص، به‌جز مغایرت یا خرابی، مرجوع نمی‌شود.</div></section><section class="totals"><div class="line"><span>جمع اقلام</span><b>${formatToman(order.subtotal)} تومان</b></div><div class="line"><span>تخفیف</span><b>۰ تومان</b></div><div class="line"><span>هزینه ارسال</span><b>${formatToman(order.shipping_fee)} تومان</b></div><div class="line"><span>مالیات/عوارض</span><b>${formatToman(order.tax)} تومان</b></div><div class="line grand"><span>مبلغ نهایی</span><b>${formatToman(order.grand_total)} تومان</b></div></section><section class="terms"><b>شرایط:</b> اعتبار قیمت و موجودی تا تاریخ درج‌شده است. زمان حمل تخمینی است و پس از تحویل به حمل‌کننده، کد رهگیری ثبت می‌شود. تغییرات بعدی قیمت محصولات روی این پیش‌فاکتور اثر ندارد.</section><footer class="footer"><span>Persia Robot Machine - PRM</span><span>${pf.proforma_number}</span></footer></main></body></html>`;
+<div class="seller"><h1>برینگ آنلاین | Bearing Online</h1><p>تامین تجهیزات و قطعات یدکی صنایع سنگین</p><p>021-88709158 | info@persiarobot.com</p><p>تهران، سعدی جنوبی، خیابان اکباتان، مرکز تجاری معصومی</p></div></div><div class="docbox"><h2>پیش‌فاکتور</h2><div class="badge">${pf.status === 'issued' ? 'صادر شده' : 'پیش‌نویس'}</div><div class="kv" style="margin-top:10px"><span>شماره:</span><b>${pf.proforma_number}</b><span>سفارش:</span><b>${escapeHTML(order.orderNumber)}</b><span>صدور:</span><b>${pf.issued_at}</b><span>اعتبار:</span><b>${pf.valid_until}</b></div></div></section><section class="grid"><div class="panel"><h3>مشخصات خریدار</h3><div class="kv"><span>نام:</span><b>${escapeHTML(addr.recipient_name) || '-'}</b><span>شرکت:</span><b>${escapeHTML(addr.company) || '-'}</b><span>موبایل:</span><b>${escapeHTML(addr.mobile) || '-'}</b><span>ایمیل:</span><b>${escapeHTML(addr.email) || '-'}</b></div></div><div class="panel"><h3>آدرس تحویل</h3><p class="muted">${escapeHTML(addr.province)}، ${escapeHTML(addr.city)}، ${escapeHTML(addr.full_address)}</p><p class="muted">کدپستی: ${escapeHTML(addr.postal_code) || '-'} | پلاک/واحد: ${escapeHTML(addr.plaque) || '-'}</p></div></section><section class="table-wrap"><table><thead><tr><th>ردیف</th><th>کد/SKU</th><th>برند</th><th>تعداد</th><th>قیمت واحد</th><th>تخفیف</th><th>مالیات</th><th>مبلغ</th></tr></thead><tbody>${rows}</tbody></table></section><section class="grid"><div class="panel"><h3>ارسال</h3><div class="kv"><span>روش:</span><b>${escapeHTML(order.shippingQuote.title)}</b><span>هزینه:</span><b>${formatToman(order.shipping_fee)} تومان</b><span>بازه تحویل:</span><b>${escapeHTML(order.shippingQuote.eta)}</b><span>منبع نرخ:</span><b>${order.shippingQuote.source === 'rules' ? 'برآورد rule-based' : escapeHTML(order.shippingQuote.source)}</b></div></div><div class="panel"><h3>پیگیری</h3><div class="qr" style="text-align:center"><img src="https://api.qrserver.com/v1/create-qr-code/?size=170x170&margin=8&color=0b2560&data=${encodeURIComponent(trackUrl)}" alt="QR پیگیری سفارش ${escapeHTML(order.orderNumber)}" style="width:150px;height:150px;border:1px solid #dbeafe;border-radius:12px;padding:6px;background:#fff" onerror="this.style.display='none'"><div style="font-size:11px;font-weight:800;color:#0b2560;margin-top:6px">با دوربین گوشی اسکن کنید</div><div style="font-size:10px;color:#94a3b8;word-break:break-all;margin-top:2px" dir="ltr">${escapeHTML(trackUrl)}</div><div style="font-size:11px;color:#475569;margin-top:4px">کد پیگیری: <b>${escapeHTML(order.orderNumber)}</b></div></div></div></section><section class="panel" style="margin-top:14px"><h3>تعهدنامه مرجوعی کالا</h3><div style="font-size:12px;line-height:2.1;color:#334155">برینگ آنلاین در موارد زیر کالا را پس می‌گیرد:<br>۱. <b>مغایرت کالا:</b> اگر کد، برند یا مشخصات کالای ارسالی با پیش‌فاکتور یکی نباشد.<br>۲. <b>خرابی یا ایراد:</b> کالای دارای ایراد فنی یا ظاهری، پس از تایید کارشناسی، تعویض یا عودت وجه می‌شود.<br>۳. <b>آسیب حین حمل:</b> با صورت‌جلسه مامور حمل و عکس بسته‌بندی، کالا جایگزین می‌شود.<br>مهلت اعلام مرجوعی <b>۴۸ ساعت پس از تحویل</b> است؛ کالا نباید نصب یا مصرف شده باشد و بسته‌بندی آن حفظ شود. پس از تایید، تعویض یا عودت مبلغ حداکثر ظرف <b>۷ روز کاری</b> انجام می‌شود. کالای سفارشی و RFQ خاص، به‌جز مغایرت یا خرابی، مرجوع نمی‌شود.</div></section><section class="totals"><div class="line"><span>جمع اقلام</span><b>${formatToman(order.subtotal)} تومان</b></div><div class="line"><span>تخفیف</span><b>۰ تومان</b></div><div class="line"><span>هزینه ارسال</span><b>${formatToman(order.shipping_fee)} تومان</b></div><div class="line"><span>مالیات/عوارض</span><b>${formatToman(order.tax)} تومان</b></div><div class="line grand"><span>مبلغ نهایی</span><b>${formatToman(order.grand_total)} تومان</b></div></section><section class="terms"><b>شرایط:</b> اعتبار قیمت و موجودی تا تاریخ درج‌شده است. زمان حمل تخمینی است و پس از تحویل به حمل‌کننده، کد رهگیری ثبت می‌شود. تغییرات بعدی قیمت محصولات روی این پیش‌فاکتور اثر ندارد.</section><footer class="footer"><span>Persia Robot Machine - PRM</span><span>${pf.proforma_number}</span></footer></main></body></html>`;
 }
 
 function downloadProforma(orderNumber) {
     const pf = getProformaByOrder(orderNumber);
     if (!pf) return showNotification('برای این سفارش پیش‌فاکتور ثبت نشده است.', 'error');
-    const order = JSON.parse(pf.snapshot_json);
+    let order;
+    try {
+        order = JSON.parse(pf.snapshot_json);
+    } catch (e) {
+        return showNotification('پیش‌فاکتور ذخیره‌شده خراب است و قابل دانلود نیست.', 'error');
+    }
+    if (!order || !order.orderNumber) return showNotification('پیش‌فاکتور ذخیره‌شده خراب است و قابل دانلود نیست.', 'error');
     const html = buildProformaHtml(order, pf);
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -458,7 +546,7 @@ function downloadLatestProforma() {
 }
 
 function renderCheckoutSuccess(order) {
-    document.getElementById('checkout-content').innerHTML = `<div class="bg-white rounded-2xl shadow-lg p-10 text-center"><i class="fas fa-circle-check text-6xl text-green-600 mb-5"></i><h3 class="text-3xl font-extrabold mb-3">سفارش پرداخت شد</h3><p class="text-gray-500">شماره سفارش: <b>${order.orderNumber}</b></p><p class="text-gray-500 mt-2">ارسال: ${order.shippingQuote.title} | ${order.shippingQuote.eta}</p><div class="flex flex-col md:flex-row justify-center gap-3 mt-8"><button onclick="downloadLatestProforma()" class="btn-primary text-white px-6 py-3 rounded-xl font-bold">دانلود پیش‌فاکتور</button><button onclick="showAccount()" class="btn-accent text-white px-6 py-3 rounded-xl font-bold">پیگیری سفارش</button></div></div>`;
+    document.getElementById('checkout-content').innerHTML = `<div class="bg-white rounded-2xl shadow-lg p-10 text-center"><i class="fas fa-circle-check text-6xl text-green-600 mb-5"></i><h3 class="text-3xl font-extrabold mb-3">سفارش پرداخت شد</h3><p class="text-gray-500">شماره سفارش: <b>${escapeHTML(order.orderNumber)}</b></p><p class="text-gray-500 mt-2">ارسال: ${escapeHTML(order.shippingQuote.title)} | ${escapeHTML(order.shippingQuote.eta)}</p><div class="flex flex-col md:flex-row justify-center gap-3 mt-8"><button onclick="downloadLatestProforma()" class="btn-primary text-white px-6 py-3 rounded-xl font-bold">دانلود پیش‌فاکتور</button><button onclick="showAccount()" class="btn-accent text-white px-6 py-3 rounded-xl font-bold">پیگیری سفارش</button></div></div>`;
     showPage('checkout');
 }
 
@@ -588,7 +676,9 @@ function renderAccountComplaints() {
 
 function copyTracking(orderNumber) {
     const url = `${location.origin}${location.pathname}#/account/orders/${orderNumber}`;
-    navigator.clipboard?.writeText(url);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).catch(() => {});
+    }
     showNotification('لینک پیگیری کپی شد.', 'success');
 }
 

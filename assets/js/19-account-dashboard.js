@@ -104,7 +104,13 @@ function renderAccountDashboard(tab, highlightOrder = '') {
         renderAccountComplaints();
         if (highlightOrder) {
             setTimeout(() => {
-                const el = document.querySelector(`[data-order="${highlightOrder}"]`);
+                // highlightOrder comes from the URL hash: escape it before it
+                // goes into a selector so a crafted link cannot throw here.
+                const safe = typeof CSS !== 'undefined' && CSS.escape
+                    ? CSS.escape(highlightOrder)
+                    : String(highlightOrder).replace(/["\\]/g, '\\$&');
+                let el = null;
+                try { el = document.querySelector(`[data-order="${safe}"]`); } catch (e) { el = null; }
                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 400);
         }
@@ -147,7 +153,7 @@ function accountActivityHTML() {
     }));
     MockDB.rfqs.slice(-2).reverse().forEach(r => items.push({
         title: `استعلام ${r.rfqNumber} در انتظار پاسخ فروش`,
-        meta: `${formatNumber(r.items.length)} قلم استعلامی`,
+        meta: `${formatNumber((r.items || []).length)} قلم استعلامی`,
         muted: true
     }));
     (MockDB.complaints || []).slice(0, 2).forEach(cm => items.push({
@@ -197,9 +203,9 @@ function accountOverviewHTML() {
         ${lastOrder ? `
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border border-[#e6ebf5] rounded-2xl p-4 bg-[#fbfcff]">
                 <div>
-                    <b class="text-gray-900">${lastOrder.orderNumber}</b>
+                    <b class="text-gray-900">${escapeHTML(lastOrder.orderNumber)}</b>
                     <span class="stock-badge in-stock mr-2">${escapeHTML(orderStatusFa(lastOrder.status))}</span>
-                    <p class="text-xs text-gray-400 mt-1.5">مبلغ: ${formatToman(lastOrder.grand_total)} تومان | ارسال: ${lastOrder.shippingQuote.title} | ETA: ${lastOrder.shippingQuote.eta}</p>
+                    <p class="text-xs text-gray-400 mt-1.5">مبلغ: ${formatToman(lastOrder.grand_total)} تومان | ارسال: ${escapeHTML(lastOrder.shippingQuote.title)} | ETA: ${escapeHTML(lastOrder.shippingQuote.eta)}</p>
                 </div>
                 <button onclick="switchAccountTab('orders')" class="acct-btn-ghost flex-none">مشاهده وضعیت <i class="fas fa-arrow-left"></i></button>
             </div>`
@@ -228,6 +234,7 @@ function accountOverviewHTML() {
 
 // ---------- سفارش‌ها ----------
 function orderStatusFa(status) {
+    if (status === 'CANCELLED') return 'لغو شد';
     const found = ORDER_STEPS.find(s => s.key === status);
     return found ? found.label : 'پرداخت موفق';
 }
@@ -262,6 +269,11 @@ function orderMatchesFilter(order) {
 }
 
 function orderTrackHTML(order) {
+    // Cancelled orders are terminal: show a cancelled notice instead of
+    // pointing the progress tracker at the first step.
+    if (order.status === 'CANCELLED') {
+        return `<div class="acct-track-cancelled"><i class="fas fa-ban"></i><span>این سفارش لغو شده است؛ مبلغ (در صورت کسر) طبق قوانین بازگشت وجه عودت داده می‌شود.</span></div>`;
+    }
     const currentIndex = Math.max(0, ORDER_STEPS.findIndex(s => s.key === order.status));
     return ORDER_STEPS.map((step, idx) => {
         const state = idx < currentIndex ? 'done' : idx === currentIndex ? 'current' : '';
@@ -284,11 +296,11 @@ function accountOrdersHTML(highlightOrder = '') {
         const pf = getProformaByOrder(order.orderNumber);
         const hl = highlightOrder && order.orderNumber === highlightOrder;
         const items = (order.items || []).length;
-        return `<div class="acct-order-card ${hl ? 'is-highlight' : ''}" data-order="${order.orderNumber}">
+        return `<div class="acct-order-card ${hl ? 'is-highlight' : ''}" data-order="${escapeHTML(order.orderNumber)}">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div class="min-w-0">
                     <div class="flex flex-wrap items-center gap-2">
-                        <b class="text-lg text-gray-900">${order.orderNumber}</b>
+                        <b class="text-lg text-gray-900">${escapeHTML(order.orderNumber)}</b>
                         <span class="stock-badge in-stock">${escapeHTML(orderStatusFa(order.status))}</span>
                         <span class="stock-badge on-order">${escapeHTML(order.shippingQuote.title)}</span>
                     </div>
@@ -308,7 +320,7 @@ function accountOrdersHTML(highlightOrder = '') {
     const rfqCards = MockDB.rfqs.map(rfq => `<div class="acct-order-card" style="background:#fffdf7;border-color:#fde8b5">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div>
-                <div class="flex flex-wrap items-center gap-2"><b class="text-lg text-gray-900">${rfq.rfqNumber}</b><span class="stock-badge inquiry">در انتظار تأیید فروش</span></div>
+                <div class="flex flex-wrap items-center gap-2"><b class="text-lg text-gray-900">${escapeHTML(rfq.rfqNumber)}</b><span class="stock-badge inquiry">در انتظار تأیید فروش</span></div>
                 <p class="text-sm text-gray-500 mt-2">${formatNumber(rfq.items.length)} قلم استعلامی | کارشناس فروش حداکثر تا ۲۴ ساعت کاری پاسخ می‌دهد.</p>
             </div>
             <button onclick="showNotification('در نسخه واقعی، این درخواست به کارتابل فروش وصل می‌شود.', 'info')" class="acct-btn-ghost flex-none"><i class="fas fa-bell"></i>پیگیری استعلام</button>
@@ -348,7 +360,7 @@ function reorderOrder(orderNumber) {
         const id = line.product_id || line.id;
         if (!id || !ProductDatabase.some(p => p.id === id)) return;
         const qty = Math.max(1, line.quantity || 1);
-        for (let i = 0; i < qty; i++) addToCart(id, line.supplier);
+        addToCart(id, line.supplier, qty, true);
         added++;
     });
     if (!added) return showNotification('اقلام این سفارش دیگر در کاتالوگ موجود نیست.', 'error');
@@ -512,6 +524,7 @@ function saveAddress(event, editId) {
 function deleteAddress(id) {
     const c = CustomerAuth.customer;
     if (!c) return;
+    if (!window.confirm || !confirm('این آدرس حذف شود؟')) return;
     c.addresses = (c.addresses || []).filter(a => a.id !== id);
     if (c.addresses.length && !c.addresses.some(a => a.isDefault)) c.addresses[0].isDefault = true;
     CustomerAuth.persist();
@@ -743,6 +756,7 @@ function changeAccountPassword(event) {
 function removeAccountPassword() {
     const account = CustomerAuth.customer;
     if (!account) return;
+    if (!window.confirm || !confirm('رمز عبور حذف شود؟ از این پس ورود فقط با کد پیامکی خواهد بود.')) return;
     account.password = null;
     CustomerAuth.persist();
     clearPasswordFailures(CustomerAuth.session);

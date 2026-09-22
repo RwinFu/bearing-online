@@ -2,16 +2,22 @@
 // =============================================
 // UTILITY FUNCTIONS
 // =============================================
+const numberFormatterCache = {};
+function cachedNumberFormatter(locale) {
+    if (!numberFormatterCache[locale]) numberFormatterCache[locale] = new Intl.NumberFormat(locale);
+    return numberFormatterCache[locale];
+}
+
 function formatPrice(priceUSD) {
     const tomanPrice = priceUSD * AppState.exchangeRate * (1 + AppState.profitMargin / 100);
-    return new Intl.NumberFormat(AppState.language === 'fa' ? 'fa-IR' : 'en-US').format(Math.round(tomanPrice));
+    return cachedNumberFormatter(AppState.language === 'fa' ? 'fa-IR' : 'en-US').format(Math.round(tomanPrice));
 }
 
 function formatNumber(num) {
     if (AppState.language === 'fa') {
-        return new Intl.NumberFormat('fa-IR').format(num);
+        return cachedNumberFormatter('fa-IR').format(num);
     }
-    return new Intl.NumberFormat('en-US').format(num);
+    return cachedNumberFormatter('en-US').format(num);
 }
 
 // Product photos: real catalogue images live in assets/img/products/. Legacy
@@ -26,7 +32,8 @@ function productTypeIcon(type) {
 
 // Grease uses a free-text label; everything else uses the d×D×B dimensions.
 function productSizeLabel(product) {
-    return product && product.type === 'grease' ? (product.dimensionsLabel || '') : `${product.d}×${product.D}×${product.B} mm`;
+    if (!product) return '';
+    return product.type === 'grease' ? (product.dimensionsLabel || '') : `${product.d}×${product.D}×${product.B} mm`;
 }
 
 // Supplier names shown on a product, or `null` when the product is only in-stock.
@@ -46,14 +53,19 @@ function productSupplierNames(product) {
 
 function showNotification(message, type = 'success') {
     const container = document.getElementById('notification-container');
+    if (!container) return;
     const notification = document.createElement('div');
     notification.className = `notification px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 ${
         type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'
     } text-white`;
-    notification.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-        <span>${message}</span>
-    `;
+    const icon = document.createElement('i');
+    icon.className = `fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}`;
+    // The message is untrusted (it can contain account names, address titles,
+    // stock errors with part codes...), so it is always inserted as text —
+    // never as HTML — to make notification XSS impossible by construction.
+    const text = document.createElement('span');
+    text.textContent = message;
+    notification.append(icon, text);
     container.appendChild(notification);
     setTimeout(() => notification.remove(), 3000);
 }

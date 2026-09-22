@@ -150,5 +150,8 @@ const BrandInfo = {
     'SNR': { country: 'France', logo: 'SNR', color: 'lime', description: 'French bearing manufacturer. Automotive and industrial roller bearings.' },
     'Timken': { country: 'USA', logo: 'TIMKEN', color: 'slate', description: 'Global leader in tapered roller bearings and power transmission.' },
     'Flender': { country: 'Germany', logo: 'FLENDER', color: 'amber', description: 'Gear units, couplings, and drive solutions for heavy industry.' },
-    'ASAHI': { country: 'Japan', logo: 'ASAHI', color: 'violet', description: 'Pillow block bearings (UCP/UCT series) for shaft support applications.' }
+    'ASAHI': { country: 'Japan', logo: 'ASAHI', color: 'violet', description: 'Pillow block bearings (UCP/UCT series) for shaft support applications.' },
+    'RULAND': { country: 'USA', logo: 'RULAND', color: 'stone', description: 'Precision shaft collars, couplings, and motion control components.' },
+    'MIKI PULLEY': { country: 'Japan', logo: 'MIKI PULLEY', color: 'sky', description: 'Flexible couplings and clutch/brake units for precision machinery.' },
+    'MOTOVARIO': { country: 'Italy', logo: 'MOTOVARIO', color: 'red', description: 'Worm and helical gearboxes for industrial power transmission.' }
 };

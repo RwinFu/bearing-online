@@ -60,6 +60,9 @@ function updateOpsBadges() {
 
 function opsLog(action, detail = '') {
     MockDB.events.unshift({ at: new Date().toLocaleString('fa-IR'), role: AppState.staffRole, staff: AppState.staffName || '-', action, detail });
+    // The log grows on every ops click; cap it so localStorage and the
+    // activity render stay bounded in long sessions.
+    if (MockDB.events.length > 300) MockDB.events.length = 300;
     persistState();
     renderOpsActivity();
     updateOpsBadges();
@@ -153,8 +156,18 @@ function saveAdminSettings() {
         showNotification('این نقش اجازه تغییر نرخ دلار را ندارد.', 'error');
         return;
     }
-    AppState.exchangeRate = parseFloat(document.getElementById('admin-exchange-rate').value) || 52000;
-    AppState.profitMargin = parseFloat(document.getElementById('admin-profit-margin').value) || 25;
+    const rate = parseFloat(document.getElementById('admin-exchange-rate').value);
+    const margin = parseFloat(document.getElementById('admin-profit-margin').value);
+    if (!isFinite(rate) || rate <= 0) {
+        showNotification('نرخ دلار باید عدد مثبت باشد.', 'error');
+        return;
+    }
+    if (!isFinite(margin) || margin < 0) {
+        showNotification('حاشیه سود باید صفر یا مثبت باشد.', 'error');
+        return;
+    }
+    AppState.exchangeRate = rate;
+    AppState.profitMargin = margin;
     ProductDatabase.forEach(product => {
         product.unit_price_toman = Math.round(product.priceUSD * AppState.exchangeRate * (1 + AppState.profitMargin / 100));
         product.pricing_updated_at = new Date().toISOString();
@@ -340,8 +353,12 @@ function addProduct() {
         showNotification('فقط مدیر می‌تواند کالا اضافه کند.', 'error');
         return;
     }
-    const brand = document.getElementById('ops-new-brand')?.value.trim() || '';
-    const code = document.getElementById('ops-new-code')?.value.trim() || '';
+    // Staff-entered catalogue text is rendered unescaped in dozens of places
+    // (cards, tables, invoices...) and feeds the search RegExp builder, so it
+    // is sanitized once here at the single input choke point.
+    const cleanText = v => String(v || '').replace(/[<>"'`&\\]/g, '').replace(/\s+/g, ' ').trim().slice(0, 60);
+    const brand = cleanText(document.getElementById('ops-new-brand')?.value);
+    const code = cleanText(document.getElementById('ops-new-code')?.value);
     const price = parseFloat(document.getElementById('ops-new-price')?.value);
     if (!brand || !code) {
         showNotification('برند و کد قطعه الزامی است.', 'error');
@@ -357,8 +374,9 @@ function addProduct() {
     };
     const stock = Math.max(0, parseInt(document.getElementById('ops-new-stock')?.value) || 0);
     const d = num('ops-new-d'), D = num('ops-new-D'), B = num('ops-new-B');
-    const type = document.getElementById('ops-new-type')?.value || 'bearing';
-    const origin = document.getElementById('ops-new-origin')?.value.trim() || '';
+    const rawType = document.getElementById('ops-new-type')?.value || 'bearing';
+    const type = ['bearing', 'linear', 'coupling', 'gearbox', 'grease'].includes(rawType) ? rawType : 'bearing';
+    const origin = cleanText(document.getElementById('ops-new-origin')?.value);
     const supplierIds = [...(document.getElementById('ops-new-suppliers')?.selectedOptions || [])]
         .map(option => option.value)
         .filter(id => id && id !== 'own');
@@ -419,6 +437,14 @@ function deleteProduct(productId) {
     } else if (!MockDB.deletedProducts.includes(productId)) {
         MockDB.deletedProducts.push(productId);
     }
+    // Drop the deleted product from the shopper's lists so compare/cart/wishlist
+    // never render (or crash on) a ghost product.
+    AppState.cart = AppState.cart.filter(i => i.id !== productId);
+    AppState.compareList = AppState.compareList.filter(id => id !== productId);
+    AppState.wishlist = AppState.wishlist.filter(id => id !== productId);
+    updateCartCount();
+    updateCompareCount();
+    updateWishlistCount();
     opsLog('product.delete', `${removed.brand} ${removed.code}`);
     persistState();
     updateFilterCounts();
@@ -510,15 +536,16 @@ function saveSupplier(id) {
     }
     const s = MockDB.suppliers.find(x => x.id === id);
     if (!s) return;
-    const name = document.getElementById('ops-edit-name')?.value.trim() || '';
+    const cleanSupplierText = v => String(v || '').replace(/[<>"']/g, '').trim().slice(0, 120);
+    const name = cleanSupplierText(document.getElementById('ops-edit-name')?.value);
     if (!name) {
         showNotification('نام تامین‌کننده را وارد کنید.', 'error');
         return;
     }
     s.name = name;
-    s.phone = document.getElementById('ops-edit-phone')?.value.trim() || '';
-    s.address = document.getElementById('ops-edit-address')?.value.trim() || '';
-    s.note = document.getElementById('ops-edit-note')?.value.trim() || '';
+    s.phone = cleanSupplierText(document.getElementById('ops-edit-phone')?.value);
+    s.address = cleanSupplierText(document.getElementById('ops-edit-address')?.value);
+    s.note = cleanSupplierText(document.getElementById('ops-edit-note')?.value);
     opsLog('supplier.edit', name);
     persistState();
     renderOpsSuppliers();
@@ -529,9 +556,10 @@ function saveSupplier(id) {
 
 function addSupplier() {
     if (!can('suppliers.write')) { showNotification('این نقش اجازه افزودن تامین‌کننده را ندارد.', 'error'); return; }
-    const name = document.getElementById('ops-sup-name')?.value.trim();
+    const cleanSupplierText = v => String(v || '').replace(/[<>"']/g, '').trim().slice(0, 120);
+    const name = cleanSupplierText(document.getElementById('ops-sup-name')?.value);
     if (!name) { showNotification('نام تامین‌کننده را وارد کنید.', 'error'); return; }
-    MockDB.suppliers.push({ id: 'SUP-' + Date.now(), name, type: 'shop', phone: document.getElementById('ops-sup-phone')?.value.trim() || '', address: document.getElementById('ops-sup-address')?.value.trim() || '', note: document.getElementById('ops-sup-note')?.value.trim() || '' });
+    MockDB.suppliers.push({ id: 'SUP-' + Date.now(), name, type: 'shop', phone: cleanSupplierText(document.getElementById('ops-sup-phone')?.value), address: cleanSupplierText(document.getElementById('ops-sup-address')?.value), note: cleanSupplierText(document.getElementById('ops-sup-note')?.value) });
     ['ops-sup-name','ops-sup-phone','ops-sup-address','ops-sup-note'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     opsLog('supplier.add', name);
     persistState();
@@ -546,6 +574,7 @@ function deleteSupplier(id) {
     ProductDatabase.forEach(p => {
         if (Array.isArray(p.supplierIds) && p.supplierIds.includes(id)) p.supplierIds = p.supplierIds.filter(sid => sid !== id);
         if (p.supplierId === id) { p.supplierId = p.supplierIds[0] || ''; p.stockSource = p.supplierIds.length ? 'supplier' : 'own'; }
+        supplierBookkeeping(p);
     });
     opsLog('supplier.delete', id);
     persistState();
@@ -562,11 +591,9 @@ function updateStock(productId, field, value) {
     }
     const product = ProductDatabase.find(p => p.id === productId);
     if (!product) return;
+    if (field !== 'stock_on_hand' && field !== 'stock_reserved') return;
     product[field] = Math.max(0, parseInt(value) || 0);
-    product.stock = product.stock_on_hand;
-    product.available_to_sell = Math.max(0, product.stock_on_hand - product.stock_reserved);
-    product.sell_mode = product.available_to_sell > 0 ? 'instant' : 'quote';
-    product.stockStatus = product.available_to_sell > 0 ? 'in-stock' : 'inquiry';
+    refreshProductAvailability(product);
     opsLog('stock.update', `${product.brand} ${product.code}: موجودی=${product.stock_on_hand} رزرو=${product.stock_reserved}`);
     persistState();
     updateFilterCounts();
@@ -667,10 +694,12 @@ function setRFQStatus(rfqNumber, status) {
 
 function setRFQField(rfqNumber, field, value) {
     if (!can('rfq.write')) return;
+    if (field !== 'quotedPrice' && field !== 'leadTime') return;
     const rfq = MockDB.rfqs.find(item => item.rfqNumber === rfqNumber);
     if (!rfq) return;
-    rfq[field] = value;
-    persistState();
+    rfq[field] = String(value == null ? '' : value).slice(0, 200);
+    // Fires on every keystroke: debounce the full-state localStorage write.
+    persistStateSoon();
 }
 
 const opsOpenOrders = new Set();
@@ -771,7 +800,7 @@ function renderOpsActivity() {
     if (!container) return;
     const st = container.scrollTop;
     const q = normalizeSearchValue(document.getElementById('ops-activity-filter')?.value || '');
-    const events = MockDB.events.filter(e => !q || normalizeSearchValue(`${e.action} ${e.detail || ''} ${e.staff} ${e.role}`).includes(q));
+    const events = MockDB.events.filter(e => !q || normalizeSearchValue(`${e.action} ${e.detail || ''} ${e.staff} ${e.role}`).includes(q)).slice(0, 100);
     container.innerHTML = events.map(event => `
         <div class="p-3 bg-white rounded-lg border border-gray-100">
             <b>${escapeHTML(event.action)}</b>
@@ -820,8 +849,15 @@ function clubTier(count) {
 }
 
 function syncCustomerClub() {
-    const club = readCustomerClub();
-    MockDB.orders.forEach(order => {
+    // The ledger is rebuilt deterministically from the orders on every call.
+    // (Accumulating into the stored ledger double-counted every order each
+    // time the club tab was merely viewed.)
+    const previous = readCustomerClub();
+    const prevByMobile = {};
+    previous.forEach(m => { if (m && m.mobile) prevByMobile[m.mobile] = m; });
+    const club = [];
+    // Oldest first so firstOrder/lastOrder come out the right way round.
+    [...MockDB.orders].reverse().forEach(order => {
         if (!order.address?.mobile) return;
         const key = String(order.address.mobile).replace(/\D/g, '');
         if (!key) return;
@@ -835,7 +871,7 @@ function syncCustomerClub() {
                 ordersTotal: 0,
                 firstOrder: null,
                 lastOrder: null,
-                createdAt: new Date().toISOString()
+                createdAt: (prevByMobile[key] && prevByMobile[key].createdAt) || new Date().toISOString()
             };
             club.push(member);
         }

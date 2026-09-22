@@ -65,10 +65,9 @@ function initHero3D() {
         kick();
     });
     hero.addEventListener('mouseleave', () => {
+        // Ease back to neutral through the running loop instead of snapping
+        // the transforms to '' (which flickered against the next frame).
         tx = 0; ty = 0;
-        if (title) title.style.transform = '';
-        if (subtitle) subtitle.style.transform = '';
-        if (kicker) kicker.style.transform = '';
-        chips.forEach(c => { c.style.transform = ''; });
+        kick();
     });
 }
