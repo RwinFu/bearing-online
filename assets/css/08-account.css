@@ -558,6 +558,90 @@ html[dir="ltr"] .acct-float > label { transform-origin: top left; }
 
 .acct-trust span i { color: var(--acct-blue); }
 
+/* ---------- رمز عبور ---------- */
+.acct-pw-wrap { position: relative; }
+
+.acct-pw-wrap > input { padding-inline-end: 46px; }
+
+.acct-pw-eye {
+    position: absolute;
+    inset-inline-end: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 11px;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 14px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: background .15s ease, color .15s ease;
+}
+
+.acct-pw-eye:hover { background: #eef2fa; color: var(--acct-blue); }
+
+/* نوار قدرت رمز */
+.acct-pw-meter {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 9px;
+    min-height: 16px;
+}
+
+.acct-pw-meter > i {
+    flex: 1;
+    height: 5px;
+    border-radius: 999px;
+    background: #e6ebf5;
+    transition: background .25s ease;
+}
+
+.acct-pw-meter > span {
+    flex: none;
+    font-size: 11px;
+    font-weight: 900;
+    color: #94a3b8;
+    min-width: 52px;
+    text-align: end;
+}
+
+.acct-pw-meter.s1 > i:nth-child(-n+1) { background: #ef4444; }
+.acct-pw-meter.s2 > i:nth-child(-n+2) { background: #f59e0b; }
+.acct-pw-meter.s3 > i:nth-child(-n+3) { background: #3b82f6; }
+.acct-pw-meter.s4 > i { background: #16a34a; }
+.acct-pw-meter.s1 > span { color: #ef4444; }
+.acct-pw-meter.s2 > span { color: #b45309; }
+.acct-pw-meter.s3 > span { color: #2563eb; }
+.acct-pw-meter.s4 > span { color: #15803d; }
+
+/* ردیف راه‌های جایگزین ورود */
+.acct-alt-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.acct-link-btn {
+    background: none;
+    border: none;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--acct-blue);
+    cursor: pointer;
+    padding: 4px;
+}
+
+.acct-link-btn:hover { text-decoration: underline; }
+
 /* کد تأیید پیامکی */
 .otp-row {
     display: flex;
@@ -1302,6 +1386,125 @@ html[dir="ltr"] .acct-switch input:checked + .track::after { transform: translat
     border-radius: 50%;
     background: #22c55e;
     border: 2px solid var(--acct-navy);
+}
+
+.acct-banner-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* ================================================================
+   موبایل: هدف‌های لمسی بزرگ‌تر، فاصله‌های فشرده‌تر و جلوگیری از زوم iOS
+   ================================================================ */
+
+/* iOS اگر فونت ورودی زیر 16px باشد هنگام فوکوس زوم می‌کند */
+@media (max-width: 767px) {
+    .acct-input,
+    .acct-phone-field input,
+    .otp-box { font-size: 16px; }
+
+    /* هدف لمسی حداقل ۴۴px */
+    .acct-btn-primary,
+    .acct-btn-ghost,
+    .acct-btn-danger { min-height: 48px; padding-block: 13px; width: 100%; }
+
+    .acct-btn-primary.\!py-2,
+    .acct-btn-ghost.\!py-2 { min-height: 40px; width: auto; }
+
+    .acct-pw-eye { width: 42px; height: 42px; }
+    .acct-link-btn { padding: 10px 4px; }
+
+    /* بنر و پنل‌ها فشرده‌تر */
+    .acct-banner { padding: 22px 18px; border-radius: 22px; }
+    .acct-banner-ring { display: none; }
+    .acct-avatar { width: 66px; height: 66px; border-radius: 22px; font-size: 24px; }
+    .acct-avatar::after { inset: -6px; border-radius: 27px; }
+
+    .acct-panel { padding: 18px 15px; border-radius: 20px; }
+    .acct-panel + .acct-panel { margin-top: 14px; }
+    .acct-panel-title { font-size: 15.5px; }
+
+    .acct-stat { padding: 13px 14px; border-radius: 17px; }
+    .acct-stat i { width: 34px; height: 34px; border-radius: 11px; font-size: 13px; }
+    .acct-stat b { font-size: 19px !important; }
+
+    .acct-order-card { padding: 16px 14px; border-radius: 19px; }
+    .acct-address-card { padding: 15px; border-radius: 17px; }
+    .acct-tile { padding: 13px 14px; }
+    .acct-empty { padding: 30px 16px; }
+
+    /* دکمه‌های داخل کارت سفارش: تمام‌عرض و در یک ستون خوانا */
+    .acct-order-card .acct-btn-primary,
+    .acct-order-card .acct-btn-ghost { flex: 1 1 calc(50% - 4px); min-width: 0; }
+
+    /* خط زمانی پیگیری: گام‌های باریک‌تر تا اسکرول کمتری لازم باشد */
+    .acct-track-step { width: 74px; }
+    .acct-track-step span { font-size: 9.5px; }
+    .acct-track-line { min-width: 12px; }
+
+    /* نوار تب‌ها با اسکرول افقی نرم و لبه محوشونده */
+    .acct-tabs {
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+        margin-inline: -16px;
+        padding-inline: 16px;
+        -webkit-mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+        mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+    }
+    .acct-tab { scroll-snap-align: start; padding: 11px 14px; font-size: 13px; }
+
+    /* چیپ فیلترها قابل اسکرول بماند و نشکند */
+    .acct-chip-row {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        margin-inline: -15px;
+        padding-inline: 15px;
+    }
+    .acct-chip-row::-webkit-scrollbar { display: none; }
+    .acct-chip { flex: none; padding: 9px 15px; }
+
+    /* کلید‌های تنظیمات: هدف لمسی بزرگ‌تر */
+    .acct-switch { padding: 14px; }
+    .acct-switch .track { width: 50px; height: 28px; }
+    .acct-switch .track::after { width: 22px; height: 22px; }
+    .acct-switch input:checked + .track::after { transform: translateX(-22px); }
+
+    /* پیامک شبیه‌سازی‌شده: پایین صفحه، تمام‌عرض و بالای safe-area */
+    .sms-sim {
+        left: 10px;
+        right: 10px;
+        width: auto;
+        max-width: none;
+        bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+        border-radius: 18px;
+    }
+    .sms-sim-body { padding: 12px 14px 14px; line-height: 1.95; }
+    .sms-sim-code { font-size: 20px; letter-spacing: 5px; }
+    .sms-sim-fill { min-height: 44px; }
+
+    /* دکمه‌های بنر: دو ستونه به‌جای سه ردیف تمام‌عرض */
+    .acct-banner-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+    .acct-banner-actions > button { width: 100%; min-height: 44px; padding: 11px 10px; font-size: 12.5px; }
+    .acct-banner-actions > button:last-child { grid-column: 1 / -1; }
+
+    /* ردیف جایگزین‌های ورود */
+    .acct-alt-row { margin-top: 14px; padding-top: 14px; }
+}
+
+/* گوشی‌های باریک */
+@media (max-width: 380px) {
+    .acct-form-side { padding: 24px 16px 22px; }
+    .acct-hero { padding: 22px 18px; }
+    .acct-login-card { border-radius: 24px; }
+    .acct-hero-metrics { gap: 4px; }
+    .acct-hero-metrics b { font-size: 15px; }
+    .acct-hero-metrics span { font-size: 9.5px; }
+    .acct-brandmark { margin-bottom: 16px; }
+    .acct-banner { padding: 18px 15px; }
+    .acct-track-step { width: 66px; }
+}
+
+/* حالت افقی کوتاه: کارت ورود نباید وسط‌چین بچسبد */
+@media (max-height: 560px) and (max-width: 900px) {
+    .acct-login-wrap { min-height: 0; align-items: flex-start; }
 }
 
 /* احترام به ترجیح کاهش حرکت */

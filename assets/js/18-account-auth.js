@@ -7,6 +7,7 @@ const CustomerAuth = {
     session: null,         // phone number of the logged-in customer
     lastPhone: '',         // آخرین شماره استفاده‌شده (برای پیش‌پر کردن ورودی)
     otp: null,             // { phone, code, expiresAt, attempts, sentAt }
+    pwFails: {},           // { phone: { count, lockedUntil } } — محدودیت تلاش رمز
     pendingTab: '',
     pendingHighlight: '',
     resendAt: 0,
@@ -29,7 +30,7 @@ const CustomerAuth = {
 
     accountFor(phone) {
         if (!this.accounts[phone]) {
-            this.accounts[phone] = { name: '', email: '', company: '', joinedAt: new Date().toISOString(), addresses: [] };
+            this.accounts[phone] = { name: '', email: '', company: '', joinedAt: new Date().toISOString(), addresses: [], password: null };
         }
         return this.accounts[phone];
     }
@@ -61,6 +62,102 @@ function filterPhoneInput(input) {
 }
 
 function isValidIranPhone(s) { return /^09\d{9}$/.test(s); }
+
+// ---------- رمز عبور (اختیاری، پس از تأیید شماره) ----------
+// توجه: این نسخه نمایشی است و همه‌چیز در localStorage می‌ماند؛ رمز هرگز خام ذخیره
+// نمی‌شود، اما هش سمت-مرورگر جایگزین هش سمت-سرور (bcrypt/argon2) نیست.
+// قرارداد بک‌اند واقعی: POST /api/auth/customer/password  و  POST /api/auth/customer/login
+function hashPassword(password, salt) {
+    // djb2 با چند دور تکرار — فقط برای این دموی بدون بک‌اند
+    let out = '';
+    for (let round = 0; round < 4; round++) {
+        let h = 5381 + round * 7919;
+        const input = salt + '|' + password + '|' + round + '|' + out;
+        for (let i = 0; i < input.length; i++) h = ((h * 33) ^ input.charCodeAt(i)) >>> 0;
+        out += h.toString(36).padStart(7, '0');
+    }
+    return out;
+}
+
+function makePasswordRecord(password) {
+    const salt = Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
+    return { salt, hash: hashPassword(password, salt), updatedAt: new Date().toISOString() };
+}
+
+function verifyPassword(account, password) {
+    const rec = account && account.password;
+    if (!rec || !rec.salt || !rec.hash) return false;
+    return hashPassword(password, rec.salt) === rec.hash;
+}
+
+function hasPassword(phone) {
+    const acc = CustomerAuth.accounts[phone];
+    return !!(acc && acc.password && acc.password.hash);
+}
+
+// سنجش قدرت رمز: ۰ تا ۴
+function passwordStrength(pw) {
+    const value = String(pw || '');
+    if (!value) return { score: 0, label: 'خالی', cls: '' };
+    let score = 0;
+    if (value.length >= 8) score++;
+    if (value.length >= 12) score++;
+    if (/[a-z]/.test(value) && /[A-Z]/.test(value)) score++;
+    if (/\d/.test(value)) score++;
+    if (/[^A-Za-z0-9]/.test(value)) score++;
+    score = Math.min(4, score);
+    const labels = ['خیلی ضعیف', 'ضعیف', 'متوسط', 'خوب', 'عالی'];
+    const classes = ['s0', 's1', 's2', 's3', 's4'];
+    return { score, label: labels[score], cls: classes[score] };
+}
+
+function passwordProblem(pw) {
+    const value = String(pw || '');
+    if (value.length < 8) return 'رمز عبور باید حداقل ۸ کاراکتر باشد.';
+    if (!/[A-Za-z]/.test(value)) return 'رمز عبور باید حداقل یک حرف داشته باشد.';
+    if (!/\d/.test(value)) return 'رمز عبور باید حداقل یک رقم داشته باشد.';
+    return '';
+}
+
+// قفل موقت پس از ۵ تلاش ناموفق رمز
+function passwordLockRemaining(phone) {
+    const rec = CustomerAuth.pwFails[phone];
+    if (!rec || !rec.lockedUntil) return 0;
+    return Math.max(0, rec.lockedUntil - Date.now());
+}
+
+function registerPasswordFailure(phone) {
+    const rec = CustomerAuth.pwFails[phone] || { count: 0, lockedUntil: 0 };
+    rec.count += 1;
+    if (rec.count >= 5) { rec.lockedUntil = Date.now() + 120000; rec.count = 0; }
+    CustomerAuth.pwFails[phone] = rec;
+    return rec;
+}
+
+function clearPasswordFailures(phone) { delete CustomerAuth.pwFails[phone]; }
+
+// نمایش/مخفی کردن رمز
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    if (btn) {
+        btn.innerHTML = `<i class="fas fa-${show ? 'eye-slash' : 'eye'}"></i>`;
+        btn.setAttribute('aria-label', show ? 'پنهان کردن رمز' : 'نمایش رمز');
+    }
+    input.focus();
+}
+
+// به‌روزرسانی زنده نوار قدرت رمز
+function onPasswordInput(input, meterId) {
+    const meter = document.getElementById(meterId || 'pw-meter');
+    if (!meter) return;
+    const st = passwordStrength(input.value);
+    meter.className = 'acct-pw-meter ' + st.cls;
+    const label = meter.querySelector('span');
+    if (label) label.textContent = input.value ? st.label : '';
+}
 
 function maskPhone(p) { return p ? p.slice(0, 4) + '***' + p.slice(7) : ''; }
 
@@ -136,8 +233,9 @@ function copySmsCode(code) {
     } else fallback();
 }
 
-function sendOtp(phone) {
+function sendOtp(phone, intent = '') {
     CustomerAuth.lastPhone = phone;
+    CustomerAuth.pwIntent = intent; // 'reset' → پس از تأیید، حتماً رمز تازه بگیر
     const code = String(Math.floor(10000 + Math.random() * 90000));
     CustomerAuth.otp = { phone, code, expiresAt: Date.now() + 120000, attempts: 0, sentAt: Date.now() };
     CustomerAuth.resendAt = Date.now() + 90000;
@@ -182,11 +280,14 @@ function switchAccountTab(tab) { showAccount(tab); }
 
 // ---------- نمایش صفحه ورود ----------
 function accountStepsHTML(step) {
-    const steps = [
-        { key: 'phone', label: 'شماره موبایل' },
-        { key: 'otp', label: 'کد تأیید' },
-        { key: 'name', label: 'تکمیل پروفایل' }
-    ];
+    // مسیر «ورود با رمز» دو مرحله دارد؛ مسیر پیامکی سه مرحله
+    const steps = step === 'password'
+        ? [{ key: 'phone', label: 'شماره موبایل' }, { key: 'password', label: 'رمز عبور' }]
+        : [
+            { key: 'phone', label: 'شماره موبایل' },
+            { key: 'otp', label: 'کد تأیید' },
+            { key: step === 'setpw' ? 'setpw' : 'name', label: step === 'setpw' ? 'ساخت رمز عبور' : 'تکمیل پروفایل' }
+        ];
     const idx = steps.findIndex(s => s.key === step);
     return `<div class="acct-steps">${steps.map((s, i) => {
         const cls = i < idx ? 'done' : i === idx ? 'active' : '';
@@ -313,6 +414,35 @@ function renderAccountLogin(step, phone, message = '') {
             <p class="text-[11.5px] leading-6 text-gray-400 mt-4">
                 ورود شما به معنای پذیرش شرایط استفاده و حریم خصوصی برینگ آنلاین است.
             </p>`;
+    } else if (step === 'password') {
+        const account = CustomerAuth.accounts[phone] || {};
+        const hello = account.name ? escapeHTML(account.name.split(/\s+/)[0]) : '';
+        formHTML = `
+            ${accountBrandmarkHTML()}
+            ${accountStepsHTML('password')}
+            <h2 class="text-2xl font-black text-gray-900 acct-rise acct-d1">${hello ? hello + ' عزیز، خوش آمدی 👋' : 'ورود با رمز عبور'}</h2>
+            <p class="text-sm text-gray-500 mt-2 acct-rise acct-d2">رمز حساب <b class="text-gray-800" dir="ltr">${maskPhone(phone)}</b> را وارد کنید.</p>
+            <button onclick="renderAccountLogin('phone','${escapeHTML(phone)}')" class="text-xs font-bold text-blue-600 mt-1 hover:underline">
+                <i class="fas fa-pen ml-1"></i>ورود با شماره دیگر
+            </button>
+            ${message ? `<div class="acct-msg-error mb-1 mt-4"><i class="fas fa-circle-exclamation"></i><span>${message}</span></div>` : ''}
+            <form onsubmit="submitPasswordForm(event)" novalidate class="mt-5 acct-rise acct-d3">
+                <label class="block text-sm font-bold text-gray-600 mb-2" for="login-password">رمز عبور</label>
+                <div class="acct-pw-wrap">
+                    <input id="login-password" class="acct-input" type="password" autocomplete="current-password" placeholder="رمز عبور خود را وارد کنید">
+                    <button type="button" class="acct-pw-eye" onclick="togglePasswordVisibility('login-password', this)" aria-label="نمایش رمز"><i class="fas fa-eye"></i></button>
+                </div>
+                <div id="login-password-error" class="hidden acct-msg-error mt-3"><i class="fas fa-circle-exclamation"></i><span></span></div>
+                <button type="submit" class="acct-btn-primary w-full mt-5"><i class="fas fa-right-to-bracket"></i>ورود به حساب</button>
+            </form>
+            <div class="acct-alt-row">
+                <button onclick="loginWithOtpInstead()" class="acct-btn-ghost w-full"><i class="fas fa-comment-sms"></i>ورود با کد پیامکی</button>
+                <button onclick="forgotPassword()" class="acct-link-btn">رمز را فراموش کرده‌ام</button>
+            </div>
+            <div class="acct-trust acct-rise acct-d4">
+                <span><i class="fas fa-lock"></i>رمز شما رمزنگاری‌شده ذخیره می‌شود</span>
+                <span><i class="fas fa-shield-halved"></i>قفل خودکار پس از ۵ تلاش ناموفق</span>
+            </div>`;
     } else if (step === 'otp') {
         formHTML = `
             ${accountBrandmarkHTML()}
@@ -366,6 +496,43 @@ function renderAccountLogin(step, phone, message = '') {
             <div class="acct-trust acct-rise acct-d3">
                 <span><i class="fas fa-user-shield"></i>اطلاعات فقط برای صدور فاکتور استفاده می‌شود</span>
             </div>`;
+    } else if (step === 'setpw') {
+        const resetting = hasPassword(phone);
+        formHTML = `
+            ${accountBrandmarkHTML()}
+            ${accountStepsHTML('setpw')}
+            <div class="flex items-center gap-3 mb-4 acct-rise acct-d1">
+                <div class="acct-avatar" style="width:58px;height:58px;border-radius:18px;font-size:22px;background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#15803d;border-color:#bbf7d0;">
+                    <i class="fas fa-key"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-black text-gray-900">${resetting ? 'رمز تازه بسازید' : 'یک رمز عبور بسازید'}</h2>
+                    <p class="text-sm text-gray-500 mt-1">دفعه بعد می‌توانید بدون منتظرماندن برای پیامک وارد شوید.</p>
+                </div>
+            </div>
+            ${message ? `<div class="acct-msg-error mb-4"><i class="fas fa-circle-exclamation"></i><span>${message}</span></div>` : ''}
+            <form onsubmit="submitSetPasswordForm(event)" novalidate class="acct-rise acct-d2">
+                <label class="block text-sm font-bold text-gray-600 mb-2" for="new-password">رمز عبور جدید</label>
+                <div class="acct-pw-wrap">
+                    <input id="new-password" class="acct-input" type="password" autocomplete="new-password" placeholder="حداقل ۸ کاراکتر شامل حرف و رقم" oninput="onPasswordInput(this,'pw-meter')">
+                    <button type="button" class="acct-pw-eye" onclick="togglePasswordVisibility('new-password', this)" aria-label="نمایش رمز"><i class="fas fa-eye"></i></button>
+                </div>
+                <div class="acct-pw-meter" id="pw-meter"><i></i><i></i><i></i><i></i><span></span></div>
+                <label class="block text-sm font-bold text-gray-600 mb-2 mt-4" for="new-password-2">تکرار رمز عبور</label>
+                <div class="acct-pw-wrap">
+                    <input id="new-password-2" class="acct-input" type="password" autocomplete="new-password" placeholder="رمز را دوباره وارد کنید">
+                    <button type="button" class="acct-pw-eye" onclick="togglePasswordVisibility('new-password-2', this)" aria-label="نمایش رمز"><i class="fas fa-eye"></i></button>
+                </div>
+                <div id="setpw-error" class="hidden acct-msg-error mt-3"><i class="fas fa-circle-exclamation"></i><span></span></div>
+                <button type="submit" class="acct-btn-primary w-full mt-5"><i class="fas fa-shield-halved"></i>ذخیره رمز و ورود</button>
+            </form>
+            <div class="acct-alt-row">
+                <button onclick="skipSetPassword()" class="acct-btn-ghost w-full"><i class="fas fa-forward"></i>فعلاً نه، بعداً می‌سازم</button>
+            </div>
+            <div class="acct-demo-note mt-4">
+                <i class="fas fa-circle-info mt-1"></i>
+                <span>ورود با کد پیامکی همیشه فعال می‌ماند؛ رمز فقط یک راه سریع‌تر است. هر زمان می‌توانید از «پروفایل و امنیت» رمز را تغییر دهید یا بردارید.</span>
+            </div>`;
     }
 
     container.innerHTML = `
@@ -381,7 +548,8 @@ function renderAccountLogin(step, phone, message = '') {
         const phoneInput = container.querySelector('#login-phone');
         if (phoneInput) onPhoneInput(phoneInput);
     }
-    const focusTarget = container.querySelector(step === 'phone' ? '#login-phone' : step === 'otp' ? '.otp-box' : '#welcome-name');
+    const FOCUS_BY_STEP = { phone: '#login-phone', otp: '.otp-box', password: '#login-password', setpw: '#new-password', name: '#welcome-name' };
+    const focusTarget = container.querySelector(FOCUS_BY_STEP[step] || '#welcome-name');
     if (focusTarget) setTimeout(() => focusTarget.focus(), 300);
 }
 
@@ -404,6 +572,65 @@ function submitPhoneForm(event) {
     if (!raw.trim()) return fail('شماره موبایل را وارد کنید.');
     if (!isValidIranPhone(phone)) return fail('شماره موبایل معتبر نیست؛ مثال: 09123456789');
     field?.classList.remove('input-error');
+    CustomerAuth.lastPhone = phone;
+    // اگر برای این شماره رمز ساخته شده، مستقیم صفحه رمز باز می‌شود (بدون پیامک)
+    if (hasPassword(phone)) return renderAccountLogin('password', phone);
+    sendOtp(phone);
+}
+
+// ---------- گام ۲-الف: ورود با رمز عبور ----------
+function submitPasswordForm(event) {
+    event.preventDefault();
+    const phone = CustomerAuth.lastPhone;
+    const input = document.getElementById('login-password');
+    const errorBox = document.getElementById('login-password-error');
+    const account = CustomerAuth.accounts[phone];
+    const fail = msg => {
+        input?.classList.add('input-error');
+        if (errorBox) {
+            errorBox.classList.remove('hidden');
+            errorBox.querySelector('span').textContent = msg;
+        }
+        input?.focus();
+        input?.select();
+    };
+    if (!account) return renderAccountLogin('phone', phone);
+
+    const lock = passwordLockRemaining(phone);
+    if (lock > 0) {
+        return fail(`به دلیل تلاش‌های ناموفق، ورود با رمز تا ${Math.ceil(lock / 1000)} ثانیه دیگر قفل است؛ می‌توانید با کد پیامکی وارد شوید.`);
+    }
+    const value = input ? input.value : '';
+    if (!value) return fail('رمز عبور را وارد کنید.');
+    if (!verifyPassword(account, value)) {
+        const rec = registerPasswordFailure(phone);
+        if (passwordLockRemaining(phone) > 0) {
+            return fail('۵ بار رمز اشتباه وارد شد؛ ورود با رمز ۲ دقیقه قفل شد. با کد پیامکی وارد شوید.');
+        }
+        return fail(`رمز عبور درست نیست. ${5 - rec.count} تلاش تا قفل موقت باقی است.`);
+    }
+    clearPasswordFailures(phone);
+    input?.classList.remove('input-error');
+    CustomerAuth.session = phone;
+    CustomerAuth.persist();
+    updateAccountNav();
+    showNotification(account.name ? `خوش آمدید ${account.name}!` : 'وارد حساب خود شدید.', 'success');
+    if (!account.name) return renderAccountLogin('name', phone);
+    finishLogin();
+}
+
+// فراموشی رمز → بازگشت به مسیر پیامکی با نیت «تعریف رمز تازه»
+function forgotPassword() {
+    const phone = CustomerAuth.lastPhone;
+    if (!phone) return renderAccountLogin('phone', '');
+    showNotification('برای بازنشانی رمز، ابتدا شماره را با کد پیامکی تأیید کنید.', 'info');
+    sendOtp(phone, 'reset');
+}
+
+// ورود با کد پیامکی به‌جای رمز (بدون بازنشانی رمز فعلی)
+function loginWithOtpInstead() {
+    const phone = CustomerAuth.lastPhone;
+    if (!phone) return renderAccountLogin('phone', '');
     sendOtp(phone);
 }
 
@@ -558,11 +785,16 @@ function verifyOtp() {
         clearAccountTimers();
         removeSmsSimulator();
         const account = CustomerAuth.accountFor(otp.phone);
+        const intent = CustomerAuth.pwIntent;
         CustomerAuth.session = otp.phone;
         CustomerAuth.otp = null;
+        CustomerAuth.pwIntent = '';
+        clearPasswordFailures(otp.phone);
         CustomerAuth.persist();
         updateAccountNav();
         if (!account.name) return renderAccountLogin('name', otp.phone);
+        // بازنشانی رمز، یا پیشنهاد ساخت رمز به کسی که هنوز رمز ندارد
+        if (intent === 'reset' || !hasPassword(otp.phone)) return renderAccountLogin('setpw', otp.phone);
         finishLogin();
     }, 450);
 }
@@ -579,6 +811,39 @@ function submitNameForm(event) {
     CustomerAuth.persist();
     updateAccountNav();
     showNotification(`خوش آمدید ${name}!`, 'success');
+    // کاربر تازه: پیشنهاد ساخت رمز برای ورودهای بعدی
+    if (!hasPassword(CustomerAuth.session)) return renderAccountLogin('setpw', CustomerAuth.session);
+    finishLogin();
+}
+
+// ---------- گام ۳-ب: ساخت / بازنشانی رمز عبور ----------
+function submitSetPasswordForm(event) {
+    event.preventDefault();
+    const account = CustomerAuth.customer;
+    if (!account) return renderAccountLogin('phone', '');
+    const pw = document.getElementById('new-password')?.value || '';
+    const pw2 = document.getElementById('new-password-2')?.value || '';
+    const errorBox = document.getElementById('setpw-error');
+    const fail = msg => {
+        if (errorBox) {
+            errorBox.classList.remove('hidden');
+            errorBox.querySelector('span').textContent = msg;
+        }
+        document.getElementById('new-password')?.focus();
+    };
+    const problem = passwordProblem(pw);
+    if (problem) return fail(problem);
+    if (pw !== pw2) return fail('دو رمز واردشده یکسان نیستند.');
+    account.password = makePasswordRecord(pw);
+    CustomerAuth.persist();
+    clearPasswordFailures(CustomerAuth.session);
+    showNotification('رمز عبور ساخته شد؛ دفعه بعد می‌توانید با رمز وارد شوید.', 'success');
+    finishLogin();
+}
+
+// «فعلاً نه» — ورود بدون ساخت رمز
+function skipSetPassword() {
+    showNotification('بدون رمز ادامه دادید؛ هر وقت خواستید از تب «پروفایل و امنیت» رمز بسازید.', 'info');
     finishLogin();
 }
 

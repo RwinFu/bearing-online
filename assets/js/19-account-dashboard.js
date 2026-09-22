@@ -78,7 +78,7 @@ function renderAccountDashboard(tab, highlightOrder = '') {
                         <p class="text-white/70 text-sm mt-1.5">شماره حساب: <b dir="ltr" class="text-white/90">${maskPhone(phone)}</b>${c.company ? ` | ${escapeHTML(c.company)}` : ''}</p>
                         ${sum.next ? `<p class="text-white/60 text-[11.5px] mt-2"><i class="fas fa-arrow-trend-up ml-1"></i>با ${formatNumber(sum.toNext)} سفارش دیگر به سطح بعدی باشگاه مشتریان می‌رسید.</p>` : ''}
                     </div>
-                    <div class="flex flex-wrap gap-2.5">
+                    <div class="acct-banner-actions">
                         <button onclick="switchAccountTab('orders')" class="acct-btn-ghost !bg-white/10 !border-white/30 !text-white hover:!bg-white/20"><i class="fas fa-truck-fast"></i>پیگیری سفارش</button>
                         <button onclick="showPage('search')" class="acct-btn-ghost !bg-white/10 !border-white/30 !text-white hover:!bg-white/20"><i class="fas fa-magnifying-glass"></i>جست‌وجوی کالا</button>
                         <button onclick="logoutCustomer()" class="acct-btn-ghost !bg-transparent !border-white/25 !text-white/85 hover:!bg-white/10"><i class="fas fa-arrow-right-from-bracket"></i>خروج</button>
@@ -586,11 +586,66 @@ function accountProfileHTML() {
         </div>
     </div>
     <div class="acct-panel">
+        <div class="acct-panel-title"><i class="fas fa-key"></i>رمز عبور</div>
+        ${hasPassword(CustomerAuth.session) ? `
+            <div class="acct-msg-success mb-4"><i class="fas fa-circle-check"></i><span>رمز عبور برای این حساب فعال است؛ می‌توانید بدون کد پیامکی وارد شوید.</span></div>
+            <form onsubmit="changeAccountPassword(event)" class="grid md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-bold text-gray-600 mb-2" for="cur-password">رمز فعلی</label>
+                    <div class="acct-pw-wrap">
+                        <input id="cur-password" class="acct-input" type="password" autocomplete="current-password">
+                        <button type="button" class="acct-pw-eye" onclick="togglePasswordVisibility('cur-password', this)" aria-label="نمایش رمز"><i class="fas fa-eye"></i></button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-600 mb-2" for="profile-new-password">رمز جدید</label>
+                    <div class="acct-pw-wrap">
+                        <input id="profile-new-password" class="acct-input" type="password" autocomplete="new-password" oninput="onPasswordInput(this,'profile-pw-meter')">
+                        <button type="button" class="acct-pw-eye" onclick="togglePasswordVisibility('profile-new-password', this)" aria-label="نمایش رمز"><i class="fas fa-eye"></i></button>
+                    </div>
+                    <div class="acct-pw-meter" id="profile-pw-meter"><i></i><i></i><i></i><i></i><span></span></div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-600 mb-2" for="profile-new-password-2">تکرار رمز جدید</label>
+                    <div class="acct-pw-wrap">
+                        <input id="profile-new-password-2" class="acct-input" type="password" autocomplete="new-password">
+                        <button type="button" class="acct-pw-eye" onclick="togglePasswordVisibility('profile-new-password-2', this)" aria-label="نمایش رمز"><i class="fas fa-eye"></i></button>
+                    </div>
+                </div>
+                <div class="md:col-span-2 flex flex-wrap gap-2.5">
+                    <button type="submit" class="acct-btn-primary"><i class="fas fa-floppy-disk"></i>تغییر رمز عبور</button>
+                    <button type="button" onclick="removeAccountPassword()" class="acct-btn-danger"><i class="fas fa-trash"></i>حذف رمز (فقط ورود پیامکی)</button>
+                </div>
+            </form>`
+        : `
+            <p class="text-sm leading-7 text-gray-500">هنوز رمزی نساخته‌اید. با ساخت رمز، دفعه بعد بدون منتظرماندن برای پیامک وارد می‌شوید.</p>
+            <form onsubmit="createAccountPassword(event)" class="grid md:grid-cols-2 gap-4 mt-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-600 mb-2" for="profile-new-password">رمز عبور</label>
+                    <div class="acct-pw-wrap">
+                        <input id="profile-new-password" class="acct-input" type="password" autocomplete="new-password" placeholder="حداقل ۸ کاراکتر شامل حرف و رقم" oninput="onPasswordInput(this,'profile-pw-meter')">
+                        <button type="button" class="acct-pw-eye" onclick="togglePasswordVisibility('profile-new-password', this)" aria-label="نمایش رمز"><i class="fas fa-eye"></i></button>
+                    </div>
+                    <div class="acct-pw-meter" id="profile-pw-meter"><i></i><i></i><i></i><i></i><span></span></div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-600 mb-2" for="profile-new-password-2">تکرار رمز عبور</label>
+                    <div class="acct-pw-wrap">
+                        <input id="profile-new-password-2" class="acct-input" type="password" autocomplete="new-password">
+                        <button type="button" class="acct-pw-eye" onclick="togglePasswordVisibility('profile-new-password-2', this)" aria-label="نمایش رمز"><i class="fas fa-eye"></i></button>
+                    </div>
+                </div>
+                <div class="md:col-span-2">
+                    <button type="submit" class="acct-btn-primary"><i class="fas fa-key"></i>ساخت رمز عبور</button>
+                </div>
+            </form>`}
+    </div>
+    <div class="acct-panel">
         <div class="acct-panel-title"><i class="fas fa-shield-halved"></i>امنیت و نشست‌ها</div>
         <div class="grid md:grid-cols-2 gap-3">
             <div class="border border-[#e6ebf5] rounded-2xl p-4 bg-[#fbfcff]">
                 <b class="text-sm text-gray-800"><i class="fas fa-mobile-screen text-blue-600 ml-1.5"></i>ورود با کد پیامکی</b>
-                <p class="text-xs text-gray-500 leading-6 mt-1.5">حساب شما رمز عبور ندارد؛ هر بار ورود فقط با کد تأیید یک‌بارمصرف پیامکی انجام می‌شود.</p>
+                <p class="text-xs text-gray-500 leading-6 mt-1.5">${hasPassword(CustomerAuth.session) ? 'علاوه بر رمز، همیشه می‌توانید با کد یک‌بارمصرف پیامکی هم وارد شوید.' : 'ورود فعلاً فقط با کد تأیید یک‌بارمصرف پیامکی انجام می‌شود.'}</p>
             </div>
             <div class="border border-[#e6ebf5] rounded-2xl p-4 bg-[#fbfcff]">
                 <b class="text-sm text-gray-800"><i class="fas fa-clock-rotate-left text-amber-500 ml-1.5"></i>عضویت از ${new Date(c.joinedAt || Date.now()).toLocaleDateString('fa-IR')}</b>
@@ -646,5 +701,51 @@ function saveProfileForm(event) {
     CustomerAuth.persist();
     updateAccountNav();
     showNotification('پروفایل به‌روزرسانی شد.', 'success');
+    renderAccountDashboard('profile');
+}
+
+// ---------- مدیریت رمز عبور از داخل حساب ----------
+function createAccountPassword(event) {
+    event.preventDefault();
+    const account = CustomerAuth.customer;
+    if (!account) return;
+    const pw = document.getElementById('profile-new-password')?.value || '';
+    const pw2 = document.getElementById('profile-new-password-2')?.value || '';
+    const problem = passwordProblem(pw);
+    if (problem) return showNotification(problem, 'error');
+    if (pw !== pw2) return showNotification('دو رمز واردشده یکسان نیستند.', 'error');
+    account.password = makePasswordRecord(pw);
+    CustomerAuth.persist();
+    clearPasswordFailures(CustomerAuth.session);
+    showNotification('رمز عبور ساخته شد.', 'success');
+    renderAccountDashboard('profile');
+}
+
+function changeAccountPassword(event) {
+    event.preventDefault();
+    const account = CustomerAuth.customer;
+    if (!account) return;
+    const current = document.getElementById('cur-password')?.value || '';
+    if (!verifyPassword(account, current)) return showNotification('رمز فعلی درست نیست.', 'error');
+    const pw = document.getElementById('profile-new-password')?.value || '';
+    const pw2 = document.getElementById('profile-new-password-2')?.value || '';
+    const problem = passwordProblem(pw);
+    if (problem) return showNotification(problem, 'error');
+    if (pw !== pw2) return showNotification('دو رمز واردشده یکسان نیستند.', 'error');
+    if (verifyPassword(account, pw)) return showNotification('رمز جدید با رمز فعلی یکسان است.', 'error');
+    account.password = makePasswordRecord(pw);
+    CustomerAuth.persist();
+    clearPasswordFailures(CustomerAuth.session);
+    showNotification('رمز عبور تغییر کرد.', 'success');
+    renderAccountDashboard('profile');
+}
+
+function removeAccountPassword() {
+    const account = CustomerAuth.customer;
+    if (!account) return;
+    account.password = null;
+    CustomerAuth.persist();
+    clearPasswordFailures(CustomerAuth.session);
+    showNotification('رمز حذف شد؛ از این پس ورود فقط با کد پیامکی است.', 'info');
     renderAccountDashboard('profile');
 }
