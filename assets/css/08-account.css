@@ -1,0 +1,640 @@
+/* ===== 08-account.css — صفحه حساب کاربری: ورود با کد تأیید پیامکی + داشبورد مشتری ===== */
+
+/* ---------- مشترک ---------- */
+.acct-wrap {
+    background:
+        radial-gradient(1100px 460px at 88% -12%, rgba(47, 107, 255, .12), transparent 60%),
+        radial-gradient(900px 420px at 8% 112%, rgba(232, 168, 29, .10), transparent 55%),
+        #f4f6fb;
+}
+
+.acct-badge-soft {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    background: rgba(255, 255, 255, .14);
+    border: 1px solid rgba(255, 255, 255, .28);
+    color: #fff;
+}
+
+.acct-input {
+    width: 100%;
+    border: 1.5px solid #dbe3f3;
+    border-radius: 13px;
+    padding: 12px 15px;
+    font: inherit;
+    background: #f8faff;
+    color: #0b2560;
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.acct-input:focus {
+    border-color: #2f6bff;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(47, 107, 255, .13);
+}
+
+.acct-input.input-error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, .12);
+}
+
+.acct-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    background: linear-gradient(135deg, #123a92, #2f6bff);
+    color: #fff;
+    font-weight: 800;
+    border-radius: 14px;
+    padding: 13px 24px;
+    box-shadow: 0 12px 26px rgba(47, 107, 255, .32);
+    transition: filter .15s ease, transform .15s ease;
+}
+
+.acct-btn-primary:hover { filter: brightness(1.07); }
+.acct-btn-primary:active { transform: scale(.99); }
+.acct-btn-primary:disabled { opacity: .55; cursor: not-allowed; filter: none; }
+
+.acct-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1.5px solid #dbe3f3;
+    border-radius: 14px;
+    padding: 12px 20px;
+    font-weight: 700;
+    color: #334155;
+    background: #fff;
+    transition: border-color .15s ease, color .15s ease;
+}
+
+.acct-btn-ghost:hover { border-color: #2f6bff; color: #123a92; }
+
+.acct-btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1.5px solid #fecaca;
+    border-radius: 14px;
+    padding: 12px 20px;
+    font-weight: 800;
+    color: #dc2626;
+    background: #fff5f5;
+    transition: background .15s ease;
+}
+
+.acct-btn-danger:hover { background: #fee2e2; }
+
+.acct-msg-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.acct-msg-success {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #15803d;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* ---------- صفحه ورود ---------- */
+.acct-login-wrap {
+    min-height: 64vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 52px 16px;
+}
+
+.acct-login-card {
+    width: 100%;
+    max-width: 980px;
+    background: #fff;
+    border-radius: 26px;
+    border: 1px solid #e6ebf5;
+    box-shadow: 0 26px 70px rgba(11, 37, 96, .16);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+}
+
+.acct-form-side { padding: 42px 40px; }
+
+.acct-hero {
+    position: relative;
+    order: 2;
+    background:
+        radial-gradient(520px 340px at 112% -18%, rgba(47, 107, 255, .6), transparent 62%),
+        radial-gradient(420px 300px at -14% 118%, rgba(232, 168, 29, .34), transparent 58%),
+        linear-gradient(135deg, #0b2560 0%, #123a92 58%, #0b2560 100%);
+    color: #fff;
+    padding: 42px 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    overflow: hidden;
+}
+
+.acct-hero-dots {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(rgba(255, 255, 255, .16) 1px, transparent 1.7px);
+    background-size: 22px 22px;
+    -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, .9), rgba(0, 0, 0, .2));
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, .9), rgba(0, 0, 0, .2));
+}
+
+.acct-hero-bearing { width: 172px; height: 172px; margin-inline-start: -12px; flex: none; }
+
+.acct-hero h3 { font-size: 26px; font-weight: 900; line-height: 1.5; }
+.acct-hero p { color: rgba(255, 255, 255, .78); font-size: 14px; line-height: 2; }
+
+.acct-hero-features { display: grid; gap: 11px; margin-top: 4px; }
+
+.acct-hero-features li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, .92);
+}
+
+.acct-hero-features li i {
+    width: 30px;
+    height: 30px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(255, 209, 102, .16);
+    border: 1px solid rgba(255, 209, 102, .4);
+    color: #ffd166;
+    font-size: 13px;
+}
+
+@media (max-width: 900px) {
+    .acct-login-card { grid-template-columns: 1fr; max-width: 560px; }
+    .acct-hero { order: -1; padding: 30px 28px; gap: 14px; }
+    .acct-hero-bearing { display: none; }
+    .acct-form-side { padding: 30px 24px; }
+}
+
+/* نشانگر مراحل ورود */
+.acct-steps { display: flex; align-items: center; gap: 8px; margin-bottom: 26px; }
+
+.acct-step {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #94a3b8;
+}
+
+.acct-step b {
+    width: 27px;
+    height: 27px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef2fa;
+    border: 1.5px solid #dbe3f3;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.acct-step.active { color: #0b2560; }
+.acct-step.active b { background: #0b2560; border-color: #0b2560; color: #ffd166; }
+.acct-step.done { color: #16a34a; }
+.acct-step.done b { background: #f0fdf4; border-color: #86efac; color: #16a34a; }
+
+.acct-step-line { flex: 1; height: 2px; border-radius: 2px; background: #e6ebf5; }
+
+/* ورودی شماره موبایل */
+.acct-phone-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1.5px solid #dbe3f3;
+    border-radius: 14px;
+    background: #f8faff;
+    padding: 6px 8px 6px 14px;
+    transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.acct-phone-field:focus-within {
+    border-color: #2f6bff;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(47, 107, 255, .13);
+}
+
+.acct-phone-field.input-error { border-color: #ef4444; box-shadow: 0 0 0 4px rgba(239, 68, 68, .12); }
+
+.acct-phone-prefix {
+    flex: none;
+    direction: ltr;
+    font-weight: 900;
+    font-size: 14px;
+    color: #0b2560;
+    background: #eef2ff;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+.acct-phone-field input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    font-weight: 700;
+    color: #0b2560;
+    padding: 10px 4px;
+    direction: ltr;
+    text-align: left;
+    letter-spacing: .5px;
+}
+
+.acct-demo-note {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    background: #fffbeb;
+    border: 1px dashed #fcd34d;
+    border-radius: 12px;
+    color: #92400e;
+    font-size: 12px;
+    line-height: 1.9;
+    padding: 10px 13px;
+}
+
+/* کد تأیید پیامکی */
+.otp-row {
+    display: flex;
+    direction: ltr;
+    justify-content: center;
+    gap: 10px;
+    margin: 22px 0 8px;
+}
+
+.otp-box {
+    width: 54px;
+    height: 60px;
+    border-radius: 14px;
+    border: 2px solid #dbe3f3;
+    background: #f8faff;
+    font-size: 27px;
+    font-weight: 900;
+    text-align: center;
+    color: #0b2560;
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.otp-box:focus { border-color: #2f6bff; background: #fff; box-shadow: 0 0 0 4px rgba(47, 107, 255, .15); }
+.otp-box.otp-error { border-color: #ef4444; box-shadow: 0 0 0 4px rgba(239, 68, 68, .12); }
+.otp-box.otp-ok { border-color: #16a34a; background: #f0fdf4; }
+
+.otp-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 12.5px;
+    color: #64748b;
+    margin-top: 10px;
+}
+
+.otp-meta b { color: #0b2560; }
+
+.otp-resend {
+    background: none;
+    border: none;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #2f6bff;
+    cursor: pointer;
+}
+
+.otp-resend:disabled { color: #94a3b8; cursor: not-allowed; }
+
+/* پیامک شبیه‌سازی‌شده */
+.sms-sim {
+    position: fixed;
+    left: 18px;
+    bottom: 18px;
+    z-index: 120;
+    width: 330px;
+    max-width: calc(100vw - 36px);
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid #e6ebf5;
+    box-shadow: 0 18px 50px rgba(11, 37, 96, .30);
+    overflow: hidden;
+}
+
+.sms-sim-head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    background: linear-gradient(135deg, #0b2560, #123a92);
+    color: #fff;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.sms-sim-head .sms-sim-close {
+    margin-inline-start: auto;
+    background: rgba(255, 255, 255, .14);
+    border: none;
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.sms-sim-body { padding: 14px 16px 16px; font-size: 13px; color: #1f2937; line-height: 2.1; }
+
+.sms-sim-code {
+    display: inline-block;
+    direction: ltr;
+    font-size: 23px;
+    font-weight: 900;
+    letter-spacing: 7px;
+    color: #0b2560;
+    background: #f2f6ff;
+    border: 1.5px dashed #9db8ef;
+    border-radius: 11px;
+    padding: 5px 14px 5px 9px;
+    margin-top: 4px;
+}
+
+/* ---------- داشبورد ---------- */
+.acct-banner {
+    position: relative;
+    border-radius: 26px;
+    overflow: hidden;
+    color: #fff;
+    background:
+        radial-gradient(640px 320px at 92% -30%, rgba(47, 107, 255, .65), transparent 60%),
+        radial-gradient(520px 280px at -8% 135%, rgba(232, 168, 29, .38), transparent 55%),
+        linear-gradient(135deg, #0b2560 0%, #16337e 55%, #0b2560 100%);
+    padding: 30px 32px;
+}
+
+.acct-banner-dots {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(rgba(255, 255, 255, .14) 1px, transparent 1.7px);
+    background-size: 23px 23px;
+    -webkit-mask-image: linear-gradient(200deg, rgba(0, 0, 0, .8), transparent 70%);
+    mask-image: linear-gradient(200deg, rgba(0, 0, 0, .8), transparent 70%);
+}
+
+.acct-avatar {
+    width: 86px;
+    height: 86px;
+    flex: none;
+    border-radius: 26px;
+    background: linear-gradient(135deg, #ffe08a, #e8a81d);
+    color: #0b2560;
+    font-size: 30px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid rgba(255, 255, 255, .65);
+    box-shadow: 0 12px 28px rgba(4, 16, 48, .4);
+}
+
+.acct-banner-ring {
+    position: absolute;
+    inset-inline-end: -46px;
+    top: -46px;
+    width: 190px;
+    height: 190px;
+    border-radius: 50%;
+    border: 22px solid rgba(255, 255, 255, .07);
+    pointer-events: none;
+}
+
+.acct-banner-ring::after {
+    content: "";
+    position: absolute;
+    inset: 14px;
+    border-radius: 50%;
+    border: 10px solid rgba(255, 209, 102, .16);
+}
+
+.acct-stat {
+    background: #fff;
+    border: 1px solid #e6ebf5;
+    border-radius: 18px;
+    padding: 16px 18px;
+    box-shadow: 0 6px 18px rgba(11, 37, 96, .05);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.acct-stat i {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+}
+
+.acct-tabs { display: grid; gap: 9px; position: sticky; top: 18px; }
+
+.acct-tab {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    text-align: start;
+    padding: 12px 16px;
+    border-radius: 15px;
+    font-weight: 800;
+    font-size: 14px;
+    color: #475569;
+    background: #fff;
+    border: 1px solid #e6ebf5;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.acct-tab i { width: 20px; text-align: center; color: #123a92; }
+.acct-tab:hover { border-color: #b9c9ef; }
+
+.acct-tab.active {
+    background: linear-gradient(135deg, #0b2560, #14419f);
+    color: #fff;
+    border-color: #0b2560;
+    box-shadow: 0 12px 26px rgba(11, 37, 96, .28);
+}
+
+.acct-tab.active i { color: #ffd166; }
+
+.acct-tab .count-chip {
+    margin-inline-start: auto;
+    background: #eef2ff;
+    color: #123a92;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 900;
+    padding: 2px 10px;
+}
+
+.acct-tab.active .count-chip { background: rgba(255, 255, 255, .16); color: #ffd166; }
+
+.acct-tab.acct-tab-logout { color: #dc2626; }
+.acct-tab.acct-tab-logout i { color: #dc2626; }
+.acct-tab.acct-tab-logout:hover { border-color: #fecaca; background: #fff5f5; }
+
+@media (max-width: 1023px) {
+    .acct-tabs {
+        display: flex;
+        overflow-x: auto;
+        position: static;
+        padding-bottom: 4px;
+        gap: 8px;
+    }
+    .acct-tab { flex: none; }
+}
+
+.acct-panel {
+    background: #fff;
+    border: 1px solid #e6ebf5;
+    border-radius: 22px;
+    padding: 24px;
+    box-shadow: 0 6px 18px rgba(11, 37, 96, .05);
+}
+
+.acct-panel + .acct-panel { margin-top: 18px; }
+
+.acct-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 17px;
+    font-weight: 900;
+    color: #0b2560;
+    margin-bottom: 16px;
+}
+
+.acct-panel-title i { color: #2f6bff; }
+
+/* آدرس‌ها */
+.acct-address-card {
+    border: 1.5px solid #e6ebf5;
+    border-radius: 18px;
+    padding: 18px;
+    background: #fbfcff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+}
+
+.acct-address-card.is-default { border-color: #ffd166; background: #fffdf4; }
+
+.acct-address-default-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 900;
+    color: #92400e;
+    background: #fef3c7;
+    border-radius: 999px;
+    padding: 3px 11px;
+}
+
+/* پروفایل */
+.acct-verified-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 900;
+    color: #15803d;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 999px;
+    padding: 3px 11px;
+}
+
+.acct-progress-track {
+    height: 9px;
+    border-radius: 999px;
+    background: #eef2fa;
+    overflow: hidden;
+}
+
+.acct-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #123a92, #2f6bff 60%, #ffd166);
+}
+
+/* آواتار کوچک داخل نوار بالا */
+.acct-nav-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ffe08a, #e8a81d);
+    color: #0b2560;
+    font-weight: 900;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, .6);
+}
+
+.acct-nav-dot {
+    position: absolute;
+    top: -3px;
+    inset-inline-end: -3px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #22c55e;
+    border: 2px solid #0b2560;
+}

@@ -43,6 +43,11 @@ function persistState() {
     saveJSON('prm_events', MockDB.events);
     saveJSON('prm_suppliers', MockDB.suppliers);
     saveJSON('prm_complaints', MockDB.complaints);
+    try {
+        if (typeof CustomerAuth !== 'undefined' && CustomerAuth) {
+            CustomerAuth.persist();
+        }
+    } catch (e) {}
     const productOverrides = {};
     ProductDatabase.forEach(p => {
         if (String(p.id || '').startsWith('CUSTOM-')) return;
@@ -123,6 +128,9 @@ function hydrateState() {
     MockDB.complaints = loadJSON('prm_complaints', []);
     MockDB.customProducts = loadJSON('prm_custom_products', []);
     MockDB.deletedProducts = loadJSON('prm_deleted_products', []);
+    try {
+        if (typeof CustomerAuth !== 'undefined' && CustomerAuth.hydrate) CustomerAuth.hydrate();
+    } catch (e) {}
     seedDefaultSuppliers();
     applyProductOverrides();
     const staff = loadJSON('prm_staff', null);
@@ -394,54 +402,7 @@ function renderCheckoutSuccess(order) {
     showPage('checkout');
 }
 
-function showAccount(highlightOrder = '') {
-    const container = document.getElementById('account-content');
-    const orderCards = MockDB.orders.map(order => {
-        const pf = getProformaByOrder(order.orderNumber);
-        const timeline = ['PAID','PICKING','QC_PASSED','PACKED','HANDED_TO_CARRIER','SHIPPED','DELIVERED'];
-        const currentIndex = Math.max(0, timeline.indexOf(order.status));
-        const hl = highlightOrder && order.orderNumber === highlightOrder;
-        return `<div class="bg-white rounded-2xl p-5 shadow-sm border ${hl ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-100'}" data-order="${order.orderNumber}">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <div class="flex flex-wrap items-center gap-2"><b class="text-lg text-gray-900">${order.orderNumber}</b><span class="stock-badge in-stock">پرداخت موفق</span><span class="stock-badge on-order">${order.shippingQuote.title}</span></div>
-                    <p class="text-sm text-gray-500 mt-2">مبلغ: ${formatToman(order.grand_total)} تومان | ETA: ${order.shippingQuote.eta}</p>
-                    <p class="text-xs text-gray-400 mt-1">پیش‌فاکتور: ${pf?.proforma_number || '-'}</p>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                    <button onclick="downloadProforma('${order.orderNumber}')" class="px-4 py-2 rounded-xl border border-gray-200 font-bold">دانلود پیش‌فاکتور</button>
-                    <button onclick="copyTracking('${order.orderNumber}')" class="px-4 py-2 rounded-xl bg-blue-50 text-blue-700 font-bold">کپی لینک پیگیری</button>
-                </div>
-            </div>
-            <div class="mt-5 overflow-x-auto"><div class="flex min-w-max items-center gap-3 text-xs text-gray-500">
-                ${timeline.map((step, idx) => `<div class="flex items-center gap-2 ${idx <= currentIndex ? 'text-blue-700 font-bold' : 'text-gray-400'}"><span class="tracking-dot" style="${idx <= currentIndex ? '' : 'background:#cbd5e1;box-shadow:0 0 0 5px #f1f5f9'}"></span>${step}</div>`).join('<span class="w-8 h-px bg-gray-200"></span>')}
-            </div></div>
-        </div>`;
-    }).join('');
 
-    const rfqCards = MockDB.rfqs.map(rfq => `<div class="bg-orange-50 border border-orange-100 rounded-2xl p-5">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3"><div><b>${rfq.rfqNumber}</b><p class="text-sm text-orange-800 mt-1">${rfq.items.length} قلم استعلامی | وضعیت: در انتظار تایید فروش</p></div><button onclick="showNotification('در نسخه واقعی، این درخواست به کارتابل فروش وصل می‌شود.', 'info')" class="px-4 py-2 rounded-xl bg-white border border-orange-200 text-orange-700 font-bold">درخواست تمدید/پیگیری</button></div>
-    </div>`).join('');
-
-    container.innerHTML = `
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white rounded-2xl p-5 shadow-sm"><p class="text-gray-400 text-sm">سفارش‌ها</p><b class="text-3xl text-gray-900">${MockDB.orders.length}</b></div>
-            <div class="bg-white rounded-2xl p-5 shadow-sm"><p class="text-gray-400 text-sm">پیش‌فاکتورها</p><b class="text-3xl text-gray-900">${MockDB.proformas.length}</b></div>
-            <div class="bg-white rounded-2xl p-5 shadow-sm"><p class="text-gray-400 text-sm">RFQ ها</p><b class="text-3xl text-gray-900">${MockDB.rfqs.length}</b></div>
-        </div>
-        <div class="grid gap-4 mb-8"><h3 class="font-extrabold text-xl">پیگیری سفارش‌ها</h3>${orderCards || '<div class="bg-white rounded-2xl p-8 text-center text-gray-500">سفارشی ثبت نشده است.</div>'}</div>
-        <div class="grid gap-4"><h3 class="font-extrabold text-xl">پیش‌فاکتورهای استعلامی</h3>${rfqCards || '<div class="bg-white rounded-2xl p-8 text-center text-gray-500">RFQ ثبت نشده است.</div>'}</div>
-    `;
-    renderAccountComplaints();
-    if (highlightOrder) {
-        setTimeout(() => {
-            const el = document.querySelector(`[data-order="${highlightOrder}"]`);
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 400);
-    }
-    if (!AppState.routing) updateHashRoute('account');
-    else showPage('account');
-}
 
 function complaintStatusFa(s) {
     return { new: 'جدید', 'in-review': 'در حال بررسی', resolved: 'حل شد', rejected: 'رد شد' }[s] || s;
@@ -529,28 +490,33 @@ function renderOpsComplaints() {
 }
 
 function renderAccountComplaints() {
-    const container = document.getElementById('account-content');
-    if (!container) return;
+    const content = document.getElementById('account-content');
+    if (!content) return;
+    const ordersPanel = document.getElementById('account-orders-panel');
+    const container = ordersPanel || content;
     document.getElementById('account-complaints')?.remove();
     const orders = MockDB.orders.map(o => `<option value="${o.orderNumber}">${o.orderNumber}</option>`).join('');
     const div = document.createElement('div');
     div.id = 'account-complaints';
-    div.className = 'grid gap-4 mt-8';
+    div.className = ordersPanel ? 'grid gap-4 mt-8' : 'grid gap-4 mt-8';
+    const acctWrapper = ordersPanel ? '' : '';
     div.innerHTML = `
-        <h3 class="font-extrabold text-xl">ثبت و پیگیری شکایت</h3>
-        <form id="complaint-form" onsubmit="submitComplaint(event)" class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 grid md:grid-cols-2 gap-3">
-            <select id="cmp-order" class="compact-input"><option value="">بدون شماره سفارش</option>${orders}</select>
-            <select id="cmp-subject" class="compact-input"><option>مغایرت کالا</option><option>خرابی / ایراد فنی</option><option>آسیب حین حمل</option><option>تاخیر در تحویل</option><option>سایر</option></select>
-            <input id="cmp-name" class="compact-input" placeholder="نام شما">
-            <input id="cmp-phone" class="compact-input" placeholder="موبایل">
-            <textarea id="cmp-message" class="compact-input md:col-span-2" rows="3" placeholder="شرح شکایت..."></textarea>
-            <button class="btn-accent text-white px-5 py-3 rounded-xl font-bold md:col-span-2">ثبت شکایت</button>
-        </form>
+        <div class="${ordersPanel ? 'acct-panel' : 'bg-white rounded-2xl p-5 shadow-sm border border-gray-100'}">
+            <h3 class="font-extrabold text-xl ${ordersPanel ? 'acct-panel-title' : 'mb-4'}">${ordersPanel ? '<i class="fas fa-triangle-exclamation"></i>' : ''}ثبت و پیگیری شکایت</h3>
+            <form id="complaint-form" onsubmit="submitComplaint(event)" class="grid md:grid-cols-2 gap-3 ${ordersPanel ? '' : 'mt-4'}">
+                <select id="cmp-order" class="compact-input ${ordersPanel ? 'acct-input' : ''}"><option value="">بدون شماره سفارش</option>${orders}</select>
+                <select id="cmp-subject" class="compact-input ${ordersPanel ? 'acct-input' : ''}"><option>مغایرت کالا</option><option>خرابی / ایراد فنی</option><option>آسیب حین حمل</option><option>تاخیر در تحویل</option><option>سایر</option></select>
+                <input id="cmp-name" class="compact-input ${ordersPanel ? 'acct-input' : ''}" placeholder="نام شما" value="${(typeof CustomerAuth !== 'undefined' && CustomerAuth.customer) ? escapeHTML(CustomerAuth.customer.name||'') : ''}">
+                <input id="cmp-phone" class="compact-input ${ordersPanel ? 'acct-input' : ''}" dir="ltr" placeholder="موبایل" value="${(typeof CustomerAuth !== 'undefined' && CustomerAuth.session) ? escapeHTML(CustomerAuth.session) : ''}">
+                <textarea id="cmp-message" class="compact-input ${ordersPanel ? 'acct-input' : ''} md:col-span-2" rows="3" placeholder="شرح شکایت..."></textarea>
+                <button class="${ordersPanel ? 'acct-btn-primary' : 'btn-accent text-white px-5 py-3 rounded-xl font-bold'} md:col-span-2">${ordersPanel ? '<i class=\"fas fa-paper-plane\"></i>ثبت شکایت' : 'ثبت شکایت'}</button>
+            </form>
+        </div>
         <div class="grid gap-3">${MockDB.complaints.map(c => `
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-2">
+            <div class="${ordersPanel ? 'acct-panel !p-4' : 'bg-white rounded-2xl p-4 shadow-sm border border-gray-100'} flex flex-col md:flex-row md:items-center justify-between gap-2">
                 <div><b>${escapeHTML(c.subject)}</b><div class="text-xs text-gray-400 mt-1">${escapeHTML(c.id)}${c.orderNumber ? ' | سفارش ' + escapeHTML(c.orderNumber) : ''} | ${escapeHTML(c.createdAt)}</div><div class="text-xs text-gray-600 mt-1">${escapeHTML(c.message)}</div>${c.opsReply ? `<div class="text-xs text-green-700 mt-1">پاسخ پشتیبانی: ${escapeHTML(c.opsReply)}</div>` : ''}</div>
                 <span class="stock-badge ${c.status === 'resolved' ? 'in-stock' : c.status === 'new' ? 'inquiry' : 'on-order'}">${complaintStatusFa(c.status)}</span>
-            </div>`).join('') || '<div class="bg-white rounded-2xl p-6 text-center text-gray-400 text-sm">شکایتی ثبت نشده است.</div>'}
+            </div>`).join('') || `<div class="${ordersPanel ? 'acct-panel text-center text-gray-400 text-sm' : 'bg-white rounded-2xl p-6 text-center text-gray-400 text-sm'}">شکایتی ثبت نشده است.</div>`}
         </div>`;
     container.appendChild(div);
 }

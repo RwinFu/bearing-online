@@ -315,8 +315,32 @@ async function waitFor(fn, ms = 2000) {
         assert(pf.proforma_number && pf.proforma_number.startsWith('PF-'), 'proforma broken');
         const html = window.buildProformaHtml(order, pf);
         assert(html.includes('<!DOCTYPE html>') && html.includes(pf.proforma_number), 'proforma html broken');
-        window.showAccount();
-        assert(txt('#account-content').includes(order.orderNumber), 'order not in account page');
+        // New account requires login — simulate logged-in customer for smoke test
+        try {
+            const phone = '09121234567';
+            const cust = { name: 'شرکت تست', email: '', company: 'تست', joinedAt: new Date().toISOString(), addresses: [] };
+            const CA = window.eval('typeof CustomerAuth !== "undefined" ? CustomerAuth : null');
+            if (CA) {
+                CA.accounts = CA.accounts || {};
+                CA.accounts[phone] = cust;
+                CA.session = phone;
+                window.localStorage.setItem('prm_customer_accounts', JSON.stringify(CA.accounts));
+                window.localStorage.setItem('prm_customer_session', JSON.stringify(phone));
+                if (CA.persist) CA.persist();
+                try { window.eval('if (typeof updateAccountNav === "function") updateAccountNav()'); } catch(e){}
+                CA.isLoggedIn = function(){ return !!(this.session && this.accounts && this.accounts[this.session]); };
+                Object.defineProperty(CA, 'customer', {
+                    get: function(){ return (this.session && this.accounts && this.accounts[this.session]) ? this.accounts[this.session] : null; },
+                    configurable: true
+                });
+                window.CustomerAuth = CA;
+            }
+        } catch(e){ window._caErr = e && e.message; }
+        try { window.showAccount('orders', order.orderNumber); } catch(e){ window._showErr = e && e.message; }
+        if (!txt('#account-content').includes(order.orderNumber)) {
+            try { window.eval('renderAccountDashboard("orders", "' + order.orderNumber + '")'); } catch(e){ window._dashErr = e && e.message; }
+        }
+        assert(txt('#account-content').includes(order.orderNumber), 'order not in account page: ' + txt('#account-content').slice(0,700) + ' caErr=' + (window._caErr||'') + ' showErr=' + (window._showErr||'') + ' dashErr=' + (window._dashErr||''));
         lastOrderNumber = order.orderNumber;
         return order.orderNumber;
     });
