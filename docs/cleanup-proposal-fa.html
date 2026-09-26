@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>فهرست موارد اضافی سایت — پیشنهاد برای تأیید</title>
+<style>
+  @font-face { font-family: 'Vazirmatn'; src: url('../assets/vendor/fonts/vazirmatn/vazirmatn-arabic-wght-normal.woff2') format('woff2-variations'); font-weight: 100 900; font-display: swap; }
+  @font-face { font-family: 'Vazirmatn'; src: url('../assets/vendor/fonts/vazirmatn/vazirmatn-latin-wght-normal.woff2') format('woff2-variations'); font-weight: 100 900; unicode-range: U+0000-00FF, U+0131, U+2000-206F; font-display: swap; }
+  :root { --ink:#16213a; --muted:#5b6b8c; --line:#dfe5f0; --bg:#f6f8fc; --card:#fff; --ok:#0b7a4b; --warn:#a45a00; --bad:#b3261e; --accent:#1d4ed8; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:32px 20px 80px; background:var(--bg); color:var(--ink);
+         font-family:'Vazirmatn', Tahoma, system-ui, sans-serif; line-height:1.85; }
+  .wrap { max-width:1000px; margin:0 auto; }
+  h1 { font-size:26px; margin:0 0 6px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:26px; }
+  h2 { font-size:20px; margin:44px 0 6px; padding-bottom:8px; border-bottom:2px solid var(--line); }
+  h2 .tag { font-size:12px; font-weight:400; color:var(--muted); }
+  h3 { font-size:16px; margin:26px 0 8px; }
+  p { margin:8px 0; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px; margin:14px 0; }
+  .lead { background:#eef4ff; border-color:#c7dbff; }
+  .ok { background:#eaf7f0; border-color:#c3e8d5; }
+  .warn { background:#fff8ec; border-color:#f2ddb5; }
+  table { width:100%; border-collapse:collapse; margin:12px 0; font-size:14px; }
+  th, td { border:1px solid var(--line); padding:8px 10px; text-align:right; vertical-align:top; }
+  th { background:#eef2fa; font-weight:700; }
+  td.n { width:52px; text-align:center; color:var(--muted); font-weight:700; }
+  td.s { width:34%; }
+  code, .mono { font-family:ui-monospace, Menlo, Consolas, monospace; direction:ltr; display:inline-block; font-size:13px; }
+  .pill { display:inline-block; padding:1px 9px; border-radius:99px; font-size:12px; font-weight:700; }
+  .pill.b { background:#e6efff; color:#1b3fa8; }
+  .pill.g { background:#e8f7ef; color:var(--ok); }
+  .pill.r { background:#fdeceb; color:var(--bad); }
+  ul { margin:8px 0; padding-inline-start:22px; }
+  li { margin:4px 0; }
+  .small { font-size:13px; color:var(--muted); }
+  .kpi { display:flex; gap:14px; flex-wrap:wrap; margin:16px 0; }
+  .kpi div { flex:1 1 150px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; }
+  .kpi b { display:block; font-size:22px; }
+  footer { margin-top:50px; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>فهرست موارد اضافی سایت — برای تأیید شما</h1>
+<div class="sub">
+  نتیجهٔ تحلیل کامل سایت «بیرینگ آنلاین» — نسخهٔ ۱ · هر مورد شماره دارد.
+  هیچ‌کدام از موارد این فهرست <b>بدون تأیید شما</b> حذف نمی‌شود.
+</div>
+
+<div class="card lead">
+  <b>چطور تأیید کنید:</b>
+  <p>کافی است در گفتگو بنویسید «همه»، یا شماره‌ها را بگویید (مثلاً «۱ تا ۱۲ و ۳۱، ۳۲»)،
+  یا هر گروه را جدا تأیید کنید (بخش ۱ = CSS، بخش ۲ = توابع JS، بخش ۳ = نشانه‌گذاری).
+  اگر موردی را نمی‌خواهید، فقط بگویید «حذف نشود».</p>
+</div>
+
+<h2>۰. خلاصهٔ وضعیت</h2>
+<div class="kpi">
+  <div><b>۵۵</b> انتخابگر CSS استفاده‌نشده<br><span class="small">≈۱۵ کیلوبایت</span></div>
+  <div><b>۷</b> تابع JS بدون هیچ استفاده<br><span class="small">+ ۲ تابعی که همراه رفع اشکال حذف شد</span></div>
+  <div><b>۱</b> بلوک نشانه‌گذاری خالی<br><span class="small">+ ۲ شناسهٔ بدون استفاده</span></div>
+  <div><b>۴</b> تصمیم دربارهٔ انیمیشن‌ها<br><span class="small">هیچ‌کدام اشکال نیستند</span></div>
+</div>
+
+<div class="card ok">
+  <b>آنچه در همین بازبینی <u>درست شد</u> (بدون نیاز به تأیید، چون اشکال واقعی بودند):</b>
+  <ul>
+    <li><b>نشانگر ماوس روی دسکتاپ نامرئی شده بود.</b> قاعدهٔ <span class="mono">body{cursor:none}</span> فعال بود
+      ولی کدی که نشانگر سفارشی را حرکت می‌داد هیچ‌وقت اجرا نمی‌شد؛ نتیجه: بازدیدکنندهٔ دسکتاپ اصلاً نشانگر نمی‌دید.
+      قاعدهٔ CSS، نشانه‌گذاری <span class="mono">#cursor-dot/#cursor-ring</span> و دو تابع مردهٔ مربوط به آن حذف شد.
+      <span class="pill r">رفع شد</span></li>
+    <li><b>سرریز افقی صفحهٔ حساب کاربری در موبایل</b> (عرض ۳۲۰px) — با
+      <span class="mono">overflow-x: clip</span> و نسخهٔ پشتیبان <span class="mono">@supports</span> رفع شد. <span class="pill g">رفع شد</span></li>
+    <li><b>کندی و لگ هنگام اسکرول</b> — حلقه‌های انیمیشن در هر فریم حدود ۷۸۵ بار موقعیت عناصر و ۱۰۴۷ بار استایل محاسبه‌شده را
+      می‌خواندند (اجبار مرورگر به محاسبهٔ مجدد چیدمان). حالا در حالت بی‌کاری به <b>صفر</b> رسیده؛ خواندن‌ها فقط هنگام اسکرول و با آهنگ ۴ بار در ثانیه انجام می‌شود. <span class="pill g">رفع شد</span></li>
+    <li><b>احترام به «کاهش حرکت» سیستمی</b> — حلقهٔ لوگوتایپ در حالت <span class="mono">prefers-reduced-motion</span>
+      دیگر ۶۰ فریم در ثانیه تصویر تکراری نمی‌کشد؛ یک‌بار می‌کشد و متوقف می‌شود. <span class="pill g">رفع شد</span></li>
+  </ul>
+</div>
+
+<h2>۱. CSS استفاده‌نشده <span class="tag">— ۵۵ انتخابگر، ≈۱۵ کیلوبایت</span></h2>
+<p class="small">
+  روش اندازه‌گیری: استخراج همهٔ کلاس‌های اعلام‌شده در ۹ فایل CSS، سپس جستجوی آن‌ها در
+  <span class="mono">index.html</span>، قالب‌های HTML که با JS ساخته می‌شوند، و DOM زندهٔ همهٔ صفحه‌ها.
+  نتیجهٔ خام در <span class="mono">.arena/audit/dead-css.json</span>.
+  حذف این‌ها ظاهر سایت را تغییر نمی‌دهد (هیچ عنصری این کلاس‌ها را دریافت نمی‌کند).
+</p>
+
+<h3>۱-۱ · صفحهٔ «دربارهٔ ما» — ۱۲ مورد <span class="small">(ملک فایل 03-about.css · ≈۷.۷KB با بقیهٔ موارد همین فایل)</span></h3>
+<table>
+  <tr><th class="n">#</th><th>انتخابگر</th><th>توضیح</th></tr>
+  <tr><td class="n">1</td><td class="s"><code>.about-full</code></td><td>پس‌زمینهٔ لایهٔ تمام‌عرض درباره‌ما — در HTML وجود ندارد</td></tr>
+  <tr><td class="n">2</td><td class="s"><code>.about-bearing-wrap</code></td><td>قاب بلبرینگ سه‌بعدی صفحهٔ درباره — جایگزین شده</td></tr>
+  <tr><td class="n">3</td><td class="s"><code>.bearing-viewport</code></td><td>نمای بلبرینگ — بازماندهٔ نسخهٔ قبلی</td></tr>
+  <tr><td class="n">4</td><td class="s"><code>.bearing-scan</code></td><td>خط اسکن روی بلبرینگ — عنصرش وجود ندارد</td></tr>
+  <tr><td class="n">5</td><td class="s"><code>.fallback-bearing</code></td><td>حالت جانشین بلبرینگ — هیچ‌وقت فعال نمی‌شود</td></tr>
+  <tr><td class="n">6</td><td class="s"><code>.about-overlay</code></td><td>لایهٔ رویی بخش درباره</td></tr>
+  <tr><td class="n">7</td><td class="s"><code>.about-frame</code></td><td>کادر تزئینی بخش درباره</td></tr>
+  <tr><td class="n">8</td><td class="s"><code>.about-eyebrow</code></td><td>برچسب کوچک بالای عنوان</td></tr>
+  <tr><td class="n">9</td><td class="s"><code>.about-title</code></td><td>عنوان بخش درباره</td></tr>
+  <tr><td class="n">10</td><td class="s"><code>.about-lead</code></td><td>متن مقدمه</td></tr>
+  <tr><td class="n">11</td><td class="s"><code>.about-legend</code></td><td>راهنمای زیر تصویر</td></tr>
+  <tr><td class="n">12</td><td class="s"><code>.about-stat</code></td><td>کارت آمار بخش درباره</td></tr>
+</table>
+
+<h3>۱-۲ · ابزارک‌های عمومی و انیمیشن‌های بی‌مصرف — ۱۲ مورد <span class="small">(01-base.css · 04-motion.css · ≈۲.۱KB)</span></h3>
+<table>
+  <tr><th class="n">#</th><th>انتخابگر</th><th>توضیح</th></tr>
+  <tr><td class="n">13</td><td class="s"><code>.accent-word</code></td><td>واژهٔ رنگی در متن — در هیچ صفحه‌ای به‌کار نرفته</td></tr>
+  <tr><td class="n">14</td><td class="s"><code>.text-gradient</code></td><td>متن گرادیانی — استفاده نشده</td></tr>
+  <tr><td class="n">15</td><td class="s"><code>.gradient-animated</code></td><td>گرادیان متحرک — استفاده نشده (+ کی‌فریم مربوطه)</td></tr>
+  <tr><td class="n">16</td><td class="s"><code>.border-animated</code></td><td>حاشیهٔ متحرک — استفاده نشده</td></tr>
+  <tr><td class="n">17</td><td class="s"><code>.shimmer</code></td><td>درخشش سطحی — استفاده نشده</td></tr>
+  <tr><td class="n">18</td><td class="s"><code>.pulse-glow</code></td><td>هالهٔ تپنده — استفاده نشده</td></tr>
+  <tr><td class="n">19</td><td class="s"><code>.zoom-hover</code></td><td>بزرگ‌نمایی هنگام هاور</td></tr>
+  <tr><td class="n">20</td><td class="s"><code>.zoom-target</code></td><td>هدف بزرگ‌نمایی</td></tr>
+  <tr><td class="n">21</td><td class="s"><code>.tilt-inner</code></td><td>لایهٔ داخلی افکت کج‌شدن</td></tr>
+  <tr><td class="n">22</td><td class="s"><code>.reveal-left</code></td><td>ظهور از چپ (گونهٔ چپ هیچ‌جا نیست)</td></tr>
+  <tr><td class="n">23</td><td class="s"><code>.reveal-right</code></td><td>ظهور از راست</td></tr>
+  <tr><td class="n">24</td><td class="s"><code>.brand-logo</code></td><td>لوگوی برند — با کلاس‌های جدید جایگزین شده</td></tr>
+</table>
+
+<h3>۱-۳ · صفحهٔ برندها — ۱۲ مورد <span class="small">(05-brand-carousel.css · ≈۵.۴KB)</span></h3>
+<table>
+  <tr><th class="n">#</th><th>انتخابگر</th><th>توضیح</th></tr>
+  <tr><td class="n">25</td><td class="s"><code>.rc-story</code></td><td>کارت داستان برند — طرح قدیمی</td></tr>
+  <tr><td class="n">26</td><td class="s"><code>.rc-story-badge</code></td><td>نشان روی کارت داستان</td></tr>
+  <tr><td class="n">27</td><td class="s"><code>.rc-story-count</code></td><td>شمارندهٔ کارت داستان</td></tr>
+  <tr><td class="n">28</td><td class="s"><code>.rc-story-cta</code></td><td>دکمهٔ کارت داستان</td></tr>
+  <tr><td class="n">29</td><td class="s"><code>.rc-story-foot</code></td><td>پاورقی کارت داستان</td></tr>
+  <tr><td class="n">30</td><td class="s"><code>.rc-story-origin</code></td><td>کشور سازنده روی کارت</td></tr>
+  <tr><td class="n">31</td><td class="s"><code>.rcStoryText</code></td><td>متن داستان برند (شناسهٔ قدیمی)</td></tr>
+  <tr><td class="n">32</td><td class="s"><code>.rc-gold-bar</code></td><td>نوار طلایی کارت</td></tr>
+  <tr><td class="n">33</td><td class="s"><code>.rc-pill</code></td><td>قرص/برچسب کوچک کارت</td></tr>
+  <tr><td class="n">34</td><td class="s"><code>.rc-hint</code></td><td>راهنمای کارت</td></tr>
+  <tr><td class="n">35</td><td class="s"><code>.text-gradient-animated</code></td><td>متن گرادیانی متحرک</td></tr>
+  <tr><td class="n">36</td><td class="s"><code>.eq-bar</code></td><td>میلهٔ اکولایزر تزئینی</td></tr>
+</table>
+
+<h3>۱-۴ · جستجو — ۴ مورد</h3>
+<table>
+  <tr><th class="n">#</th><th>انتخابگر</th><th>توضیح</th></tr>
+  <tr><td class="n">37</td><td class="s"><code>.search-scope-grid</code></td><td>شبکهٔ دامنهٔ جستجو — ساختار قدیمی</td></tr>
+  <tr><td class="n">38</td><td class="s"><code>.stock-source-chip</code></td><td>برچسب منبع موجودی</td></tr>
+  <tr><td class="n">39</td><td class="s"><code>.filter-checkbox</code></td><td>چک‌باکس فیلتر — با استایل فعلی جایگزین شده</td></tr>
+  <tr><td class="n">40</td><td class="s"><code>.spec-chip</code></td><td>برچسب مشخصات فنی</td></tr>
+</table>
+
+<h3>۱-۵ · هدر و قهرمان صفحه — ۴ مورد</h3>
+<table>
+  <tr><th class="n">#</th><th>انتخابگر</th><th>توضیح</th></tr>
+  <tr><td class="n">41</td><td class="s"><code>.hero-microcopy</code></td><td>متن ریز زیر عنوان قهرمان</td></tr>
+  <tr><td class="n">42</td><td class="s"><code>.tracking-dot</code></td><td>نقطهٔ ردیابی</td></tr>
+  <tr><td class="n">43</td><td class="s"><code>.typing-caret</code></td><td>نشانگر تایپ (قابلیت حذف‌شده)</td></tr>
+  <tr><td class="n">44</td><td class="s"><code>.wave-link</code></td><td>لینک موج‌دار</td></tr>
+</table>
+
+<h3>۱-۶ · پنل عملیات — ۳ مورد</h3>
+<table>
+  <tr><th class="n">#</th><th>انتخابگر</th><th>توضیح</th></tr>
+  <tr><td class="n">45</td><td class="s"><code>.ops-shell</code></td><td>پوستهٔ پنل — با ساختار جدید جایگزین شده</td></tr>
+  <tr><td class="n">46</td><td class="s"><code>.ops-sup-toggle</code></td><td>کلید تأمین‌کننده — بدون عنصر</td></tr>
+  <tr><td class="n">47</td><td class="s"><code>.ops-sup-clear</code></td><td>پاک‌کردن تأمین‌کننده — بدون عنصر</td></tr>
+</table>
+
+<h3>۱-۷ · متفرقه — ۸ مورد</h3>
+<table>
+  <tr><th class="n">#</th><th>انتخابگر</th><th>توضیح</th></tr>
+  <tr><td class="n">48</td><td class="s"><code>.compare-badge</code></td><td>نشان مقایسه — استایل جدید جایش را گرفته</td></tr>
+  <tr><td class="n">49</td><td class="s"><code>.brand-logo-img</code></td><td>تصویر لوگوی برند</td></tr>
+  <tr><td class="n">50</td><td class="s"><code>.scrollbar-hide</code></td><td>مخفی‌کردن نوار اسکرول — هیچ‌جا اعمال نشده</td></tr>
+  <tr><td class="n">51</td><td class="s"><code>.grad</code></td><td>کلاس گرادیان کوتاه</td></tr>
+  <tr><td class="n">52</td><td class="s"><code>.lbl</code></td><td>برچسب کوتاه — نام‌گذاری قدیمی</td></tr>
+  <tr><td class="n">53</td><td class="s"><code>.c1</code></td><td>کلاس کوتاه بدون مصرف</td></tr>
+  <tr><td class="n">54</td><td class="s"><code>.c2</code></td><td>کلاس کوتاه بدون مصرف</td></tr>
+  <tr><td class="n">55</td><td class="s"><code>.c3</code></td><td>کلاس کوتاه بدون مصرف</td></tr>
+</table>
+
+<div class="card warn">
+  <b>نکتهٔ ایمنی:</b> در حالت عادی بخشی از کلاس‌ها ممکن است فقط در مسیرهایی ظاهر شوند که با کلیک‌های پشت‌سرهم
+  (خرید، ورود، پنل عملیات) باز می‌شوند. برای همین کلاس‌ها در DOM زندهٔ <b>همهٔ ۱۹ حالت</b> جستجو شده‌اند،
+  نه فقط صفحهٔ اول. اگر پس از حذف، جاهایی از ظاهر تغییر کرد، همان لحظه قابل برگشت است (تاریخچه/بکاپ دارد).
+</div>
+
+<h2>۲. توابع JS بدون استفاده <span class="tag">— ۷ تابع</span></h2>
+<p class="small">
+  از میان ۳۳۳ تابع سطح‌بالا در ۱۹ فایل، این ۷ تابع در هیچ نقطه‌ای از سایت (نه در HTML، نه در قالب‌های ساخته‌شده با JS،
+  نه در فراخوانی‌های غیرمستقیم) صدا زده نمی‌شوند.
+</p>
+<table>
+  <tr><th class="n">#</th><th>تابع</th><th>فایل</th><th>توضیح</th></tr>
+  <tr><td class="n">56</td><td class="s"><code>extractClearanceQuery()</code></td><td>06-search.js</td><td>استخراج کوئری لقی — بخشی از یک موتور جستجوی قدیمی که جایگزین شده</td></tr>
+  <tr><td class="n">57</td><td class="s"><code>hasAllMeaningfulTokens()</code></td><td>06-search.js</td><td>همراه تابع بالا؛ هیچ فراخوان‌کننده‌ای ندارد</td></tr>
+  <tr><td class="n">58</td><td class="s"><code>productMatchesPartQuery()</code></td><td>06-search.js</td><td>همراه تابع بالا</td></tr>
+  <tr><td class="n">59</td><td class="s"><code>productSuppliers()</code></td><td>14-admin.js</td><td>تأمین‌کنندگان محصول — پنل عملیات از فیلد <span class="mono">suppliers</span> مستقیم می‌خواند</td></tr>
+  <tr><td class="n">60</td><td class="s"><code>replaceProductSuppliers()</code></td><td>14-admin.js</td><td>همان گروه</td></tr>
+  <tr><td class="n">61</td><td class="s"><code>setProductSource()</code></td><td>14-admin.js</td><td>تنظیم منبع محصول — بدون دکمهٔ مربوطه</td></tr>
+  <tr><td class="n">62</td><td class="s"><code>toggleProductSupplier()</code></td><td>14-admin.js</td><td>همان گروه</td></tr>
+</table>
+
+<div class="card">
+  <b>افشای شفاف — دو تابعی که همراه رفع اشکال حذف شدند:</b>
+  <p class="small">
+    <span class="mono">initCursor()</span> و <span class="mono">initTypingPlaceholder()</span> در فایل
+    <span class="mono">16-animations.js</span> مرده بودند و هیچ‌وقت صدا زده نمی‌شدند، ولی نشانگر ماوس را روی دسکتاپ
+    <b>نامرئی</b> می‌کردند (چون CSS منتظر نشانگر سفارشی‌ای بود که هرگز حرکت نمی‌کرد). چون بخشی از همان اشکال بودند،
+    همراه قاعدهٔ CSS و نشانه‌گذاری‌شان حذف شدند. اگر ترجیح می‌دهید بمانند، بگویید تا برگردانم.
+  </p>
+</div>
+
+<h2>۳. نشانه‌گذاری اضافی <span class="tag">— ۱ بلوک + ۲ شناسه</span></h2>
+<table>
+  <tr><th class="n">#</th><th>مورد</th><th>وضعیت</th><th>پیشنهاد</th></tr>
+  <tr><td class="n">63</td><td class="s"><code>&lt;div id="home-brands-grid" class="hidden"&gt;&lt;/div&gt;</code></td>
+      <td>خالی، مخفی، و در هیچ CSS/JS استفاده نشده</td>
+      <td>حذف شود</td></tr>
+  <tr><td class="n">64</td><td class="s"><code>id="brandViewport"</code></td>
+      <td>شناسه هیچ‌جا استفاده نمی‌شود (استایل‌ها با کلاس <span class="mono">.round-viewport</span> اعمال می‌شوند)</td>
+      <td>حذف شناسه — عنصر و ظاهرش دست‌نخورده می‌ماند (اختیاری)</td></tr>
+  <tr><td class="n">65</td><td class="s"><code>id="main-content"</code></td>
+      <td>شناسهٔ <span class="mono">&lt;main&gt;</span> بدون لینک پرش</td>
+      <td><b>حذف نکنیم</b>؛ به‌جایش یک «پرش به محتوا» برای دسترس‌پذیری اضافه شود</td></tr>
+</table>
+
+<h2>۴. انیمیشن‌ها — تصمیم‌های ظاهری <span class="tag">— هیچ‌کدام اشکال نیستند</span></h2>
+<p class="small">
+  کندی‌ای که حس می‌شد ریشه‌اش انیمیشن‌های CSS نبود، بلکه خواندن‌های مکرر چیدمان در JS بود که رفع شد.
+  انیمیشن‌های باقی‌مانده روی لایهٔ گرافیکی اجرا می‌شوند و بار محسوسی روی پردازنده ندارند.
+  پس این‌ها فقط «سلیقه» هستند، نه اشکال:
+</p>
+<table>
+  <tr><th class="n">#</th><th>مورد</th><th>وضعیت فعلی</th><th>پیشنهاد من</th></tr>
+  <tr><td class="n">D1</td><td class="s">جاروی نور روی صفحهٔ اصلی (هالهٔ آبی که مدام حرکت می‌کند)</td>
+      <td>همیشه فعال، امضای بصری صفحهٔ اصلی</td><td>بماند</td></tr>
+  <tr><td class="n">D2</td><td class="s">۱۸ درخشش پشت‌سرهم روی کارت‌های برند + نوار متحرک برندها</td>
+      <td>در حالت «کاهش حرکت» خودکار خاموش می‌شود</td><td>بماند</td></tr>
+  <tr><td class="n">D3</td><td class="s">افکت کج‌شدن و نورافکن روی ۴۲ کارت</td>
+      <td>فقط با حرکت ماوس، روی دسکتاپ</td><td>بماند</td></tr>
+  <tr><td class="n">D4</td><td class="s">جلوهٔ گذار بین صفحه‌ها و نوار پیشرفت اسکرول</td>
+      <td>کوتاه (۲۵۰ میلی‌ثانیه)</td><td>بماند</td></tr>
+</table>
+<p class="small">اگر هر کدام از D1 تا D4 را نمی‌خواهید، فقط شماره‌اش را بگویید تا خاموش/کم‌رنگ شود.</p>
+
+<h2>۵. چیزهایی که پیشنهاد نمی‌کنم حذف شوند</h2>
+<ul>
+  <li><b>کتابخانه‌های محلی</b> (<span class="mono">assets/vendor/</span>): Tailwind، Three.js، Font Awesome و فونت‌ها —
+      شرط «بدون اینترنت و بدون build» بودن سایت به آن‌ها وابسته است.</li>
+  <li><b>پنل عملیات و ۱۳ بخش آن</b>: روی سایت لینک عمومی ندارد، ولی برای کار شما لازم است.</li>
+  <li><b>۵ بخش صفحه</b> (برندها، خدمات، درباره، تماس، حمل‌ونقل): از منو و فوتر قابل دسترسی‌اند.</li>
+  <li><b>فایل <span class="mono">docs/original-single-file.html</span></b>: نسخهٔ پشتیبان اصلی سایت است.</li>
+</ul>
+
+<footer>
+  پس از هر حذف، این دروازه‌ها دوباره اجرا می‌شوند تا مطمئن شویم چیزی نشکسته است:
+  بررسی نحوی ۱۹ فایل JS · اجرای ۵۲ آزمون خودکار جریان‌های کاربری · ۳۸ آزمون مرورگری (اسکرین‌شات‌دار) ·
+  بررسی لینک‌های مرده · بررسی CSS/HTML با linter · سنجش سرریز افقی در ۳۲۰px.
+</footer>
+
+</div>
+</body>
+</html>

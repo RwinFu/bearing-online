@@ -109,65 +109,13 @@ function initScrollEffects() {
     }, { passive: true });
 }
 
-function initCursor() {
-    const dot = document.getElementById('cursor-dot');
-    const ring = document.getElementById('cursor-ring');
-    if (!dot || !ring || !window.matchMedia('(hover: hover)').matches) return;
-    let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
-
-    document.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX; mouseY = e.clientY;
-        dot.style.transform = `translate(${mouseX}px, ${mouseY}px) translate(-50%, -50%) rotate(45deg)`;
-    });
-
-    function animate() {
-        ringX = mouseX;
-        ringY = mouseY;
-        ring.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
-        requestAnimationFrame(animate);
-    }
-    animate();
-
-    document.addEventListener('mouseover', (e) => {
-        if (e.target.closest('a, button, .card-hover, .tilt-card, input, select, label')) ring.classList.add('hovering');
-        if (e.target.closest('input, textarea, select')) ring.classList.add('scanning');
-    });
-    document.addEventListener('mouseout', (e) => {
-        if (e.target.closest('a, button, .card-hover, .tilt-card, input, select, label')) ring.classList.remove('hovering');
-        if (e.target.closest('input, textarea, select')) ring.classList.remove('scanning');
-    });
-}
-
-function initTypingPlaceholder() {
-    const input = document.getElementById('search-input');
-    if (!input) return;
-    const enTexts = ['6205', 'SKF-6205', 'bearing 25x52x15', 'LM12UU', 'ROTEX 28', 'PL60-5'];
-    const faTexts = ['۶۲۰۵', 'SKF-6205', 'بلبرینگ 25x52x15', 'LM12UU', 'یاتاقان UCP 205', 'کوپلینگ رینگ اسپن'];
-    let textIndex = 0, charIndex = 0, deleting = false;
-
-    function type() {
-        const list = AppState.language === 'fa' ? faTexts : enTexts;
-        const current = list[textIndex];
-        if (!deleting) {
-            input.setAttribute('placeholder', current.substring(0, charIndex + 1));
-            charIndex++;
-            if (charIndex === current.length) {
-                deleting = true;
-                setTimeout(type, 1200);
-                return;
-            }
-        } else {
-            input.setAttribute('placeholder', current.substring(0, charIndex - 1));
-            charIndex--;
-            if (charIndex === 0) {
-                deleting = false;
-                textIndex = (textIndex + 1) % list.length;
-            }
-        }
-        setTimeout(type, deleting ? 50 : 120);
-    }
-    type();
-}
+/* The custom-cursor layer (`#cursor-dot` / `#cursor-ring`) and the typing
+   placeholder used to live here. Both were already switched off in 17-init.js —
+   the site keeps the native pointer and a stable search hint — but their markup,
+   CSS and JS kept shipping. The leftovers were not harmless: the desktop-only
+   rule `body { cursor: none }` hid the real mouse pointer while the replacement
+   cursor could never move (initCursor() was never called), leaving visitors with
+   no visible pointer at all. Removed together, so the native cursor is back. */
 
 function initHeaderScroll() {
     const header = document.querySelector('header');
@@ -230,7 +178,7 @@ function initVectorWordmarks() {
         host.appendChild(canvas);
 
         const pointer = { x: -80, y: 0, tx: -80, ty: 0, active: false };
-        let width = 0, height = 0, dpr = 1, last = 0, sweep = 0;
+        let width = 0, height = 0, dpr = 1, last = 0, sweep = 0, lastMeasure = 0;
         let lines = [], fontSize = 20, lineHeight = 25, fontFamily = 'Vazirmatn, Inter, sans-serif';
         let fontWeight = '900';
 
@@ -284,6 +232,7 @@ function initVectorWordmarks() {
                 fontSize = Math.max(13, Math.min(22, height * .42));
                 lineHeight = fontSize * 1.1;
             }
+            lastMeasure = 0;
             ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
             lines = fitLines(currentText(), width - (isHero ? 34 : 8));
             if (!isHero) lines = [currentText()];
@@ -298,7 +247,16 @@ function initVectorWordmarks() {
         }
 
         function draw(now) {
-            if (!width && !resize()) return;
+            // A host with no measurable box (collapsed container, hidden footer
+            // column, …) used to re-measure on every single frame — a forced
+            // layout 60 times a second for something that is not even visible.
+            // Retry at most once a second; the ResizeObserver covers the moment
+            // the host actually gains a size.
+            if (!width) {
+                if (now - lastMeasure < 1000) return;
+                lastMeasure = now;
+                if (!resize()) return;
+            }
             const dt = last ? Math.min(.05, (now - last) / 1000) : 0;
             last = now;
             if (!pointer.active && !reduced) {
@@ -389,9 +347,9 @@ function initVectorWordmarks() {
         }
         host.addEventListener('pointermove', move, { passive: true });
         host.addEventListener('pointerleave', () => { pointer.active = false; }, { passive: true });
-        const resizeObserver = 'ResizeObserver' in window ? new ResizeObserver(resize) : null;
+        const resizeObserver = 'ResizeObserver' in window ? new ResizeObserver(() => { needsPaint = true; resize(); }) : null;
         if (resizeObserver) resizeObserver.observe(host);
-        else window.addEventListener('resize', resize, { passive: true });
+        else window.addEventListener('resize', () => { needsPaint = true; resize(); }, { passive: true });
         resize();
         instances.push({ draw, resize, resizeObserver });
     }
@@ -404,15 +362,46 @@ function initVectorWordmarks() {
     document.querySelectorAll('[data-vector-wordmark]').forEach(el => create(el, false));
     if (!instances.length) return;
 
+    // The wordmark canvases sit in the header and footer, so they are on screen
+    // for the whole session. The loop therefore parks on tab-hide / page-hide
+    // instead — and keeps a handle to its frame so it can actually be stopped,
+    // which the previous version could not do (the id was assigned but unused).
     let raf = 0;
+    let running = false;
+    // Under `prefers-reduced-motion: reduce` the sweep is frozen and the glow
+    // never follows the pointer, so consecutive frames are pixel-identical.
+    // Painting them anyway kept a 60 fps canvas loop alive for the whole
+    // session on a page that was not visibly animating. Instead: paint once,
+    // then park the loop and repaint only when something real changes
+    // (host resize, language switch, webfont arrival, tab return).
+    let needsPaint = true;
     function frame(now) {
-        if (!document.hidden) instances.forEach(instance => instance.draw(now));
+        if (!running) return;
+        instances.forEach(instance => instance.draw(now));
+        if (reduced && !needsPaint) { running = false; raf = 0; return; }
+        needsPaint = false;
         raf = requestAnimationFrame(frame);
     }
-    const langObserver = new MutationObserver(() => instances.forEach(instance => instance.resize()));
+    function start() {
+        if (running || document.hidden) return;
+        running = true;
+        needsPaint = true;
+        instances.forEach(instance => { instance.resize(); });
+        raf = requestAnimationFrame(frame);
+    }
+    function stop() {
+        running = false;
+        if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    }
+    const onVisibility = () => (document.hidden ? stop() : start());
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pagehide', stop);
+    const langObserver = new MutationObserver(() => { needsPaint = true; instances.forEach(instance => instance.resize()); });
     langObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['lang', 'dir'] });
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => instances.forEach(instance => instance.resize()));
-    raf = requestAnimationFrame(frame);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { needsPaint = true; instances.forEach(instance => instance.resize()); });
+    start();
+    // Exposed so the browser suite can assert the layer really stops.
+    window.VectorWordmarks = { start, stop, get running() { return running; }, get raf() { return raf; }, instances };
 }
 
 // Pointer-driven engineering glow used by the metrics panel below the hero.
@@ -464,10 +453,25 @@ function initPageVectorLayer() {
         idleT: 0,
         last: 0,
         raf: 0,
+        tick: 0,
+        // The loop parks itself unless the home page is on screen in a visible tab.
+        running: false,
+        onScreen: true,
+        // Diagnostic: layout/style reads performed since load. The frame loop is
+        // expected to add none — only rebuilds and slowTick() may read.
+        forcedReads: 0,
     };
 
+    // Each item caches everything the frame loop needs. Nothing in the loop is
+    // allowed to read layout or computed style: those reads invalidate the
+    // browser's layout/style caches and were costing ~800 forced layouts and
+    // ~1000 forced style recalcs per second on an idle page.
+    //   docTop/docLeft : position in document space, refreshed on rebuild
+    //   alpha          : cached opacity, refreshed by slowTick()
+    const PAGE_HIDDEN = () => S.page.classList.contains('hidden');
     document.querySelectorAll('#page-home [data-vector-page]').forEach(el => {
-        S.items.push({ el, off: null, rows: [], text: '', size: 16, line: 20, pad: 12, w: 0, h: 0, font: '', align: 'center' });
+        S.items.push({ el, off: null, rows: [], text: '', size: 16, line: 20, pad: 12, w: 0, h: 0, font: '', align: 'center',
+            docTop: 0, docLeft: 0, alpha: 1, alphaSettled: false });
     });
     if (!S.items.length) { canvas.style.display = 'none'; return; }
 
@@ -492,8 +496,16 @@ function initPageVectorLayer() {
     function rebuildItem(item) {
         const el = item.el;
         if (!el.isConnected) return;
+        // Rebuild is the only place that may read layout. It runs on resize,
+        // language change, font load and content mutation — not per frame.
         const rect = el.getBoundingClientRect();
+        S.forcedReads += 2; // one layout read + the getComputedStyle below
         if (!rect.width || !rect.height) return;
+        item.docTop = rect.top + window.scrollY;
+        item.docLeft = rect.left + window.scrollX;
+        item.alphaSettled = false;
+        item.stableTicks = 0;
+        S.alphaAllSettled = false;
         const cs = getComputedStyle(el);
         const size = parseFloat(cs.fontSize) || 16;
         const family = cs.fontFamily || 'Vazirmatn, Inter, sans-serif';
@@ -561,7 +573,8 @@ function initPageVectorLayer() {
     }
 
     // Reveal animations (stagger/reveal) fade the DOM cards; mirror that
-    // opacity on the canvas copy so both fade together.
+    // opacity on the canvas copy so both fade together. Called only from
+    // slowTick(), never from the frame loop.
     function effectiveAlpha(el) {
         let alpha = 1, node = el;
         for (let i = 0; i < 4 && node && node !== document.body; i++) {
@@ -573,11 +586,48 @@ function initPageVectorLayer() {
         return alpha;
     }
 
+    // Opacity only changes while a reveal transition runs, so sampling it a few
+    // times a second is visually identical to sampling it 60 times a second.
+    // Once every item has settled the sampling stops entirely.
+    function slowTick() {
+        if (S.alphaAllSettled) return;
+        let allSettled = true;
+        for (const item of S.items) {
+            if (item.alphaSettled) continue;
+            S.forcedReads++;
+            const next = effectiveAlpha(item.el);
+            // A reveal transition is over once the sampled value stops moving.
+            // Four consecutive equal samples at 4 Hz ≈ 1 s of stability.
+            if (Math.abs(next - item.alpha) <= 0.01) item.stableTicks = (item.stableTicks || 0) + 1;
+            else item.stableTicks = 0;
+            item.alpha = next;
+            if (item.stableTicks >= 4) item.alphaSettled = true;
+            else allSettled = false;
+        }
+        S.alphaAllSettled = allSettled;
+    }
+
+    // Reveal animations restart on scroll, so re-arm the sampler then. Sampling
+    // a handful of times a second during scrolling is cheap; doing it every
+    // frame for the whole session was not.
+    let rearmTimer = 0;
+    window.addEventListener('scroll', () => {
+        clearTimeout(rearmTimer);
+        rearmTimer = setTimeout(() => {
+            S.alphaAllSettled = false;
+            S.items.forEach(item => { item.alphaSettled = false; item.stableTicks = 0; });
+        }, 120);
+    }, { passive: true });
+
     function frame(now) {
+        // Bail out *before* scheduling the next frame, so stopLoop() really
+        // stops it — otherwise the handle would stay non-zero and the loop
+        // could never be restarted.
+        if (!S.running || document.hidden) { S.raf = 0; return; }
         S.raf = requestAnimationFrame(frame);
         const dt = S.last ? Math.min(0.05, (now - S.last) / 1000) : 0.016;
         S.last = now;
-        if (document.hidden || !S.page.offsetWidth) return;
+        if (++S.tick % 15 === 0) slowTick();
         ensureSize();
         const c = S.ctx;
         c.clearRect(0, 0, S.vw, S.vh);
@@ -596,21 +646,27 @@ function initPageVectorLayer() {
         // (The roaming construction triangle was removed per request: it stayed
         // pinned over all first-page headlines and hid the written words. Only
         // the live wordmark keeps its handles, on the first page alone.)
+        // Cached document positions minus the current scroll offset. Reading
+        // scrollX/scrollY is served from the compositor's cached values and does
+        // not invalidate layout, unlike getBoundingClientRect().
+        const scrollY = window.scrollY || window.pageYOffset || 0;
+        const scrollX = window.scrollX || window.pageXOffset || 0;
         for (const item of S.items) {
-            const rect = item.el.getBoundingClientRect();
-            if (!rect.width || !rect.height) continue;
-            if (rect.bottom < -item.pad || rect.top > S.vh + item.pad || rect.right < -item.pad || rect.left > S.vw + item.pad) continue;
-            const alpha = effectiveAlpha(item.el);
+            if (!item.w || !item.h) continue;
+            const left = item.docLeft - scrollX;
+            const top = item.docTop - scrollY;
+            if (top + item.h < -item.pad || top > S.vh + item.pad || left + item.w < -item.pad || left > S.vw + item.pad) continue;
+            const alpha = item.alpha;
             if (alpha <= 0.02) continue;
-            const ox = rect.left - item.pad, oy = rect.top - item.pad;
+            const ox = left - item.pad, oy = top - item.pad;
 
             c.save();
             c.globalAlpha = alpha;
             if (item.off) c.drawImage(item.off, ox, oy, item.w + item.pad * 2, item.h + item.pad * 2);
 
             const reach = Math.max(48, Math.min(130, item.size * 3.1));
-            const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
-            if (Math.hypot(gx - cx, gy - cy) < reach + Math.max(rect.width, rect.height) * 0.6) {
+            const cx = left + item.w / 2, cy = top + item.h / 2;
+            if (Math.hypot(gx - cx, gy - cy) < reach + Math.max(item.w, item.h) * 0.6) {
                 const glow = c.createRadialGradient(gx, gy, 0, gx, gy, reach);
                 glow.addColorStop(0, 'rgba(47,107,255,0.95)');
                 glow.addColorStop(0.55, 'rgba(19,72,200,0.5)');
@@ -652,21 +708,77 @@ function initPageVectorLayer() {
 
     rebuildAll();
     S.page.classList.add('vector-page-live');
-    S.raf = requestAnimationFrame(frame);
 
     // Resized into the mobile range → hand the text back to the DOM.
     const narrow = window.matchMedia('(max-width: 1023px)');
     const onNarrow = () => {
         if (narrow.matches) {
-            cancelAnimationFrame(S.raf); S.raf = 0;
+            stopLoop();
             S.page.classList.remove('vector-page-live');
             S.canvas.style.display = 'none';
         } else if (!S.raf) {
             S.canvas.style.display = '';
             rebuildAll();
             S.page.classList.add('vector-page-live');
-            S.raf = requestAnimationFrame(frame);
+            syncRunState();
         }
     };
     if (narrow.addEventListener) narrow.addEventListener('change', onNarrow);
+
+    // ---- loop lifecycle -----------------------------------------------------
+    // The layer only has to run while the home page is the visible page and its
+    // content is actually in view; otherwise it burns a full frame budget for
+    // pixels nobody can see.
+    function startLoop() {
+        if (S.raf || narrow.matches) return;
+        S.running = true;
+        S.last = 0;
+        S.tick = 0;
+        S.raf = requestAnimationFrame(frame);
+    }
+    function stopLoop() {
+        S.running = false;
+        if (S.raf) { cancelAnimationFrame(S.raf); S.raf = 0; }
+    }
+    function syncRunState() {
+        const shouldRun = S.onScreen && !document.hidden && !PAGE_HIDDEN();
+        if (shouldRun) startLoop(); else stopLoop();
+        S.canvas.style.visibility = shouldRun ? '' : 'hidden';
+    }
+
+    document.addEventListener('visibilitychange', syncRunState);
+    // `hidden` class toggling on the page section does not fire an event, so the
+    // observer below doubles as the "which page is active" signal.
+    if ('IntersectionObserver' in window) {
+        new IntersectionObserver(entries => {
+            S.onScreen = entries.some(e => e.isIntersecting);
+            if (S.onScreen) { rebuildAll(); }
+            syncRunState();
+        }, { threshold: 0 }).observe(S.page);
+    }
+    // showPage() swaps the `hidden` class on .page-section; watch for it.
+    if ('MutationObserver' in window) {
+        new MutationObserver(syncRunState).observe(S.page, { attributes: true, attributeFilter: ['class'] });
+    }
+    syncRunState();
+    window.addEventListener('pagehide', stopLoop);
+    window.addEventListener('beforeunload', stopLoop);
+    // Exposed so the browser suite can assert the layer parks itself.
+    window.VectorPageLayer = {
+        start: startLoop,
+        stop: stopLoop,
+        get running() { return S.running; },
+        get raf() { return S.raf; },
+        get ticks() { return S.tick; },
+        get items() { return S.items.length; },
+        get forcedReads() { return S.forcedReads; },
+        // Per-item sampler state, so the suite can prove the sampler parks.
+        get alphaState() {
+            return {
+                allSettled: S.alphaAllSettled,
+                pending: S.items.filter(i => !i.alphaSettled).length,
+                alphas: S.items.map(i => Number(i.alpha.toFixed(3)))
+            };
+        }
+    };
 }

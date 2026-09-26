@@ -1,0 +1,14 @@
+{
+  "name": "bearing-online-audit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dev-only deep audit for the static Bearing Online site: dead controls, JS errors, accessibility, motion cost. Not part of the shipped site.",
+  "scripts": {
+    "audit": "node audit.js",
+    "audit:motion": "node motion-audit.js"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "playwright": "^1.63.0"
+  }
+}

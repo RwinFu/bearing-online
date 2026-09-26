@@ -1,0 +1,25 @@
+{
+  "name": "bearing-online-quality",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dev-only lint / validation / static-analysis toolchain for the static Bearing Online site. The site itself ships with no build step and no npm dependency.",
+  "scripts": {
+    "globals": "node gen-globals.js",
+    "lint": "npm run lint:js && npm run lint:css && npm run lint:html",
+    "lint:js": "cd ../.. && ./tools/quality/node_modules/.bin/eslint assets/js",
+    "lint:css": "cd ../.. && ./tools/quality/node_modules/.bin/stylelint --config tools/quality/.stylelintrc.json --config-basedir tools/quality/node_modules \"assets/css/*.css\"",
+    "lint:html": "cd ../.. && ./tools/quality/node_modules/.bin/html-validate --config tools/quality/.htmlvalidate.json index.html",
+    "format": "cd ../.. && ./tools/quality/node_modules/.bin/prettier --config tools/quality/.prettierrc.json --write \"assets/css/*.css\"",
+    "format:check": "cd ../.. && ./tools/quality/node_modules/.bin/prettier --config tools/quality/.prettierrc.json --check \"assets/css/*.css\"",
+    "check": "npm run globals && npm run lint"
+  },
+  "devDependencies": {
+    "acorn": "^8.18.0",
+    "eslint": "^9.39.5",
+    "html-validate": "^11.16.0",
+    "prettier": "^3.9.9",
+    "prettier-plugin-organize-attributes": "^1.0.0",
+    "stylelint": "^17.15.0",
+    "stylelint-config-standard": "^40.0.0"
+  }
+}

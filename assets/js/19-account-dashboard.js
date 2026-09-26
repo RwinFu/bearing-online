@@ -27,8 +27,8 @@ function accountTabs(activeTab) {
         { key: 'profile', icon: 'fa-id-card', label: 'پروفایل و امنیت', count: null },
         { key: 'logout', icon: 'fa-arrow-right-from-bracket', label: 'خروج از حساب', count: null }
     ].map(t => t.key === 'logout'
-        ? `<button class="acct-tab acct-tab-logout" onclick="logoutCustomer()"><i class="fas ${t.icon}"></i><span>${t.label}</span></button>`
-        : `<button class="acct-tab ${t.key === activeTab ? 'active' : ''}" onclick="switchAccountTab('${t.key}')"><i class="fas ${t.icon}"></i><span>${t.label}</span>${t.count !== null ? `<span class="count-chip">${formatNumber(t.count)}</span>` : ''}</button>`
+        ? `<button class="acct-tab acct-tab-logout" onclick="logoutCustomer()" type="button"><i class="fas ${t.icon}"></i><span>${t.label}</span></button>`
+        : `<button class="acct-tab ${t.key === activeTab ? 'active' : ''}" onclick="switchAccountTab('${t.key}')" type="button"><i class="fas ${t.icon}"></i><span>${t.label}</span>${t.count !== null ? `<span class="count-chip">${formatNumber(t.count)}</span>` : ''}</button>`
     ).join('');
 }
 
@@ -56,7 +56,6 @@ function renderAccountDashboard(tab, highlightOrder = '') {
     if (!container || !c) return;
     const phone = CustomerAuth.session;
     const joined = new Date(c.joinedAt || Date.now()).toLocaleDateString('fa-IR');
-    const firstName = (c.name || '').split(/\s+/)[0] || 'کاربر';
     const sum = accountSpendSummary();
 
     container.innerHTML = `
@@ -79,9 +78,9 @@ function renderAccountDashboard(tab, highlightOrder = '') {
                         ${sum.next ? `<p class="text-white/60 text-[11.5px] mt-2"><i class="fas fa-arrow-trend-up ml-1"></i>با ${formatNumber(sum.toNext)} سفارش دیگر به سطح بعدی باشگاه مشتریان می‌رسید.</p>` : ''}
                     </div>
                     <div class="acct-banner-actions">
-                        <button onclick="switchAccountTab('orders')" class="acct-btn-ghost !bg-white/10 !border-white/30 !text-white hover:!bg-white/20"><i class="fas fa-truck-fast"></i>پیگیری سفارش</button>
-                        <button onclick="showPage('search')" class="acct-btn-ghost !bg-white/10 !border-white/30 !text-white hover:!bg-white/20"><i class="fas fa-magnifying-glass"></i>جست‌وجوی کالا</button>
-                        <button onclick="logoutCustomer()" class="acct-btn-ghost !bg-transparent !border-white/25 !text-white/85 hover:!bg-white/10"><i class="fas fa-arrow-right-from-bracket"></i>خروج</button>
+                        <button onclick="switchAccountTab('orders')" class="acct-btn-ghost !bg-white/10 !border-white/30 !text-white hover:!bg-white/20" type="button"><i class="fas fa-truck-fast"></i>پیگیری سفارش</button>
+                        <button onclick="showPage('search')" class="acct-btn-ghost !bg-white/10 !border-white/30 !text-white hover:!bg-white/20" type="button"><i class="fas fa-magnifying-glass"></i>جست‌وجوی کالا</button>
+                        <button onclick="logoutCustomer()" class="acct-btn-ghost !bg-transparent !border-white/25 !text-white/85 hover:!bg-white/10" type="button"><i class="fas fa-arrow-right-from-bracket"></i>خروج</button>
                     </div>
                 </div>
             </div>
@@ -195,7 +194,7 @@ function accountOverviewHTML() {
             <ul class="acct-check-list">
                 ${checks.map(ch => `<li class="${ch.ok ? 'done' : ''}"><i class="fas ${ch.ok ? 'fa-check' : 'fa-minus'}"></i>${ch.label}</li>`).join('')}
             </ul>
-            ${pct < 100 ? `<button onclick="switchAccountTab('profile')" class="text-xs font-bold text-blue-600 mt-3 hover:underline">تکمیل اطلاعات پروفایل <i class="fas fa-arrow-left mr-1"></i></button>` : '<p class="text-xs text-green-700 font-bold mt-3"><i class="fas fa-circle-check ml-1"></i>پروفایل شما کامل است.</p>'}
+            ${pct < 100 ? `<button onclick="switchAccountTab('profile')" class="text-xs font-bold text-blue-600 mt-3 hover:underline" type="button">تکمیل اطلاعات پروفایل <i class="fas fa-arrow-left mr-1"></i></button>` : '<p class="text-xs text-green-700 font-bold mt-3"><i class="fas fa-circle-check ml-1"></i>پروفایل شما کامل است.</p>'}
         </div>
     </div>
     <div class="acct-panel">
@@ -207,14 +206,14 @@ function accountOverviewHTML() {
                     <span class="stock-badge in-stock mr-2">${escapeHTML(orderStatusFa(lastOrder.status))}</span>
                     <p class="text-xs text-gray-400 mt-1.5">مبلغ: ${formatToman(lastOrder.grand_total)} تومان | ارسال: ${escapeHTML(lastOrder.shippingQuote.title)} | ETA: ${escapeHTML(lastOrder.shippingQuote.eta)}</p>
                 </div>
-                <button onclick="switchAccountTab('orders')" class="acct-btn-ghost flex-none">مشاهده وضعیت <i class="fas fa-arrow-left"></i></button>
+                <button onclick="switchAccountTab('orders')" class="acct-btn-ghost flex-none" type="button">مشاهده وضعیت <i class="fas fa-arrow-left"></i></button>
             </div>`
         : `
             <div class="acct-empty">
                 <i class="fas fa-box-open big"></i>
                 <b>هنوز سفارشی ثبت نکرده‌اید</b>
                 <p>کاتالوگ بیش از ${formatNumber(ProductDatabase.length)} کد کالا آماده سفارش است.</p>
-                <button onclick="showPage('search')" class="acct-btn-primary mt-4 !py-2.5 !px-5 text-sm">مشاهده محصولات <i class="fas fa-arrow-left"></i></button>
+                <button onclick="showPage('search')" class="acct-btn-primary mt-4 !py-2.5 !px-5 text-sm" type="button">مشاهده محصولات <i class="fas fa-arrow-left"></i></button>
             </div>`}
     </div>
     <div class="acct-panel">
@@ -224,10 +223,10 @@ function accountOverviewHTML() {
     <div class="acct-panel">
         <div class="acct-panel-title"><i class="fas fa-bolt"></i>دسترسی سریع</div>
         <div class="grid sm:grid-cols-2 gap-3">
-            <button onclick="switchAccountTab('orders')" class="acct-tile"><i class="fas fa-receipt"></i><span>سفارش‌ها و شکایت‌ها<small>پیگیری وضعیت و ثبت شکایت</small></span><i class="fas fa-arrow-left go"></i></button>
-            <button onclick="switchAccountTab('addresses')" class="acct-tile"><i class="fas fa-location-dot" style="background:#fff7e8;color:#e8a81d"></i><span>آدرس‌های تحویل<small>افزودن و ویرایش آدرس</small></span><i class="fas fa-arrow-left go"></i></button>
-            <button onclick="switchAccountTab('saved')" class="acct-tile"><i class="fas fa-heart" style="background:#fff1f2;color:#f43f5e"></i><span>محصولات نشان‌شده<small>${formatNumber(AppState.wishlist.length)} کالا در فهرست شما</small></span><i class="fas fa-arrow-left go"></i></button>
-            <button onclick="showCart()" class="acct-tile"><i class="fas fa-cart-shopping" style="background:#ecfdf5;color:#16a34a"></i><span>سبد خرید<small>${formatNumber(AppState.cart.reduce((s, i) => s + i.quantity, 0))} قلم در سبد</small></span><i class="fas fa-arrow-left go"></i></button>
+            <button onclick="switchAccountTab('orders')" class="acct-tile" type="button"><i class="fas fa-receipt"></i><span>سفارش‌ها و شکایت‌ها<small>پیگیری وضعیت و ثبت شکایت</small></span><i class="fas fa-arrow-left go"></i></button>
+            <button onclick="switchAccountTab('addresses')" class="acct-tile" type="button"><i class="fas fa-location-dot" style="background:#fff7e8;color:#e8a81d"></i><span>آدرس‌های تحویل<small>افزودن و ویرایش آدرس</small></span><i class="fas fa-arrow-left go"></i></button>
+            <button onclick="switchAccountTab('saved')" class="acct-tile" type="button"><i class="fas fa-heart" style="background:#fff1f2;color:#f43f5e"></i><span>محصولات نشان‌شده<small>${formatNumber(AppState.wishlist.length)} کالا در فهرست شما</small></span><i class="fas fa-arrow-left go"></i></button>
+            <button onclick="showCart()" class="acct-tile" type="button"><i class="fas fa-cart-shopping" style="background:#ecfdf5;color:#16a34a"></i><span>سبد خرید<small>${formatNumber(AppState.cart.reduce((s, i) => s + i.quantity, 0))} قلم در سبد</small></span><i class="fas fa-arrow-left go"></i></button>
         </div>
     </div>`;
 }
@@ -308,9 +307,9 @@ function accountOrdersHTML(highlightOrder = '') {
                     <p class="text-xs text-gray-400 mt-1">پیش‌فاکتور: ${pf?.proforma_number || '-'}</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <button onclick="downloadProforma('${order.orderNumber}')" class="acct-btn-ghost !py-2.5 !px-4 text-sm"><i class="fas fa-file-arrow-down"></i>پیش‌فاکتور</button>
-                    <button onclick="copyTracking('${order.orderNumber}')" class="acct-btn-ghost !py-2.5 !px-4 text-sm"><i class="fas fa-link"></i>لینک پیگیری</button>
-                    <button onclick="reorderOrder('${order.orderNumber}')" class="acct-btn-primary !py-2.5 !px-4 text-sm"><i class="fas fa-rotate-right"></i>سفارش مجدد</button>
+                    <button onclick="downloadProforma('${order.orderNumber}')" class="acct-btn-ghost !py-2.5 !px-4 text-sm" type="button"><i class="fas fa-file-arrow-down"></i>پیش‌فاکتور</button>
+                    <button onclick="copyTracking('${order.orderNumber}')" class="acct-btn-ghost !py-2.5 !px-4 text-sm" type="button"><i class="fas fa-link"></i>لینک پیگیری</button>
+                    <button onclick="reorderOrder('${order.orderNumber}')" class="acct-btn-primary !py-2.5 !px-4 text-sm" type="button"><i class="fas fa-rotate-right"></i>سفارش مجدد</button>
                 </div>
             </div>
             <div class="mt-5 overflow-x-auto pb-1"><div class="acct-track">${orderTrackHTML(order)}</div></div>
@@ -323,7 +322,7 @@ function accountOrdersHTML(highlightOrder = '') {
                 <div class="flex flex-wrap items-center gap-2"><b class="text-lg text-gray-900">${escapeHTML(rfq.rfqNumber)}</b><span class="stock-badge inquiry">در انتظار تأیید فروش</span></div>
                 <p class="text-sm text-gray-500 mt-2">${formatNumber(rfq.items.length)} قلم استعلامی | کارشناس فروش حداکثر تا ۲۴ ساعت کاری پاسخ می‌دهد.</p>
             </div>
-            <button onclick="showNotification('در نسخه واقعی، این درخواست به کارتابل فروش وصل می‌شود.', 'info')" class="acct-btn-ghost flex-none"><i class="fas fa-bell"></i>پیگیری استعلام</button>
+            <button onclick="showNotification('در نسخه واقعی، این درخواست به کارتابل فروش وصل می‌شود.', 'info')" class="acct-btn-ghost flex-none" type="button"><i class="fas fa-bell"></i>پیگیری استعلام</button>
         </div>
     </div>`).join('');
 
@@ -337,7 +336,7 @@ function accountOrdersHTML(highlightOrder = '') {
                 </div>
             </div>
             <div class="acct-chip-row mt-4">
-                ${filters.map(f => `<button class="acct-chip ${AccountUI.orderFilter === f.key ? 'active' : ''}" onclick="setOrderFilter('${f.key}')">${f.label}</button>`).join('')}
+                ${filters.map(f => `<button class="acct-chip ${AccountUI.orderFilter === f.key ? 'active' : ''}" onclick="setOrderFilter('${f.key}')" type="button">${f.label}</button>`).join('')}
             </div>
         </div>
         <div class="grid gap-4 mb-8" id="account-order-list">
@@ -377,7 +376,7 @@ function accountSavedHTML() {
                 <i class="fas fa-heart big"></i>
                 <b>هنوز محصولی نشان نکرده‌اید</b>
                 <p>روی آیکن قلب هر محصول بزنید تا برای خرید بعدی این‌جا ذخیره شود.</p>
-                <button onclick="showPage('search')" class="acct-btn-primary mt-4 !py-2.5 !px-5 text-sm">مشاهده کاتالوگ <i class="fas fa-arrow-left"></i></button>
+                <button onclick="showPage('search')" class="acct-btn-primary mt-4 !py-2.5 !px-5 text-sm" type="button">مشاهده کاتالوگ <i class="fas fa-arrow-left"></i></button>
             </div>
         </div>`;
     }
@@ -395,15 +394,15 @@ function accountSavedHTML() {
                         <h4 class="text-lg font-black text-gray-900 mt-2">${escapeHTML(p.code)}</h4>
                         <p class="text-xs text-gray-400 mt-1">${escapeHTML(productSizeLabel(p))}</p>
                     </div>
-                    <button onclick="toggleWishlistFromAccount('${p.id}')" class="text-rose-500 text-lg" title="حذف از نشان‌شده‌ها" aria-label="حذف از نشان‌شده‌ها"><i class="fas fa-heart-crack"></i></button>
+                    <button onclick="toggleWishlistFromAccount('${p.id}')" class="text-rose-500 text-lg" title="حذف از نشان‌شده‌ها" aria-label="حذف از نشان‌شده‌ها" type="button"><i class="fas fa-heart-crack"></i></button>
                 </div>
                 <div class="flex items-center justify-between gap-2 mt-auto pt-2">
                     <b class="text-sm text-gray-900">${p.sell_mode === 'instant' ? formatPrice(p.priceUSD) + ' تومان' : 'نیازمند استعلام'}</b>
                     <div class="flex gap-2">
-                        <button onclick="showProductDetail('${p.id}')" class="acct-btn-ghost !py-2 !px-3 text-xs">جزئیات</button>
+                        <button onclick="showProductDetail('${p.id}')" class="acct-btn-ghost !py-2 !px-3 text-xs" type="button">جزئیات</button>
                         ${p.sell_mode === 'instant'
-                            ? `<button onclick="addToCart('${p.id}')" class="acct-btn-primary !py-2 !px-3 text-xs"><i class="fas fa-cart-plus"></i>افزودن</button>`
-                            : `<button onclick="requestQuote('${p.id}')" class="acct-btn-primary !py-2 !px-3 text-xs"><i class="fas fa-file-invoice"></i>استعلام</button>`}
+                            ? `<button onclick="addToCart('${p.id}')" class="acct-btn-primary !py-2 !px-3 text-xs" type="button"><i class="fas fa-cart-plus"></i>افزودن</button>`
+                            : `<button onclick="requestQuote('${p.id}')" class="acct-btn-primary !py-2 !px-3 text-xs" type="button"><i class="fas fa-file-invoice"></i>استعلام</button>`}
                     </div>
                 </div>
             </div>`).join('')}
@@ -436,10 +435,10 @@ function accountAddressesHTML() {
             <p class="text-sm text-gray-600 leading-7">${escapeHTML(a.recipient)} | <span dir="ltr">${escapeHTML(a.phone)}</span>${a.city ? ' | ' + escapeHTML(a.city) : ''}</p>
             <p class="text-sm text-gray-500 leading-7">${escapeHTML(a.details)}${a.postalCode ? ` | کد پستی: <span dir="ltr">${escapeHTML(a.postalCode)}</span>` : ''}</p>
             <div class="flex flex-wrap gap-2 mt-auto pt-1">
-                ${a.isDefault ? '' : `<button onclick="setDefaultAddress('${a.id}')" class="px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-extrabold text-gray-600 hover:border-amber-400"><i class="fas fa-star ml-1 text-amber-400"></i>انتخاب پیش‌فرض</button>`}
-                <button onclick="openAddressForm('${a.id}')" class="px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-extrabold text-gray-600 hover:border-blue-400"><i class="fas fa-pen ml-1"></i>ویرایش</button>
-                <button onclick="copyAddress('${a.id}')" class="px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-extrabold text-gray-600 hover:border-blue-400"><i class="fas fa-copy ml-1"></i>کپی</button>
-                <button onclick="deleteAddress('${a.id}')" class="px-3.5 py-2 rounded-xl border border-red-100 text-xs font-extrabold text-red-500 hover:bg-red-50"><i class="fas fa-trash ml-1"></i>حذف</button>
+                ${a.isDefault ? '' : `<button onclick="setDefaultAddress('${a.id}')" class="px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-extrabold text-gray-600 hover:border-amber-400" type="button"><i class="fas fa-star ml-1 text-amber-400"></i>انتخاب پیش‌فرض</button>`}
+                <button onclick="openAddressForm('${a.id}')" class="px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-extrabold text-gray-600 hover:border-blue-400" type="button"><i class="fas fa-pen ml-1"></i>ویرایش</button>
+                <button onclick="copyAddress('${a.id}')" class="px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-extrabold text-gray-600 hover:border-blue-400" type="button"><i class="fas fa-copy ml-1"></i>کپی</button>
+                <button onclick="deleteAddress('${a.id}')" class="px-3.5 py-2 rounded-xl border border-red-100 text-xs font-extrabold text-red-500 hover:bg-red-50" type="button"><i class="fas fa-trash ml-1"></i>حذف</button>
             </div>
         </div>`).join('');
 
@@ -447,7 +446,7 @@ function accountAddressesHTML() {
     <div class="acct-panel">
         <div class="flex items-center justify-between gap-3 flex-wrap mb-2">
             <div class="acct-panel-title !mb-0"><i class="fas fa-location-dot"></i>آدرس‌های تحویل</div>
-            <button onclick="openAddressForm()" class="acct-btn-primary !py-2.5 !px-4 text-sm"><i class="fas fa-plus"></i>افزودن آدرس جدید</button>
+            <button onclick="openAddressForm()" class="acct-btn-primary !py-2.5 !px-4 text-sm" type="button"><i class="fas fa-plus"></i>افزودن آدرس جدید</button>
         </div>
         <p class="text-xs text-gray-400 leading-6">آدرس پیش‌فرض هنگام تسویه‌حساب به‌صورت خودکار انتخاب می‌شود.</p>
         <div id="account-address-form" class="hidden"></div>
@@ -666,8 +665,8 @@ function accountProfileHTML() {
             </div>
         </div>
         <div class="flex flex-wrap gap-2.5 mt-4">
-            <button onclick="downloadAccountData()" class="acct-btn-ghost"><i class="fas fa-download"></i>دریافت نسخه اطلاعات حساب</button>
-            <button onclick="logoutCustomer()" class="acct-btn-danger"><i class="fas fa-arrow-right-from-bracket"></i>خروج از حساب کاربری</button>
+            <button onclick="downloadAccountData()" class="acct-btn-ghost" type="button"><i class="fas fa-download"></i>دریافت نسخه اطلاعات حساب</button>
+            <button onclick="logoutCustomer()" class="acct-btn-danger" type="button"><i class="fas fa-arrow-right-from-bracket"></i>خروج از حساب کاربری</button>
         </div>
     </div>`;
 }

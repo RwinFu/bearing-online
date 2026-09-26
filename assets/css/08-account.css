@@ -18,10 +18,25 @@
 .acct-wrap {
     position: relative;
     isolation: isolate;
+    /* The two decorative halos below are deliberately positioned outside the
+       box (inset-inline-end/-start: -80px / -90px). Without clipping they widen
+       the document by 80px on every viewport and the account page can be
+       scrolled sideways. `clip` (not `hidden`) is required here: `hidden` would
+       create a scroll container and break the sticky `.acct-tabs` inside. */
+    overflow-x: clip;
     background:
         radial-gradient(1100px 460px at 88% -12%, rgba(47, 107, 255, .12), transparent 60%),
         radial-gradient(900px 420px at 8% 112%, rgba(232, 168, 29, .10), transparent 55%),
         #f4f6fb;
+}
+
+/* Safari < 16 has no `overflow: clip`; fall back to hiding the halo's outward
+   bleed instead of letting the page scroll sideways. */
+@supports not (overflow: clip) {
+    .acct-wrap::before,
+    .acct-wrap::after {
+        display: none;
+    }
 }
 
 /* هاله‌های نرم متحرک پس‌زمینه */

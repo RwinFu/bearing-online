@@ -433,7 +433,7 @@ function executeAutocomplete(value) {
             <div class="px-4 py-4 bg-gray-50">
                 <div class="font-bold text-gray-800 mb-1">${AppState.language === 'fa' ? 'نتیجه‌ای پیدا نشد' : 'No matching result'}</div>
                 <div class="text-sm text-gray-500 mb-3">${AppState.language === 'fa' ? 'همین جستجو را به درخواست تامین تبدیل کنید.' : 'Convert this search into a sourcing request.'}</div>
-                <button onclick="submitMissingSearchFromAutocomplete()" class="btn-accent text-white px-4 py-2 rounded-lg text-sm font-bold">
+                <button onclick="submitMissingSearchFromAutocomplete()" class="btn-accent text-white px-4 py-2 rounded-lg text-sm font-bold" type="button">
                     ${AppState.language === 'fa' ? 'ثبت درخواست سریع' : 'Fast request'}
                 </button>
             </div>
@@ -625,7 +625,7 @@ function renderActiveFilters() {
     container.innerHTML = chips.map(chip => `
         <span class="active-filter-chip">
             ${escapeHTML(chip.label)}
-            <button onclick="removeFilter('${chip.kind}', '${chip.value}')" aria-label="Remove filter">×</button>
+            <button onclick="removeFilter('${chip.kind}', '${chip.value}')" aria-label="Remove filter" type="button">×</button>
         </span>
     `).join('');
 }
@@ -838,12 +838,12 @@ function renderSearchResults() {
                 </div>
                 <h3 class="text-lg sm:text-xl font-extrabold mb-1">${title}</h3>
                 <p class="text-white/70 text-xs sm:text-sm mb-3 max-w-2xl leading-5">${desc}</p>
-                <button onclick="clearFilters()" class="mb-3 underline text-sm">${AppState.language === 'fa' ? 'پاک کردن جستجو و فیلترها' : 'Clear search and filters'}</button>
+                <button onclick="clearFilters()" class="mb-3 underline text-sm" type="button">${AppState.language === 'fa' ? 'پاک کردن جستجو و فیلترها' : 'Clear search and filters'}</button>
                 <div class="flex flex-col sm:flex-row gap-2">
-                    <button onclick="openLeadModal('failed-search')" class="btn-accent magnetic text-white px-4 py-2.5 rounded-xl font-bold text-sm">
+                    <button onclick="openLeadModal('failed-search')" class="btn-accent magnetic text-white px-4 py-2.5 rounded-xl font-bold text-sm" type="button">
                         <i class="fas fa-bolt mr-2"></i>${sendLabel}
                     </button>
-                    <button onclick="openLeadModal('consultation')" class="btn-primary magnetic text-white px-4 py-2.5 rounded-xl font-bold text-sm">
+                    <button onclick="openLeadModal('consultation')" class="btn-primary magnetic text-white px-4 py-2.5 rounded-xl font-bold text-sm" type="button">
                         <i class="fas fa-user-gear mr-2"></i>${consultLabel}
                     </button>
                 </div>
@@ -862,10 +862,10 @@ function renderSearchResults() {
             <div tabindex="0" role="link" aria-label="${p.brand} ${p.code}" onkeydown="if(event.target === this && event.key === 'Enter') showProductDetail('${p.id}')" class="bg-white rounded-2xl shadow-sm overflow-hidden card-hover tilt-card animate-fade-in cursor-pointer" onclick="showProductDetail('${p.id}')">
                 <div class="product-image-bg p-6 sm:p-8 flex items-center justify-center relative">
                     ${hasProductImage(p) ? `<img src="${p.image}" alt="${p.brand} ${p.code}" class="product-photo max-h-44 w-auto max-w-full object-contain rounded-lg" loading="lazy">` : `<i class="fas fa-${productTypeIcon(p.type)} text-6xl text-gray-300"></i>`}
-                    <button onclick="event.stopPropagation(); toggleCompare('${p.id}')" aria-label="${AppState.language === 'fa' ? 'مقایسه' : 'Compare'}" class="absolute top-4 right-4 w-10 h-10 rounded-full ${AppState.compareList.includes(p.id) ? 'bg-blue-500 text-white' : 'bg-white text-gray-400 hover:text-blue-500'} shadow flex items-center justify-center transition">
+                    <button onclick="event.stopPropagation(); toggleCompare('${p.id}')" aria-label="${AppState.language === 'fa' ? 'مقایسه' : 'Compare'}" class="absolute top-4 right-4 w-10 h-10 rounded-full ${AppState.compareList.includes(p.id) ? 'bg-blue-500 text-white' : 'bg-white text-gray-400 hover:text-blue-500'} shadow flex items-center justify-center transition" type="button">
                         <i class="fas fa-balance-scale"></i>
                     </button>
-                    <button onclick="event.stopPropagation(); toggleWishlist('${p.id}')" aria-label="${AppState.language === 'fa' ? 'علاقه‌مندی' : 'Save product'}" class="absolute top-4 left-4 w-10 h-10 rounded-full ${AppState.wishlist.includes(p.id) ? 'bg-red-500 text-white' : 'bg-white text-gray-400 hover:text-red-500'} shadow flex items-center justify-center transition">
+                    <button onclick="event.stopPropagation(); toggleWishlist('${p.id}')" aria-label="${AppState.language === 'fa' ? 'علاقه‌مندی' : 'Save product'}" class="absolute top-4 left-4 w-10 h-10 rounded-full ${AppState.wishlist.includes(p.id) ? 'bg-red-500 text-white' : 'bg-white text-gray-400 hover:text-red-500'} shadow flex items-center justify-center transition" type="button">
                         <i class="fas fa-heart"></i>
                     </button>
                 </div>
@@ -882,7 +882,7 @@ function renderSearchResults() {
                             <span class="text-2xl font-bold ${p.sell_mode === 'instant' ? 'text-gray-800' : 'text-orange-600'}">${p.sell_mode === 'instant' ? formatPrice(p.priceUSD) : (AppState.language === 'fa' ? 'استعلام' : 'RFQ')}</span>
                             ${p.sell_mode === 'instant' ? `<span class="text-sm text-gray-500"> ${currencyLabel()}</span>` : ''}
                         </div>
-                        ${p.sell_mode === 'instant' ? `<button onclick="event.stopPropagation(); addToCart('${p.id}')" aria-label="${AppState.language === 'fa' ? 'افزودن به سبد' : 'Add to cart'}" class="btn-primary text-white px-4 py-2 rounded-lg"><i class="fas fa-cart-plus"></i></button>` : `<button onclick="event.stopPropagation(); requestQuote('${p.id}')" class="btn-accent text-white px-4 py-2 rounded-lg text-sm">${AppState.language === 'fa' ? 'استعلام' : 'RFQ'}</button>`}
+                        ${p.sell_mode === 'instant' ? `<button onclick="event.stopPropagation(); addToCart('${p.id}')" aria-label="${AppState.language === 'fa' ? 'افزودن به سبد' : 'Add to cart'}" class="btn-primary text-white px-4 py-2 rounded-lg" type="button"><i class="fas fa-cart-plus"></i></button>` : `<button onclick="event.stopPropagation(); requestQuote('${p.id}')" class="btn-accent text-white px-4 py-2 rounded-lg text-sm" type="button">${AppState.language === 'fa' ? 'استعلام' : 'RFQ'}</button>`}
                     </div>
                 </div>
             </div>
@@ -904,11 +904,11 @@ function renderSearchResults() {
                 <td class="px-4 py-4 font-bold ${p.sell_mode === 'instant' ? 'text-gray-800' : 'text-orange-600'}">${p.sell_mode === 'instant' ? `${formatPrice(p.priceUSD)} <span class="text-xs text-gray-500">${currencyLabel()}</span>` : quoteLabel()}</td>
                 <td class="px-4 py-4">
                     <div class="flex gap-2">
-                        ${p.sell_mode === 'instant' ? `<button onclick="event.stopPropagation(); addToCart('${p.id}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Add to cart"><i class="fas fa-cart-plus"></i></button>` : `<button onclick="event.stopPropagation(); requestQuote('${p.id}')" class="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition" title="RFQ"><i class="fas fa-file-invoice"></i></button>`}
-                        <button onclick="event.stopPropagation(); toggleCompare('${p.id}')" class="p-2 ${AppState.compareList.includes(p.id) ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:bg-gray-100'} rounded-lg transition" title="Compare">
+                        ${p.sell_mode === 'instant' ? `<button onclick="event.stopPropagation(); addToCart('${p.id}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Add to cart" type="button"><i class="fas fa-cart-plus"></i></button>` : `<button onclick="event.stopPropagation(); requestQuote('${p.id}')" class="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition" title="RFQ" type="button"><i class="fas fa-file-invoice"></i></button>`}
+                        <button onclick="event.stopPropagation(); toggleCompare('${p.id}')" class="p-2 ${AppState.compareList.includes(p.id) ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:bg-gray-100'} rounded-lg transition" title="Compare" type="button">
                             <i class="fas fa-balance-scale"></i>
                         </button>
-                        <button onclick="event.stopPropagation(); toggleWishlist('${p.id}')" class="p-2 ${AppState.wishlist.includes(p.id) ? 'text-red-600 bg-red-50' : 'text-gray-400 hover:bg-gray-100'} rounded-lg transition" title="Save">
+                        <button onclick="event.stopPropagation(); toggleWishlist('${p.id}')" class="p-2 ${AppState.wishlist.includes(p.id) ? 'text-red-600 bg-red-50' : 'text-gray-400 hover:bg-gray-100'} rounded-lg transition" title="Save" type="button">
                             <i class="fas fa-heart"></i>
                         </button>
                     </div>

@@ -195,18 +195,18 @@ function simulateIncomingSms(phone, code) {
             <div class="sms-sim-head">
                 <i class="fas fa-message"></i>
                 <span>پیامک شبیه‌سازی‌شده | <span dir="ltr">BearingOnline</span></span>
-                <button class="sms-sim-close" onclick="removeSmsSimulator()" aria-label="بستن پیامک شبیه‌سازی‌شده"><i class="fas fa-times"></i></button>
+                <button class="sms-sim-close" onclick="removeSmsSimulator()" aria-label="بستن پیامک شبیه‌سازی‌شده" type="button"><i class="fas fa-times"></i></button>
             </div>
             <div class="sms-sim-body">
                 کاربر گرامی، کد تأیید شما:
                 <br>
                 <span class="sms-sim-code-wrap" dir="ltr">
                     <span class="sms-sim-code">${code}</span>
-                    <button class="sms-sim-copy" onclick="copySmsCode('${code}')" title="کپی کد" aria-label="کپی کد تأیید"><i class="fas fa-copy"></i></button>
+                    <button class="sms-sim-copy" onclick="copySmsCode('${code}')" title="کپی کد" aria-label="کپی کد تأیید" type="button"><i class="fas fa-copy"></i></button>
                 </span>
                 <br>
                 <span class="text-xs text-gray-400">برای <span dir="ltr">${maskPhone(phone)}</span> ارسال شد.</span>
-                <button class="sms-sim-fill" onclick="fillOtpFromSms('${code}')"><i class="fas fa-wand-magic-sparkles ml-1"></i>وارد کردن خودکار کد</button>
+                <button class="sms-sim-fill" onclick="fillOtpFromSms('${code}')" type="button"><i class="fas fa-wand-magic-sparkles ml-1"></i>وارد کردن خودکار کد</button>
             </div>
         </div>`;
     document.body.appendChild(holder);
@@ -432,7 +432,7 @@ function renderAccountLogin(step, phone, message = '') {
             ${accountStepsHTML('password')}
             <h2 class="text-2xl font-black text-gray-900 acct-rise acct-d1">${hello ? hello + ' عزیز، خوش آمدی 👋' : 'ورود با رمز عبور'}</h2>
             <p class="text-sm text-gray-500 mt-2 acct-rise acct-d2">رمز حساب <b class="text-gray-800" dir="ltr">${maskPhone(phone)}</b> را وارد کنید.</p>
-            <button onclick="renderAccountLogin('phone','${escapeHTML(phone)}')" class="text-xs font-bold text-blue-600 mt-1 hover:underline">
+            <button onclick="renderAccountLogin('phone','${escapeHTML(phone)}')" class="text-xs font-bold text-blue-600 mt-1 hover:underline" type="button">
                 <i class="fas fa-pen ml-1"></i>ورود با شماره دیگر
             </button>
             ${message ? `<div class="acct-msg-error mb-1 mt-4"><i class="fas fa-circle-exclamation"></i><span>${message}</span></div>` : ''}
@@ -446,8 +446,8 @@ function renderAccountLogin(step, phone, message = '') {
                 <button type="submit" class="acct-btn-primary w-full mt-5"><i class="fas fa-right-to-bracket"></i>ورود به حساب</button>
             </form>
             <div class="acct-alt-row">
-                <button onclick="loginWithOtpInstead()" class="acct-btn-ghost w-full"><i class="fas fa-comment-sms"></i>ورود با کد پیامکی</button>
-                <button onclick="forgotPassword()" class="acct-link-btn">رمز را فراموش کرده‌ام</button>
+                <button onclick="loginWithOtpInstead()" class="acct-btn-ghost w-full" type="button"><i class="fas fa-comment-sms"></i>ورود با کد پیامکی</button>
+                <button onclick="forgotPassword()" class="acct-link-btn" type="button">رمز را فراموش کرده‌ام</button>
             </div>
             <div class="acct-trust acct-rise acct-d4">
                 <span><i class="fas fa-lock"></i>رمز شما رمزنگاری‌شده ذخیره می‌شود</span>
@@ -459,7 +459,7 @@ function renderAccountLogin(step, phone, message = '') {
             ${accountStepsHTML('otp')}
             <h2 class="text-2xl font-black text-gray-900 acct-rise acct-d1">کد تأیید را وارد کنید</h2>
             <p class="text-sm text-gray-500 mt-2 acct-rise acct-d2">کد ۵ رقمی ارسال‌شده به <b class="text-gray-800" dir="ltr">${maskPhone(phone)}</b> را وارد کنید.</p>
-            <button onclick="renderAccountLogin('phone','${escapeHTML(phone)}')" class="text-xs font-bold text-blue-600 mt-1 hover:underline">
+            <button onclick="renderAccountLogin('phone','${escapeHTML(phone)}')" class="text-xs font-bold text-blue-600 mt-1 hover:underline" type="button">
                 <i class="fas fa-pen ml-1"></i>ویرایش شماره
             </button>
             ${message ? `<div class="acct-msg-error mb-1 mt-4"><i class="fas fa-circle-exclamation"></i><span>${message}</span></div>` : ''}
@@ -471,9 +471,9 @@ function renderAccountLogin(step, phone, message = '') {
             <div class="otp-timebar" id="otp-timebar"><i></i></div>
             <div class="otp-meta">
                 <span><i class="fas fa-stopwatch ml-1"></i>اعتبار کد: <b id="otp-expiry">۲:۰۰</b></span>
-                <button id="otp-resend" class="otp-resend" onclick="resendOtp()" disabled>ارسال مجدد کد</button>
+                <button id="otp-resend" class="otp-resend" onclick="resendOtp()" disabled type="button">ارسال مجدد کد</button>
             </div>
-            <button id="otp-verify-btn" onclick="verifyOtp()" class="acct-btn-primary w-full mt-5"><i class="fas fa-shield-halved"></i>تأیید کد و ورود</button>
+            <button id="otp-verify-btn" onclick="verifyOtp()" class="acct-btn-primary w-full mt-5" type="button"><i class="fas fa-shield-halved"></i>تأیید کد و ورود</button>
             <div class="acct-demo-note mt-5">
                 <i class="fas fa-flask mt-1"></i>
                 <span>پیامک شبیه‌سازی‌شده حاوی کد، پایین صفحه نمایش داده شده است؛ با دکمه «وارد کردن خودکار کد» می‌توانید آن را یک‌جا پر کنید.</span>
@@ -537,7 +537,7 @@ function renderAccountLogin(step, phone, message = '') {
                 <button type="submit" class="acct-btn-primary w-full mt-5"><i class="fas fa-shield-halved"></i>ذخیره رمز و ورود</button>
             </form>
             <div class="acct-alt-row">
-                <button onclick="skipSetPassword()" class="acct-btn-ghost w-full"><i class="fas fa-forward"></i>فعلاً نه، بعداً می‌سازم</button>
+                <button onclick="skipSetPassword()" class="acct-btn-ghost w-full" type="button"><i class="fas fa-forward"></i>فعلاً نه، بعداً می‌سازم</button>
             </div>
             <div class="acct-demo-note mt-4">
                 <i class="fas fa-circle-info mt-1"></i>

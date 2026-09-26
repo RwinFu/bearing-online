@@ -51,7 +51,10 @@ if (missingIds.length) note('JS looks up ids that the markup does not define: ' 
 // --- 3. local asset references -------------------------------------------------------
 const localRefs = [...html.matchAll(/(?:src|href)="((?!https?:|#|mailto:|tel:|data:)[^"]+)"/g)].map(m => m[1]);
 for (const ref of localRefs) {
-    if (!fs.existsSync(path.join(ROOT, ref))) note('missing local asset referenced by index.html: ' + ref);
+    // Assets are cache-busted with ?v=... — the query string is not part of the
+    // path on disk, so strip it (and any #fragment) before checking existence.
+    const onDisk = ref.split(/[?#]/)[0];
+    if (!fs.existsSync(path.join(ROOT, onDisk))) note('missing local asset referenced by index.html: ' + ref);
 }
 for (const f of jsFiles) {
     if (!html.includes('assets/js/' + f)) note('module not loaded by index.html: ' + f);
