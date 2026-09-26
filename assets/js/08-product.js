@@ -113,28 +113,28 @@ function showProductDetail(productId) {
                     </div>`;
                     })()}
                     <div class="flex flex-col md:flex-row gap-4 mb-8">
-                        ${product.sell_mode === 'instant' ? `<button onclick="addToCart('${product.id}', document.getElementById('product-supplier-select')?.value || undefined)" class="flex-1 btn-primary magnetic text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2"><i class="fas fa-cart-plus"></i><span data-en="Add to Cart" data-fa="افزودن به سبد">افزودن به سبد</span></button>` : ''}
-                        <button onclick="requestQuote('${product.id}')" class="flex-1 btn-accent magnetic text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2">
+                        ${product.sell_mode === 'instant' ? `<button onclick="addToCart('${product.id}', document.getElementById('product-supplier-select')?.value || undefined)" class="flex-1 btn-primary magnetic text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2" type="button"><i class="fas fa-cart-plus"></i><span data-en="Add to Cart" data-fa="افزودن به سبد">افزودن به سبد</span></button>` : ''}
+                        <button onclick="requestQuote('${product.id}')" class="flex-1 btn-accent magnetic text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2" type="button">
                             <i class="fas fa-file-invoice"></i>
                             <span data-en="Request Quote" data-fa="درخواست قیمت">Request Quote</span>
                         </button>
-                        <button onclick="openLeadModal('consultation', '${product.brand} ${product.code}')" class="flex-1 border-2 border-blue-100 text-blue-700 bg-blue-50 py-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:border-blue-500 transition">
+                        <button onclick="openLeadModal('consultation', '${product.brand} ${product.code}')" class="flex-1 border-2 border-blue-100 text-blue-700 bg-blue-50 py-4 rounded-xl font-medium flex items-center justify-center gap-2 hover:border-blue-500 transition" type="button">
                             <i class="fas fa-user-gear"></i>
                             <span data-en="Ask Engineer" data-fa="مشاوره مهندسی">Ask Engineer</span>
                         </button>
                     </div>
 
                     <div class="flex gap-3">
-                        <button onclick="toggleCompare('${product.id}')" class="px-4 py-2 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:text-blue-600 transition flex items-center gap-2">
+                        <button onclick="toggleCompare('${product.id}')" class="px-4 py-2 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:text-blue-600 transition flex items-center gap-2" type="button">
                             <i class="fas fa-balance-scale"></i>
                             <span data-en="Compare" data-fa="مقایسه">Compare</span>
                         </button>
-                        <button onclick="toggleWishlist('${product.id}')" class="px-4 py-2 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:text-red-600 transition flex items-center gap-2">
+                        <button onclick="toggleWishlist('${product.id}')" class="px-4 py-2 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:text-red-600 transition flex items-center gap-2" type="button">
                             <i class="fas fa-heart"></i>
                             <span data-en="Save" data-fa="نشان کردن">نشان کردن</span>
                         </button>
                         <!-- Single datasheet entry point: quick access, shows which maker's sheet opens. -->
-                        <button onclick="openProductDatasheet('${product.id}')" class="px-4 py-2 border-2 border-blue-100 bg-blue-50/60 text-blue-700 rounded-lg hover:border-blue-500 hover:text-blue-800 transition flex items-center gap-2" title="${productDatasheetUrl(product).url}">
+                        <button onclick="openProductDatasheet('${product.id}')" class="px-4 py-2 border-2 border-blue-100 bg-blue-50/60 text-blue-700 rounded-lg hover:border-blue-500 hover:text-blue-800 transition flex items-center gap-2" title="${productDatasheetUrl(product).url}" type="button">
                             <i class="fas fa-file-pdf"></i>
                             <span data-en="Datasheet" data-fa="دیتاشیت">Datasheet</span>
                             <span dir="ltr" class="text-xs font-semibold text-blue-400">${productDatasheetUrl(product).brand}</span>

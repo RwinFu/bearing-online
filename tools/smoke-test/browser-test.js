@@ -128,6 +128,23 @@ const fs = require('node:fs');
                 }
             }
         });
+        // Headless CI images and sandboxes often ship no GPU and no software
+        // rasteriser, so `getContext('webgl')` returns null there. That is a
+        // property of the machine, not of the site — the no-WebGL path is
+        // covered by the jsdom suite. Detect it and skip the WebGL checks
+        // instead of reporting a site failure that cannot happen on real hardware.
+        const webglAvailable = await page.evaluate(() => {
+            try {
+                const c = document.createElement('canvas');
+                return !!(c.getContext('webgl') || c.getContext('experimental-webgl'));
+            } catch (e) { return false; }
+        });
+        const skipWebgl = name => console.log(`SKIP ${name} (no WebGL in this environment)`);
+
+        if (!webglAvailable) {
+            skipWebgl('WebGL viewer renders, all presets work and reduced motion starts paused');
+            skipWebgl('Mobile 3D controls and canvas are within the viewport; hidden viewer stops rendering');
+        } else {
         await check('WebGL viewer renders, all presets work and reduced motion starts paused', async () => {
             await navigate('about');
             await page.locator('#bearingStage').scrollIntoViewIfNeeded();
@@ -159,6 +176,17 @@ const fs = require('node:fs');
             const box = await page.locator('#bearingViewport').boundingBox();
             assert(box.width <= 390 && box.height >= 300);
             await page.locator('#bearingStage').screenshot({ path: path.join(output, 'mobile-viewer.png') });
+            await navigate('home');
+            assert.equal(await page.evaluate(() => Bearing3D.raf), 0);
+        });
+        }
+        // Runs with or without WebGL: the fallback must never leave the page
+        // scrolled sideways, and the viewer must stop rendering when hidden.
+        await check('3D stage never causes horizontal page overflow', async () => {
+            await page.setViewportSize({ width: 390, height: 844 });
+            await navigate('about');
+            await page.waitForTimeout(900);
+            assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
             await navigate('home');
             assert.equal(await page.evaluate(() => Bearing3D.raf), 0);
         });

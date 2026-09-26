@@ -114,12 +114,12 @@ function renderOpsOverview() {
     const newLeads = AppState.leads.filter(l => l.status === 'new').length;
     const newComplaints = MockDB.complaints.filter(c => c.status === 'new').length;
     kpis.innerHTML = `
-        <button class="ops-kpi" onclick="switchOpsTab('stock')"><b>${ProductDatabase.length}</b><span>کالای کاتالوگ</span></button>
-        <button class="ops-kpi" onclick="switchOpsTab('stock')"><b>${instant}</b><span>قابل خرید آنلاین</span></button>
-        <button class="ops-kpi" onclick="switchOpsTab('orders')"><b>${openOrders}</b><span>سفارش باز</span></button>
-        <button class="ops-kpi" onclick="switchOpsTab('rfq')"><b>${waitingRFQ}</b><span>استعلام در انتظار</span></button>
-        <button class="ops-kpi" onclick="switchOpsTab('tech')"><b>${newLeads}</b><span>لید جدید</span></button>
-        <button class="ops-kpi" onclick="switchOpsTab('complaints')"><b>${newComplaints}</b><span>شکایت جدید</span></button>
+        <button class="ops-kpi" onclick="switchOpsTab('stock')" type="button"><b>${ProductDatabase.length}</b><span>کالای کاتالوگ</span></button>
+        <button class="ops-kpi" onclick="switchOpsTab('stock')" type="button"><b>${instant}</b><span>قابل خرید آنلاین</span></button>
+        <button class="ops-kpi" onclick="switchOpsTab('orders')" type="button"><b>${openOrders}</b><span>سفارش باز</span></button>
+        <button class="ops-kpi" onclick="switchOpsTab('rfq')" type="button"><b>${waitingRFQ}</b><span>استعلام در انتظار</span></button>
+        <button class="ops-kpi" onclick="switchOpsTab('tech')" type="button"><b>${newLeads}</b><span>لید جدید</span></button>
+        <button class="ops-kpi" onclick="switchOpsTab('complaints')" type="button"><b>${newComplaints}</b><span>شکایت جدید</span></button>
         <div class="ops-kpi"><b>${formatToman(stockValue)}</b><span>ارزش موجودی (تومان)</span></div>`;
     const lowItems = ProductDatabase.filter(p => (p.available_to_sell || 0) <= 2).slice(0, 8);
     low.innerHTML = lowItems.map(p => `<div class="flex items-center justify-between gap-2 p-2 rounded-lg ${p.available_to_sell === 0 ? 'bg-red-50' : 'bg-orange-50'}"><span class="font-bold text-gray-700">${escapeHTML(p.brand)} ${escapeHTML(p.code)}</span><span class="text-xs ${p.available_to_sell === 0 ? 'text-red-600' : 'text-orange-600'} font-bold">${p.available_to_sell === 0 ? 'ناموجود' : 'فقط ' + p.available_to_sell + ' عدد'}</span></div>`).join('') || '<p class="text-xs text-gray-400">موجودی همه کالاها مناسب است.</p>';
@@ -245,7 +245,6 @@ function renderOpsStock() {
     const manager = AppState.staffRole === 'manager';
     const all = ProductDatabase.filter(p => !q || normalizeSearchValue(`${p.brand} ${p.code} ${p.id}`).includes(q));
     const rows = all.slice(0, 60);
-    const suppliers = MockDB.suppliers.filter(s => s.type !== 'own');
     const countEl = document.getElementById('ops-stock-count');
     if (countEl) countEl.textContent = `نمایش ${rows.length} از ${all.length} کالا (کل کاتالوگ: ${ProductDatabase.length})`;
     container.innerHTML = rows.map(p => {
@@ -256,7 +255,7 @@ function renderOpsStock() {
                 <div><b dir="ltr">${escapeHTML(p.brand)} ${escapeHTML(p.code)}</b>
                     <div class="text-xs text-gray-400">قابل فروش: ${p.available_to_sell} | ${p.sell_mode === 'instant' ? 'خرید آنلاین' : 'استعلامی'} | ${formatToman(p.unit_price_toman)} تومان</div>
                 </div>
-                ${manager ? `<button onclick="deleteProduct('${p.id}')" class="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-bold self-start" title="حذف کالا از کاتالوگ"><i class="fas fa-trash ml-1"></i>حذف</button>` : ''}
+                ${manager ? `<button onclick="deleteProduct('${p.id}')" class="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-bold self-start" title="حذف کالا از کاتالوگ" type="button"><i class="fas fa-trash ml-1"></i>حذف</button>` : ''}
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
                 <label class="text-xs text-gray-500">موجودی<input type="number" min="0" value="${p.stock_on_hand}" ${stockEditable ? '' : 'disabled'} onchange="updateStock('${p.id}','stock_on_hand',this.value)" class="compact-input mt-1 ${stockEditable ? '' : 'ops-locked'}"></label>
@@ -488,8 +487,8 @@ function renderOpsSuppliers(editId = '') {
                 <label class="text-xs text-gray-500">آدرس / بازار<input id="ops-edit-address" value="${escapeHTML(s.address || '')}" class="compact-input mt-1"></label>
                 <label class="text-xs text-gray-500">توضیح<input id="ops-edit-note" value="${escapeHTML(s.note || '')}" class="compact-input mt-1"></label>
                 <div class="md:col-span-4 flex gap-2">
-                    <button onclick="saveSupplier('${s.id}')" class="btn-primary text-white px-4 py-2 rounded-xl font-bold text-sm">ذخیره</button>
-                    <button onclick="renderOpsSuppliers()" class="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-600">انصراف</button>
+                    <button onclick="saveSupplier('${s.id}')" class="btn-primary text-white px-4 py-2 rounded-xl font-bold text-sm" type="button">ذخیره</button>
+                    <button onclick="renderOpsSuppliers()" class="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-600" type="button">انصراف</button>
                 </div>
             </div>`;
         }
@@ -497,8 +496,8 @@ function renderOpsSuppliers(editId = '') {
         <div class="p-3 bg-white rounded-xl border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-2">
             <div><b>${escapeHTML(s.name)}</b> ${s.type === 'own' ? '<span class="text-xs text-green-700">(انبار خودمان)</span>' : '<span class="text-xs text-blue-600">(مغازه/تامین‌کننده)</span>'}<div class="text-xs text-gray-400 mt-1">${escapeHTML(s.phone) || '-'} | ${escapeHTML(s.address) || '-'}${s.note ? ' | ' + escapeHTML(s.note) : ''}</div><div class="text-xs text-gray-500 mt-1">${count} کالا از این منبع تامین می‌شود</div></div>
             ${!editable ? '<span class="text-xs text-gray-400">فقط مدیر/انباردار</span>' : `<div class="flex gap-2">
-                <button onclick="editSupplier('${s.id}')" class="px-3 py-2 rounded-xl border border-blue-200 text-blue-700 text-sm font-bold">ویرایش</button>
-                ${s.type === 'own' ? '' : `<button onclick="deleteSupplier('${s.id}')" class="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-bold">حذف</button>`}
+                <button onclick="editSupplier('${s.id}')" class="px-3 py-2 rounded-xl border border-blue-200 text-blue-700 text-sm font-bold" type="button">ویرایش</button>
+                ${s.type === 'own' ? '' : `<button onclick="deleteSupplier('${s.id}')" class="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-bold" type="button">حذف</button>`}
             </div>`}
         </div>`;
     }).join('') || '<p class="text-sm text-gray-400">تامین‌کننده‌ای ثبت نشده است.</p>';
@@ -648,7 +647,7 @@ function renderOpsRFQ() {
                     <select ${editable ? '' : 'disabled'} onchange="setRFQStatus('${rfq.rfqNumber}',this.value)" class="compact-input md:w-48 ${editable ? '' : 'ops-locked'}">
                         ${Object.keys(RFQ_STATUS_FA).map(s => `<option value="${s}" ${rfq.status === s ? 'selected' : ''}>${RFQ_STATUS_FA[s]}</option>`).join('')}
                     </select>
-                    ${editable ? `<button onclick="deleteRFQ('${rfq.rfqNumber}')" class="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-bold" title="حذف استعلام"><i class="fas fa-trash"></i></button>` : ''}
+                    ${editable ? `<button onclick="deleteRFQ('${rfq.rfqNumber}')" class="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-bold" title="حذف استعلام" type="button"><i class="fas fa-trash"></i></button>` : ''}
                 </div>
             </div>
             <div class="text-xs text-gray-600 bg-gray-50 rounded-lg p-2 mt-2">اقلام: ${escapeHTML(rfqItemsText(rfq)) || '-'}</div>
@@ -739,7 +738,7 @@ function renderOpsOrders() {
                     <select ${editable ? '' : 'disabled'} onchange="setOrderStatus('${order.orderNumber}',this.value)" class="compact-input md:w-44 text-sm ${editable ? '' : 'ops-locked'}">
                         ${Object.keys(statusFa).map(s => `<option value="${s}" ${order.status === s ? 'selected' : ''}>${statusFa[s]}</option>`).join('')}
                     </select>
-                    <button onclick="toggleOrderDetail('${order.orderNumber}')" class="px-3 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 whitespace-nowrap">${open ? 'بستن ▲' : 'جزئیات ▼'}</button>
+                    <button onclick="toggleOrderDetail('${order.orderNumber}')" class="px-3 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 whitespace-nowrap" type="button">${open ? 'بستن ▲' : 'جزئیات ▼'}</button>
                 </div>
             </div>
             <div class="text-xs text-gray-400 mt-2">پرداخت: ${escapeHTML(order.payment_status)} | ارسال: ${escapeHTML(order.shipping_status)}${order.trackingCode ? ' | رهگیری: ' + escapeHTML(order.trackingCode) : ''}${editable ? '' : ' | فقط مدیر'}</div>

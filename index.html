@@ -81,10 +81,6 @@
         </g>
     </svg>
 
-    <!-- Custom Cursor -->
-    <div class="cursor-dot" id="cursor-dot"></div>
-    <div class="cursor-ring" id="cursor-ring"></div>
-
     <!-- Scroll Progress Bar -->
     <div id="scroll-progress"></div>
 
@@ -100,15 +96,15 @@
 
     <!-- Always-on Engineering & Fast Order Actions -->
     <div class="quick-action-panel">
-        <button onclick="openLeadModal('quick-order')" class="quick-action-btn lead-pulse" style="background:linear-gradient(135deg,#ff9a4d,#ff5d0d 55%,#b84300); color:#10203f;" aria-label="Fast custom order">
+        <button onclick="openLeadModal('quick-order')" class="quick-action-btn lead-pulse" style="background:linear-gradient(135deg,#ff9a4d,#ff5d0d 55%,#b84300); color:#10203f;" aria-label="Fast custom order" type="button">
             <i class="fas fa-bolt text-xl"></i>
             <span class="quick-action-label" data-en="Fast custom order" data-fa="سفارش سریع قطعه">Fast custom order</span>
         </button>
-        <button onclick="openLeadModal('consultation')" class="quick-action-btn" style="background:linear-gradient(135deg,#2f6bff,#1348c8 60%,#0a2358);" aria-label="Engineering consultation">
+        <button onclick="openLeadModal('consultation')" class="quick-action-btn" style="background:linear-gradient(135deg,#2f6bff,#1348c8 60%,#0a2358);" aria-label="Engineering consultation" type="button">
             <i class="fas fa-user-gear text-xl"></i>
             <span class="quick-action-label" data-en="Engineering consultation" data-fa="مشاوره مهندسی">Engineering consultation</span>
         </button>
-        <a href="https://wa.me/989123224260" target="_blank" class="quick-action-btn" style="background:linear-gradient(135deg,#16a34a,#15803d);" aria-label="WhatsApp">
+        <a href="https://wa.me/989123224260" class="quick-action-btn" style="background:linear-gradient(135deg,#16a34a,#15803d);" aria-label="WhatsApp" target="_blank" rel="noopener noreferrer">
             <i class="fab fa-whatsapp text-2xl"></i>
             <span class="quick-action-label" data-en="WhatsApp support" data-fa="پشتیبانی واتس‌اپ">WhatsApp support</span>
         </a>
@@ -125,26 +121,26 @@
                 <div class="flex items-center gap-4 text-white/70">
                     <a href="tel:+982188709158" class="hover:text-white flex items-center gap-1">
                         <i class="fas fa-phone text-xs"></i>
-                        <span data-en="+98 21 8870 9158" data-fa="۰۲۱-۸۸۷۰۹۱۵۸">+98 21 8870 9158</span>
+                        <span data-en="+98&nbsp;21&nbsp;8870&nbsp;9158" data-fa="۰۲۱-۸۸۷۰۹۱۵۸">+98&nbsp;21&nbsp;8870&nbsp;9158</span>
                     </a>
-                    <a href="https://wa.me/989123224260" class="hover:text-white flex items-center gap-1">
+                    <a href="https://wa.me/989123224260" class="hover:text-white flex items-center gap-1" target="_blank" rel="noopener noreferrer">
                         <i class="fab fa-whatsapp text-xs"></i>
                         <span data-en="WhatsApp" data-fa="واتس‌اپ">WhatsApp</span>
                     </a>
                 </div>
                 <div class="flex items-center gap-4">
-                    <button onclick="toggleLanguage()" class="flex items-center gap-2 text-white/70 hover:text-white transition">
+                    <button onclick="toggleLanguage()" class="flex items-center gap-2 text-white/70 hover:text-white transition" type="button">
                         <i class="fas fa-globe"></i>
                         <span id="lang-toggle" data-en="فارسی" data-fa="English">English</span>
                     </button>
-                    <button onclick="showAdminPanel()" class="text-white/70 hover:text-white">
+                    <button onclick="showAdminPanel()" class="text-white/70 hover:text-white" aria-label="پنل عملیات" title="پنل عملیات" type="button">
                         <i class="fas fa-cog"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Main Nav -->
-            <nav class="flex items-center justify-between py-4">
+            <nav class="flex items-center justify-between py-4" aria-label="ناوبری اصلی">
                 <a href="#" onclick="showPage('home')" class="flex items-center gap-3 nav-logo transition-transform" aria-label="برینگ آنلاین | Bearing Online">
                     <div class="brand-lockup vector-brand" aria-hidden="true">
                         <svg class="vector-brand-mark" viewBox="0 0 120 116" focusable="false">
@@ -168,22 +164,22 @@
                 </div>
 
                 <div class="flex items-center gap-4">
-                    <button onclick="showCart()" class="relative text-white hover:text-white/80 transition">
+                    <button onclick="showCart()" class="relative text-white hover:text-white/80 transition" type="button">
                         <i class="fas fa-shopping-cart text-xl"></i>
                         <span id="cart-count" class="absolute -top-2 -right-2 bg-orange-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
                     </button>
-                    <button onclick="showWishlist()" class="relative text-white hover:text-white/80 transition" aria-label="Saved products">
+                    <button onclick="showWishlist()" class="relative text-white hover:text-white/80 transition" aria-label="Saved products" type="button">
                         <i class="fas fa-heart text-xl"></i>
                         <span id="wishlist-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
                     </button>
-                    <button onclick="showCompare()" class="nav-icon-compare relative text-white hover:text-white/80 transition" aria-label="Compare">
+                    <button onclick="showCompare()" class="nav-icon-compare relative text-white hover:text-white/80 transition" aria-label="Compare" type="button">
                         <i class="fas fa-balance-scale text-xl"></i>
                         <span id="compare-count" class="absolute -top-2 -right-2 bg-blue-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
                     </button>
-                    <button id="account-nav-button" onclick="showAccount()" class="nav-icon-account relative text-white hover:text-white/80 transition flex items-center justify-center" aria-label="ورود / حساب کاربری" title="ورود / حساب کاربری">
+                    <button id="account-nav-button" onclick="showAccount()" class="nav-icon-account relative text-white hover:text-white/80 transition flex items-center justify-center" aria-label="ورود / حساب کاربری" title="ورود / حساب کاربری" type="button">
                         <i class="fas fa-user text-xl"></i>
                     </button>
-                    <button onclick="toggleMobileMenu()" id="mobile-menu-toggle" class="lg:hidden text-white" aria-label="باز کردن منو" aria-controls="mobile-menu" aria-expanded="false">
+                    <button onclick="toggleMobileMenu()" id="mobile-menu-toggle" class="lg:hidden text-white" aria-label="باز کردن منو" aria-controls="mobile-menu" aria-expanded="false" type="button">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
                 </div>
@@ -196,11 +192,11 @@
     <aside id="mobile-menu" aria-label="منوی اصلی" inert>
         <div class="flex items-center justify-between p-4 border-b border-gray-100">
             <span class="font-extrabold text-lg" style="color:#0b2560" data-en="Menu" data-fa="منو">منو</span>
-            <button onclick="closeMobileMenu()" class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center" aria-label="Close menu">
+            <button onclick="closeMobileMenu()" class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center" aria-label="Close menu" type="button">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <nav class="flex-1 overflow-y-auto py-2">
+        <nav class="flex-1 overflow-y-auto py-2" aria-label="ناوبری موبایل">
             <a href="#" class="mnav" onclick="closeMobileMenu();showPage('home')"><i class="fas fa-home w-6 text-center" style="color:#1348c8"></i><span data-en="Home" data-fa="خانه">خانه</span></a>
             <a href="#" class="mnav" onclick="closeMobileMenu();showPage('search')"><i class="fas fa-boxes w-6 text-center" style="color:#1348c8"></i><span data-en="Products" data-fa="محصولات">محصولات</span></a>
             <a href="#" class="mnav" onclick="closeMobileMenu();showPage('brands')"><i class="fas fa-award w-6 text-center" style="color:#1348c8"></i><span data-en="Brands" data-fa="برندها">برندها</span></a>
@@ -213,8 +209,8 @@
             <a href="#" class="mnav" onclick="closeMobileMenu();showPage('shipping')"><i class="fas fa-truck-fast w-6 text-center" style="color:#1348c8"></i><span data-en="Shipping &amp; returns" data-fa="ارسال و مرجوعی کالا">ارسال و مرجوعی کالا</span></a>
         </nav>
         <div class="p-4 border-t border-gray-100 space-y-2">
-            <a href="tel:+982188709158" class="flex items-center gap-3 font-bold" style="color:#0b2560"><i class="fas fa-phone"></i><span dir="ltr">+98 21 8870 9158</span></a>
-            <a href="https://wa.me/989123224260" target="_blank" class="flex items-center gap-3 font-bold text-green-700"><i class="fab fa-whatsapp text-xl"></i><span>واتس‌اپ پشتیبانی</span></a>
+            <a href="tel:+982188709158" class="flex items-center gap-3 font-bold" style="color:#0b2560"><i class="fas fa-phone"></i><span dir="ltr">+98&nbsp;21&nbsp;8870&nbsp;9158</span></a>
+            <a href="https://wa.me/989123224260" class="flex items-center gap-3 font-bold text-green-700" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp text-xl"></i><span>واتس‌اپ پشتیبانی</span></a>
         </div>
     </aside>
 
@@ -242,7 +238,7 @@
                         <div class="vector-hero-title mb-5" data-vector-title>
                             <h2 class="text-4xl md:text-6xl font-extrabold hero-title-clear" data-en="Find your industrial bearing fast" data-fa="بلبرینگ صنعتی خود را سریع پیدا کنید">بلبرینگ صنعتی خود را سریع پیدا کنید</h2>
                         </div>
-                        <p class="text-lg md:text-xl max-w-3xl mx-auto data-vector-page hero-subtitle-clear" data-en="Search by part code, brand, name or dimensions. Can’t find it? Send a sourcing request to our engineering team." data-fa="با کد قطعه، برند، نام یا ابعاد جستجو کنید. قطعه را پیدا نکردید؟ درخواست تامین را برای تیم مهندسی ما بفرستید.">با کد قطعه، برند، نام یا ابعاد جستجو کنید. قطعه را پیدا نکردید؟ درخواست تامین را برای تیم مهندسی ما بفرستید.</p>
+                        <p class="text-lg md:text-xl max-w-3xl mx-auto hero-subtitle-clear" data-en="Search by part code, brand, name or dimensions. Can’t find it? Send a sourcing request to our engineering team." data-fa="با کد قطعه، برند، نام یا ابعاد جستجو کنید. قطعه را پیدا نکردید؟ درخواست تامین را برای تیم مهندسی ما بفرستید.">با کد قطعه، برند، نام یا ابعاد جستجو کنید. قطعه را پیدا نکردید؟ درخواست تامین را برای تیم مهندسی ما بفرستید.</p>
                         <div class="hero-proof-row">
                             <span class="hero-proof-chip" data-vector-page data-en="Bearings, housings, bushings" data-fa="برینگ، یاتاقان و بوش">برینگ، یاتاقان و بوش</span>
                             <span class="hero-proof-chip" data-vector-page data-en="Instant checkout for stocked items" data-fa="پرداخت آنلاین برای کالای موجود">پرداخت آنلاین برای کالای موجود</span>
@@ -255,9 +251,9 @@
                         <div class="glass-effect rounded-2xl shadow-2xl p-6">
                             <!-- Search Tabs -->
                             <div class="flex gap-4 mb-6 border-b border-gray-200">
-                                <button onclick="setSearchMode('part')" class="search-tab tab-active pb-3 px-4 font-medium text-gray-600" data-mode="part" data-en="Code or Name" data-fa="کد یا نام قطعه">کد یا نام قطعه</button>
-                                <button onclick="setSearchMode('dimension')" class="search-tab pb-3 px-4 font-medium text-gray-600" data-mode="dimension" data-en="Size Search" data-fa="جستجوی ابعادی">جستجوی ابعادی</button>
-                                <button onclick="setSearchMode('type')" class="search-tab pb-3 px-4 font-medium text-gray-600" data-mode="type" data-en="Category" data-fa="دسته‌بندی">دسته‌بندی</button>
+                                <button onclick="setSearchMode('part')" class="search-tab tab-active pb-3 px-4 font-medium text-gray-600" data-mode="part" data-en="Code or Name" data-fa="کد یا نام قطعه" type="button">کد یا نام قطعه</button>
+                                <button onclick="setSearchMode('dimension')" class="search-tab pb-3 px-4 font-medium text-gray-600" data-mode="dimension" data-en="Size Search" data-fa="جستجوی ابعادی" type="button">جستجوی ابعادی</button>
+                                <button onclick="setSearchMode('type')" class="search-tab pb-3 px-4 font-medium text-gray-600" data-mode="type" data-en="Category" data-fa="دسته‌بندی" type="button">دسته‌بندی</button>
                             </div>
 
                             <!-- Part Number Search -->
@@ -273,7 +269,7 @@
                                         data-placeholder-fa="کد، نام یا ابعاد؛ مثلاً ۶۲۰۵ یا SKF-6205"
                                         placeholder="کد، نام یا ابعاد؛ مثلاً ۶۲۰۵ یا SKF-6205"
                                         oninput="handleSearchInput(this.value)">
-                                    <button onclick="performSearch()" class="search-submit btn-primary text-white px-6 py-3 rounded-lg font-medium">
+                                    <button onclick="performSearch()" class="search-submit btn-primary text-white px-6 py-3 rounded-lg font-medium" type="button">
                                         <i class="fas fa-search mr-2"></i>
                                         <span data-en="Search" data-fa="جستجو">جستجو</span>
                                     </button>
@@ -331,7 +327,7 @@
                                             <input type="text" inputmode="decimal" dir="ltr" aria-label="dim-B" id="dim-B" class="compact-input" placeholder="15">
                                         </div>
                                         <div class="flex items-end">
-                                            <button onclick="searchByDimension()" class="w-full btn-primary text-white px-6 py-3 rounded-xl font-bold">
+                                            <button onclick="searchByDimension()" class="w-full btn-primary text-white px-6 py-3 rounded-xl font-bold" type="button">
                                                 <i class="fas fa-crosshairs mr-2"></i>
                                                 <span data-en="Find exact" data-fa="جستجوی دقیق">جستجوی دقیق</span>
                                             </button>
@@ -362,7 +358,7 @@
                                             </div>
                                         </div>
                                         <div class="flex items-end">
-                                            <button onclick="searchByDimension()" class="w-full btn-primary text-white px-6 py-3 rounded-xl font-bold">
+                                            <button onclick="searchByDimension()" class="w-full btn-primary text-white px-6 py-3 rounded-xl font-bold" type="button">
                                                 <i class="fas fa-sliders mr-2"></i>
                                                 <span data-en="Find range" data-fa="جستجوی بازه‌ای">جستجوی بازه‌ای</span>
                                             </button>
@@ -374,21 +370,21 @@
                             <!-- Category Search -->
                             <div id="search-type" class="search-panel hidden">
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <button onclick="searchByType('industrial-bearing')" class="magnetic p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-center group">
+                                    <button onclick="searchByType('industrial-bearing')" class="magnetic p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-center group" type="button">
                                         <i class="fas fa-circle-notch text-3xl text-gray-400 group-hover:text-blue-500 mb-3"></i>
-                                        <p class="font-medium text-gray-700" data-en="Industrial bearings" data-fa="برینگ‌های صنعتی">برینگ‌های صنعتی</p>
+                                        <span class="block font-medium text-gray-700" data-en="Industrial bearings" data-fa="برینگ‌های صنعتی">برینگ‌های صنعتی</span>
                                     </button>
-                                    <button onclick="searchByType('grease')" class="magnetic p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-center group">
+                                    <button onclick="searchByType('grease')" class="magnetic p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-center group" type="button">
                                         <i class="fas fa-droplet text-3xl text-gray-400 group-hover:text-blue-500 mb-3"></i>
-                                        <p class="font-medium text-gray-700" data-en="Grease" data-fa="گریس">گریس</p>
+                                        <span class="block font-medium text-gray-700" data-en="Grease" data-fa="گریس">گریس</span>
                                     </button>
-                                    <button onclick="searchByType('automotive-bearing')" class="magnetic p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-center group">
+                                    <button onclick="searchByType('automotive-bearing')" class="magnetic p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-center group" type="button">
                                         <i class="fas fa-car-side text-3xl text-gray-400 group-hover:text-blue-500 mb-3"></i>
-                                        <p class="font-medium text-gray-700" data-en="Automotive bearings" data-fa="برینگ‌های خودرویی">برینگ‌های خودرویی</p>
+                                        <span class="block font-medium text-gray-700" data-en="Automotive bearings" data-fa="برینگ‌های خودرویی">برینگ‌های خودرویی</span>
                                     </button>
-                                    <button onclick="searchByType('housing-bushing')" class="magnetic p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-center group">
+                                    <button onclick="searchByType('housing-bushing')" class="magnetic p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-center group" type="button">
                                         <i class="fas fa-ring text-3xl text-gray-400 group-hover:text-blue-500 mb-3"></i>
-                                        <p class="font-medium text-gray-700" data-en="Housings & bushings" data-fa="یاتاقان و بوش">یاتاقان و بوش</p>
+                                        <span class="block font-medium text-gray-700" data-en="Housings & bushings" data-fa="یاتاقان و بوش">یاتاقان و بوش</span>
                                     </button>
                                 </div>
                             </div>
@@ -398,7 +394,7 @@
                                     <h4 class="font-bold text-gray-800" data-vector-page data-en="No time to search?" data-fa="وقت جستجو ندارید؟">No time to search?</h4>
                                     <p class="text-sm text-gray-500" data-en="Send the code or photo. Every missing part becomes a fast sourcing lead." data-fa="کد یا عکس قطعه را بفرستید. هر قطعه ناموجود به درخواست تامین سریع تبدیل می‌شود.">Send the code or photo. Every missing part becomes a fast sourcing lead.</p>
                                 </div>
-                                <button onclick="openLeadModal('quick-order')" class="btn-accent magnetic text-white px-5 py-3 rounded-xl font-bold whitespace-nowrap">
+                                <button onclick="openLeadModal('quick-order')" class="btn-accent magnetic text-white px-5 py-3 rounded-xl font-bold whitespace-nowrap" type="button">
                                     <i class="fas fa-bolt mr-2"></i>
                                     <span data-en="Fast part request" data-fa="ثبت سریع قطعه">Fast part request</span>
                                 </button>
@@ -448,7 +444,7 @@
                     <span class="signal-pulse"></span>
                     <span data-vector-page data-en="Brands available through our global supply network" data-fa="برندهای قابل تأمین از شبکه جهانی">برندهای قابل تأمین از شبکه جهانی</span>
                 </div>
-                <div class="marquee" aria-label="برندهای قابل تأمین">
+                <div class="marquee" role="group" aria-label="برندهای قابل تأمین">
                     <div class="marquee-track brand-signal-track items-center">
                         <span class="brand-marquee-item">SKF</span><span class="brand-marquee-item">FAG</span><span class="brand-marquee-item">NTN</span><span class="brand-marquee-item">ZWZ</span><span class="brand-marquee-item">HKT</span><span class="brand-marquee-item">TIMKEN</span><span class="brand-marquee-item">ASAHI</span><span class="brand-marquee-item">FLENDER</span><span class="brand-marquee-item">RINGSPANN</span>
                         <span class="brand-marquee-item" aria-hidden="true">SKF</span><span class="brand-marquee-item" aria-hidden="true">FAG</span><span class="brand-marquee-item" aria-hidden="true">NTN</span><span class="brand-marquee-item" aria-hidden="true">ZWZ</span><span class="brand-marquee-item" aria-hidden="true">HKT</span><span class="brand-marquee-item" aria-hidden="true">TIMKEN</span><span class="brand-marquee-item" aria-hidden="true">ASAHI</span><span class="brand-marquee-item" aria-hidden="true">FLENDER</span><span class="brand-marquee-item" aria-hidden="true">RINGSPANN</span>
@@ -622,7 +618,7 @@
                     <span data-en="Search Results" data-fa="نتایج جستجو">Search Results</span>
                 </div>
 
-                <button id="mobile-filter-btn" aria-controls="filters-aside" aria-expanded="false" onclick="toggleMobileFilters()">
+                <button id="mobile-filter-btn" aria-controls="filters-aside" aria-expanded="false" onclick="toggleMobileFilters()" type="button">
                     <i class="fas fa-sliders"></i>
                     <span data-en="Filters" data-fa="فیلترها">فیلترها</span>
                     <span id="mobile-filter-count" class="px-2 py-0.5 rounded-full text-xs font-bold" style="background:rgba(19,72,200,.1);color:#1348c8">۰</span>
@@ -630,14 +626,14 @@
                 </button>
                 <div class="flex flex-col lg:flex-row gap-8">
                     <!-- Filters Sidebar -->
-                    <aside id="filters-aside" class="lg:w-72 flex-shrink-0 filters-collapsed">
+                    <aside id="filters-aside" class="lg:w-72 flex-shrink-0 filters-collapsed" aria-label="فیلتر نتایج">
                         <div class="filter-shell rounded-2xl shadow-sm p-5 lg:sticky lg:top-24">
                             <div class="flex items-start justify-between gap-3 mb-4">
                                 <div>
                                     <h3 class="font-extrabold text-lg text-gray-900" data-en="Smart filters" data-fa="فیلتر هوشمند">فیلتر هوشمند</h3>
                                     <p class="text-xs text-gray-400 mt-1" data-en="Narrow results without leaving the table" data-fa="نتایج را بدون خروج از جدول دقیق‌تر کنید">نتایج را بدون خروج از جدول دقیق‌تر کنید</p>
                                 </div>
-                                <button onclick="clearFilters()" class="text-xs font-bold text-blue-600 hover:underline" data-en="Reset" data-fa="حذف همه">حذف همه</button>
+                                <button onclick="clearFilters()" class="text-xs font-bold text-blue-600 hover:underline" data-en="Reset" data-fa="حذف همه" type="button">حذف همه</button>
                             </div>
 
                             <div class="mb-4">
@@ -661,14 +657,14 @@
                             <div class="mb-4">
                                 <p class="text-xs font-bold text-gray-500 mb-2" data-en="Quick picks" data-fa="انتخاب سریع">انتخاب سریع</p>
                                 <div class="flex flex-wrap gap-2">
-                                    <button onclick="setQuickFilter('brand','SKF')" class="quick-filter-chip">SKF</button>
-                                    <button onclick="setQuickFilter('brand','HKT')" class="quick-filter-chip">HKT</button>
-                                    <button onclick="setQuickFilter('type','bearing')" class="quick-filter-chip" data-en="Bearings" data-fa="برینگ‌ها">برینگ‌ها</button>
+                                    <button onclick="setQuickFilter('brand','SKF')" class="quick-filter-chip" type="button">SKF</button>
+                                    <button onclick="setQuickFilter('brand','HKT')" class="quick-filter-chip" type="button">HKT</button>
+                                    <button onclick="setQuickFilter('type','bearing')" class="quick-filter-chip" data-en="Bearings" data-fa="برینگ‌ها" type="button">برینگ‌ها</button>
                                 </div>
                             </div>
 
                             <div class="filter-group">
-                                <button class="filter-toggle" onclick="toggleFilterGroup(this)">
+                                <button class="filter-toggle" onclick="toggleFilterGroup(this)" type="button">
                                     <span data-en="Brand" data-fa="برند">برند</span>
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
@@ -686,7 +682,7 @@
                             </div>
 
                             <div class="filter-group">
-                                <button class="filter-toggle" onclick="toggleFilterGroup(this)">
+                                <button class="filter-toggle" onclick="toggleFilterGroup(this)" type="button">
                                     <span data-en="Part type" data-fa="نوع قطعه">نوع قطعه</span>
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
@@ -700,7 +696,7 @@
                             </div>
 
                             <div class="filter-group">
-                                <button class="filter-toggle" onclick="toggleFilterGroup(this)">
+                                <button class="filter-toggle" onclick="toggleFilterGroup(this)" type="button">
                                     <span data-en="Size" data-fa="ابعاد">ابعاد</span>
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
@@ -735,7 +731,7 @@
                             </div>
 
                             <div class="filter-group collapsed">
-                                <button class="filter-toggle" onclick="toggleFilterGroup(this)">
+                                <button class="filter-toggle" onclick="toggleFilterGroup(this)" type="button">
                                     <span data-en="Technical filters" data-fa="فیلترهای فنی">فیلترهای فنی</span>
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
@@ -813,10 +809,10 @@
                                     <option value="name" data-en="Name" data-fa="نام">Name</option>
                                 </select>
                                 <div class="flex gap-2">
-                                    <button aria-label="نمای کارتی" aria-pressed="true" onclick="setViewMode('grid')" class="view-mode-btn p-2 rounded-lg bg-blue-100 text-blue-600" data-mode="grid">
+                                    <button aria-label="نمای کارتی" aria-pressed="true" onclick="setViewMode('grid')" class="view-mode-btn p-2 rounded-lg bg-blue-100 text-blue-600" data-mode="grid" type="button">
                                         <i class="fas fa-th"></i>
                                     </button>
-                                    <button aria-label="نمای جدولی" aria-pressed="false" onclick="setViewMode('table')" class="view-mode-btn p-2 rounded-lg hover:bg-gray-100" data-mode="table">
+                                    <button aria-label="نمای جدولی" aria-pressed="false" onclick="setViewMode('table')" class="view-mode-btn p-2 rounded-lg hover:bg-gray-100" data-mode="table" type="button">
                                         <i class="fas fa-list"></i>
                                     </button>
                                 </div>
@@ -834,7 +830,7 @@
                                     <p class="text-white/60 text-sm" data-en="Send the application and our engineers validate fit, equivalent code, and delivery path." data-fa="کاربری قطعه را بفرستید تا مهندسین ما تطابق، کد معادل و مسیر تحویل را بررسی کنند.">Send the application and our engineers validate fit, equivalent code, and delivery path.</p>
                                 </div>
                             </div>
-                            <button onclick="openLeadModal('consultation')" class="btn-accent text-white px-5 py-3 rounded-xl font-bold whitespace-nowrap">
+                            <button onclick="openLeadModal('consultation')" class="btn-accent text-white px-5 py-3 rounded-xl font-bold whitespace-nowrap" type="button">
                                 <span data-en="Ask Engineer" data-fa="مشاوره مهندسی">Ask Engineer</span>
                             </button>
                         </div>
@@ -922,7 +918,7 @@
                         <h2 class="text-3xl font-extrabold text-gray-900" data-en="Checkout" data-fa="تسویه حساب">تسویه حساب</h2>
                         <p class="text-gray-500 mt-2" data-en="Instant items are paid online; inquiry items become RFQ." data-fa="اقلام موجود پرداخت آنلاین می‌شوند؛ اقلام استعلامی به RFQ جدا تبدیل می‌شوند.">اقلام موجود پرداخت آنلاین می‌شوند؛ اقلام استعلامی به RFQ جدا تبدیل می‌شوند.</p>
                     </div>
-                    <button onclick="showCart()" class="px-4 py-2 rounded-xl border border-gray-200 text-gray-600 hover:border-blue-500" data-en="Back to cart" data-fa="بازگشت به سبد">بازگشت به سبد</button>
+                    <button onclick="showCart()" class="px-4 py-2 rounded-xl border border-gray-200 text-gray-600 hover:border-blue-500" data-en="Back to cart" data-fa="بازگشت به سبد" type="button">بازگشت به سبد</button>
                 </div>
                 <div id="checkout-content"></div>
             </div>
@@ -1164,7 +1160,7 @@
                             <p class="about-cta-text">برای استعلام موجودی، دریافت مشاوره فنی یا تأمین محصولات خاص، با کارشناسان بیرینگ آنلاین در ارتباط باشید.</p>
                             <div class="about-cta-buttons">
                                 <a href="tel:+982188709158" class="about-btn about-btn-primary"><i class="fas fa-phone ml-2"></i>تماس با کارشناسان</a>
-                                <a href="https://wa.me/989123224260" target="_blank" class="about-btn about-btn-whatsapp"><i class="fab fa-whatsapp ml-2"></i>پشتیبانی واتس‌اپ</a>
+                                <a href="https://wa.me/989123224260" class="about-btn about-btn-whatsapp" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp ml-2"></i>پشتیبانی واتس‌اپ</a>
                             </div>
                         </div>
                     </div>
@@ -1227,7 +1223,7 @@
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-gray-800" data-en="Phone" data-fa="تلفن">Phone</h4>
-                                    <p class="text-gray-600">+98 21 8870 9158</p>
+                                    <p class="text-gray-600">+98&nbsp;21&nbsp;8870&nbsp;9158</p>
                                     <p class="text-gray-400 text-sm">021-88709158 ~ 63</p>
                                 </div>
                             </div>
@@ -1239,7 +1235,7 @@
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-gray-800">WhatsApp</h4>
-                                    <p class="text-gray-600">+98 912 322 4260</p>
+                                    <p class="text-gray-600">+98&nbsp;912&nbsp;322&nbsp;4260</p>
                                 </div>
                             </div>
                         </div>
@@ -1298,7 +1294,7 @@
                 </div>
                 </div>
                 <div class="policy-layout">
-                <aside class="policy-help">
+                <aside class="policy-help" aria-label="راهنمای سیاست‌ها">
                 <h2 data-fa="برای انتخاب قطعه مطمئن نیستید؟" data-en="Unsure which part to choose?">برای انتخاب قطعه مطمئن نیستید؟</h2>
                 <p data-fa="پیش از ثبت سفارش با کارشناسان ما مشورت کنید. انتخاب صحیح قطعه از هزینه تعویض، توقف تجهیزات و آسیب‌های احتمالی جلوگیری می‌کند." data-en="Consult our specialists before ordering. Selecting the right part helps avoid replacement costs, downtime and potential damage.">پیش از ثبت سفارش با کارشناسان ما مشورت کنید. انتخاب صحیح قطعه از هزینه تعویض، توقف تجهیزات و آسیب‌های احتمالی جلوگیری می‌کند.</p>
                 <a class="editorial-link" href="#/contact">
@@ -1510,7 +1506,7 @@
                             <h3 id="lead-modal-title" class="text-lg font-extrabold leading-7" data-en="Cannot find the part? Send it to engineering." data-fa="قطعه پیدا نشد؟ برای مهندسی ارسال کنید.">Cannot find the part? Send it to engineering.</h3>
                             <p id="lead-modal-subtitle" class="text-white/70 text-xs leading-5 mt-1" data-en="Send the part number and your mobile. We reply with price and delivery time." data-fa="فقط شماره قطعه و موبایل را بفرستید؛ قیمت و زمان تحویل را اعلام می‌کنیم.">Send the part number and your mobile. We reply with price and delivery time.</p>
                         </div>
-                        <button onclick="closeLeadModal()" class="shrink-0 w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition" aria-label="Close">
+                        <button onclick="closeLeadModal()" class="shrink-0 w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition" aria-label="Close" type="button">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
@@ -1582,7 +1578,7 @@
                             <i class="fas fa-paper-plane mr-2"></i>
                             <span data-en="Send request" data-fa="ارسال درخواست">Send request</span>
                         </button>
-                        <a href="https://wa.me/989123224260" target="_blank" class="flex-1 btn-primary text-white py-2.5 rounded-xl font-bold text-sm text-center">
+                        <a href="https://wa.me/989123224260" class="flex-1 btn-primary text-white py-2.5 rounded-xl font-bold text-sm text-center" target="_blank" rel="noopener noreferrer">
                             <i class="fab fa-whatsapp mr-2"></i>
                             <span data-en="WhatsApp" data-fa="واتس‌اپ">WhatsApp</span>
                         </a>
@@ -1602,7 +1598,7 @@
                             <h3 class="text-2xl font-extrabold">پنل عملیات / بک‌اند</h3>
                             <p class="ops-sub text-sm mt-1">فعلاً بدون رمز است. نقش را انتخاب کنید؛ هر نقش فقط به بخش خودش دسترسی دارد. این ساختار آماده اتصال به بک‌اند واقعی است.</p>
                         </div>
-                        <button onclick="closeAdminPanel()" class="text-white/70 hover:text-white" aria-label="Close">
+                        <button onclick="closeAdminPanel()" class="text-white/70 hover:text-white" aria-label="Close" type="button">
                             <i class="fas fa-times text-xl"></i>
                         </button>
                     </div>
@@ -1621,11 +1617,11 @@
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">نام همکار</label>
-                        <input id="ops-staff-name" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none" placeholder="مثلاً علی رضایی" onchange="AppState.staffName=this.value;persistState();renderOpsConsole()">
+                        <input id="ops-staff-name" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none" placeholder="مثلاً علی رضایی" onchange="AppState.staffName=this.value;persistState();renderOpsConsole()" type="text">
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">رمز عبور</label>
-                        <input type="password" disabled class="w-full px-4 py-3 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-gray-400" placeholder="به‌زودی: SSO / رمز بک‌اند">
+                        <input type="password" autocomplete="current-password" disabled class="w-full px-4 py-3 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-gray-400" placeholder="به‌زودی: SSO / رمز بک‌اند">
                         <p class="text-xs text-gray-400 mt-1">در نسخه واقعی ورود با رمز/SSO اجباری می‌شود.</p>
                     </div>
                 </div>
@@ -1633,17 +1629,17 @@
                 <div id="ops-permission-note" class="mb-4 text-sm rounded-xl p-3"></div>
 
                 <div class="flex flex-wrap gap-2 mb-5">
-                    <button data-ops-tab="overview" onclick="switchOpsTab('overview')">نمای کلی</button>
-                    <button data-ops-tab="pricing" onclick="switchOpsTab('pricing')">نرخ دلار و سود</button>
-                    <button data-ops-tab="staff" onclick="switchOpsTab('staff')">نقش‌ها و دسترسی</button>
-                    <button data-ops-tab="stock" onclick="switchOpsTab('stock')">انبار و موجودی</button>
-                    <button data-ops-tab="tech" onclick="switchOpsTab('tech')">مشاوره فنی / لیدها <span id="ops-count-tech" class="ops-badge" hidden></span></button>
-                    <button data-ops-tab="rfq" onclick="switchOpsTab('rfq')">استعلام‌ها / RFQ <span id="ops-count-rfq" class="ops-badge" hidden></span></button>
-                    <button data-ops-tab="complaints" onclick="switchOpsTab('complaints')">شکایات <span id="ops-count-complaints" class="ops-badge" hidden></span></button>
-                    <button data-ops-tab="orders" onclick="switchOpsTab('orders')">سفارش‌ها <span id="ops-count-orders" class="ops-badge" hidden></span></button>
-                    <button data-ops-tab="activity" onclick="switchOpsTab('activity')">گزارش فعالیت</button>
-                    <button data-ops-tab="club" onclick="switchOpsTab('club')">باشگاه مشتریان</button>
-                    <button data-ops-tab="daily" onclick="switchOpsTab('daily')">گزارش روز / اکسل</button>
+                    <button data-ops-tab="overview" onclick="switchOpsTab('overview')" type="button">نمای کلی</button>
+                    <button data-ops-tab="pricing" onclick="switchOpsTab('pricing')" type="button">نرخ دلار و سود</button>
+                    <button data-ops-tab="staff" onclick="switchOpsTab('staff')" type="button">نقش‌ها و دسترسی</button>
+                    <button data-ops-tab="stock" onclick="switchOpsTab('stock')" type="button">انبار و موجودی</button>
+                    <button data-ops-tab="tech" onclick="switchOpsTab('tech')" type="button">مشاوره فنی / لیدها <span id="ops-count-tech" class="ops-badge" hidden></span></button>
+                    <button data-ops-tab="rfq" onclick="switchOpsTab('rfq')" type="button">استعلام‌ها / RFQ <span id="ops-count-rfq" class="ops-badge" hidden></span></button>
+                    <button data-ops-tab="complaints" onclick="switchOpsTab('complaints')" type="button">شکایات <span id="ops-count-complaints" class="ops-badge" hidden></span></button>
+                    <button data-ops-tab="orders" onclick="switchOpsTab('orders')" type="button">سفارش‌ها <span id="ops-count-orders" class="ops-badge" hidden></span></button>
+                    <button data-ops-tab="activity" onclick="switchOpsTab('activity')" type="button">گزارش فعالیت</button>
+                    <button data-ops-tab="club" onclick="switchOpsTab('club')" type="button">باشگاه مشتریان</button>
+                    <button data-ops-tab="daily" onclick="switchOpsTab('daily')" type="button">گزارش روز / اکسل</button>
                 </div>
 
                 <section id="ops-overview" class="ops-panel space-y-4">
@@ -1652,14 +1648,14 @@
                         <div class="bg-white rounded-2xl border border-gray-100 p-4">
                             <div class="flex items-center justify-between mb-3">
                                 <h4 class="font-bold text-gray-800">هشدار موجودی</h4>
-                                <button onclick="switchOpsTab('stock')" class="text-xs font-bold text-blue-600 hover:underline">رفتن به انبار ←</button>
+                                <button onclick="switchOpsTab('stock')" class="text-xs font-bold text-blue-600 hover:underline" type="button">رفتن به انبار ←</button>
                             </div>
                             <div id="ops-overview-lowstock" class="space-y-2 max-h-56 overflow-y-auto text-sm"></div>
                         </div>
                         <div class="bg-white rounded-2xl border border-gray-100 p-4">
                             <div class="flex items-center justify-between mb-3">
                                 <h4 class="font-bold text-gray-800">آخرین فعالیت‌ها</h4>
-                                <button onclick="switchOpsTab('activity')" class="text-xs font-bold text-blue-600 hover:underline">همه ←</button>
+                                <button onclick="switchOpsTab('activity')" class="text-xs font-bold text-blue-600 hover:underline" type="button">همه ←</button>
                             </div>
                             <div id="ops-overview-recent" class="space-y-2 max-h-56 overflow-y-auto text-sm text-gray-600"></div>
                         </div>
@@ -1681,7 +1677,7 @@
                     <div class="bg-blue-50 rounded-xl p-4">
                         <p class="text-sm text-blue-800">فرمول: قیمت نهایی = قیمت دلاری × نرخ ارز × (۱ + درصد سود). فقط مدیر می‌تواند ذخیره کند.</p>
                     </div>
-                    <button onclick="saveAdminSettings()" class="w-full btn-primary text-white py-4 rounded-xl font-medium">
+                    <button onclick="saveAdminSettings()" class="w-full btn-primary text-white py-4 rounded-xl font-medium" type="button">
                         <i class="fas fa-save mr-2"></i>
                         <span>ذخیره تنظیمات</span>
                     </button>
@@ -1692,11 +1688,11 @@
                         <table class="w-full text-sm">
                             <thead class="bg-gray-50"><tr><th class="p-3 text-right">نقش</th><th class="p-3 text-right">دسترسی</th><th class="p-3 text-right">ورود</th></tr></thead>
                             <tbody>
-                                <tr class="border-t"><td class="p-3 font-bold">مدیر</td><td class="p-3">همه بخش‌ها: نرخ، انبار، فنی، استعلام، سفارش‌ها</td><td class="p-3"><button class="quick-filter-chip" onclick="setStaffRole('manager')">ورود به‌عنوان مدیر</button></td></tr>
-                                <tr class="border-t"><td class="p-3 font-bold">انباردار</td><td class="p-3">فقط موجودی و تعداد انبار</td><td class="p-3"><button class="quick-filter-chip" onclick="setStaffRole('warehouse')">ورود به‌عنوان انباردار</button></td></tr>
-                                <tr class="border-t"><td class="p-3 font-bold">مشاور فنی</td><td class="p-3">فقط لیدها و وضعیت مشاوره فنی</td><td class="p-3"><button class="quick-filter-chip" onclick="setStaffRole('technical')">ورود به‌عنوان مشاور فنی</button></td></tr>
-                                <tr class="border-t"><td class="p-3 font-bold">مشاور استعلام</td><td class="p-3">فقط RFQ، قیمت و زمان تحویل استعلامی</td><td class="p-3"><button class="quick-filter-chip" onclick="setStaffRole('inquiry')">ورود به‌عنوان مشاور استعلام</button></td></tr>
-                                <tr class="border-t"><td class="p-3 font-bold">مشتری</td><td class="p-3">فقط مشاهده سفارش‌ها و پیگیری خرید خودش</td><td class="p-3"><button class="quick-filter-chip" onclick="setStaffRole('customer')">ورود به‌عنوان مشتری</button></td></tr>
+                                <tr class="border-t"><td class="p-3 font-bold">مدیر</td><td class="p-3">همه بخش‌ها: نرخ، انبار، فنی، استعلام، سفارش‌ها</td><td class="p-3"><button class="quick-filter-chip" onclick="setStaffRole('manager')" type="button">ورود به‌عنوان مدیر</button></td></tr>
+                                <tr class="border-t"><td class="p-3 font-bold">انباردار</td><td class="p-3">فقط موجودی و تعداد انبار</td><td class="p-3"><button class="quick-filter-chip" onclick="setStaffRole('warehouse')" type="button">ورود به‌عنوان انباردار</button></td></tr>
+                                <tr class="border-t"><td class="p-3 font-bold">مشاور فنی</td><td class="p-3">فقط لیدها و وضعیت مشاوره فنی</td><td class="p-3"><button class="quick-filter-chip" onclick="setStaffRole('technical')" type="button">ورود به‌عنوان مشاور فنی</button></td></tr>
+                                <tr class="border-t"><td class="p-3 font-bold">مشاور استعلام</td><td class="p-3">فقط RFQ، قیمت و زمان تحویل استعلامی</td><td class="p-3"><button class="quick-filter-chip" onclick="setStaffRole('inquiry')" type="button">ورود به‌عنوان مشاور استعلام</button></td></tr>
+                                <tr class="border-t"><td class="p-3 font-bold">مشتری</td><td class="p-3">فقط مشاهده سفارش‌ها و پیگیری خرید خودش</td><td class="p-3"><button class="quick-filter-chip" onclick="setStaffRole('customer')" type="button">ورود به‌عنوان مشتری</button></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1705,15 +1701,15 @@
 
                 <section id="ops-stock" class="ops-panel hidden">
                     <div class="flex flex-col md:flex-row md:items-center gap-3 mb-3">
-                        <input id="ops-stock-search" class="compact-input" placeholder="جستجوی کد یا برند انبار..." oninput="renderOpsStock()">
+                        <input id="ops-stock-search" class="compact-input" placeholder="جستجوی کد یا برند انبار..." oninput="renderOpsStock()" type="text">
                         <span id="ops-stock-count" class="text-xs text-gray-400 whitespace-nowrap"></span>
                     </div>
                     <p class="text-xs text-gray-400 mb-3">موجودی و منبع: مدیر و انباردار | قیمت دلاری و افزودن/حذف کالا: فقط مدیر</p>
                     <details id="ops-add-product" class="rounded-xl border border-gray-200 bg-white mb-4 overflow-hidden">
                         <summary class="px-4 py-3 text-sm font-bold text-gray-700 cursor-pointer select-none">＋ افزودن کالای جدید به کاتالوگ</summary>
                         <div class="p-4 pt-1 grid md:grid-cols-4 gap-3 bg-gray-50">
-                            <div><label class="block text-xs font-bold text-gray-500 mb-1">برند *</label><input id="ops-new-brand" class="compact-input" placeholder="SKF"></div>
-                            <div><label class="block text-xs font-bold text-gray-500 mb-1">کد قطعه *</label><input id="ops-new-code" class="compact-input" placeholder="6205-2RS"></div>
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1">برند *</label><input id="ops-new-brand" class="compact-input" placeholder="SKF" type="text"></div>
+                            <div><label class="block text-xs font-bold text-gray-500 mb-1">کد قطعه *</label><input id="ops-new-code" class="compact-input" placeholder="6205-2RS" type="text"></div>
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">نوع قطعه</label><select id="ops-new-type" class="compact-input"><option value="bearing">برینگ و یاتاقان</option><option value="grease">گریس</option><option value="linear">گاید خطی</option><option value="coupling">کوپلینگ</option><option value="gearbox">گیربکس</option></select></div>
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">قطر داخل d</label><input id="ops-new-d" type="number" min="0" step="any" class="compact-input" placeholder="25"></div>
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">قطر خارج D</label><input id="ops-new-D" type="number" min="0" step="any" class="compact-input" placeholder="52"></div>
@@ -1724,7 +1720,7 @@
                                 <label class="block text-xs font-bold text-gray-500 mb-1">منبع تأمین (چند انتخاب — Ctrl/Shift) <span class="font-normal text-gray-400">خالی = انبار خودمان</span></label>
                                 <select id="ops-new-suppliers" multiple size="3" class="compact-input"></select>
                             </div>
-                            <div class="md:col-span-2 flex items-end"><button onclick="addProduct()" class="btn-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm w-full md:w-auto">ثبت کالا در کاتالوگ</button></div>
+                            <div class="md:col-span-2 flex items-end"><button onclick="addProduct()" class="btn-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm w-full md:w-auto" type="button">ثبت کالا در کاتالوگ</button></div>
                         </div>
                     </details>
                     <div id="ops-stock-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
@@ -1733,12 +1729,12 @@
                 <section id="ops-suppliers" class="ops-panel hidden">
                     <div class="bg-blue-50 rounded-xl p-3 mb-4 text-sm text-blue-800">انباردار می‌تواند برای هر کالا مشخص کند موجودی از <b>انبار خودمان</b> است یا از مغازه/انبار یک تامین‌کننده (مثل آقای اسکوئی) قابل تامین است.</div>
                     <div class="grid md:grid-cols-4 gap-2 mb-3">
-                        <input id="ops-sup-name" class="compact-input" placeholder="نام تامین‌کننده *">
-                        <input id="ops-sup-phone" class="compact-input" placeholder="تلفن">
-                        <input id="ops-sup-address" class="compact-input" placeholder="آدرس / بازار">
-                        <input id="ops-sup-note" class="compact-input" placeholder="توضیح">
+                        <input id="ops-sup-name" class="compact-input" placeholder="نام تامین‌کننده *" type="text">
+                        <input id="ops-sup-phone" class="compact-input" placeholder="تلفن" type="text">
+                        <input id="ops-sup-address" class="compact-input" placeholder="آدرس / بازار" type="text">
+                        <input id="ops-sup-note" class="compact-input" placeholder="توضیح" type="text">
                     </div>
-                    <button onclick="addSupplier()" class="btn-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm mb-4">+ افزودن تامین‌کننده</button>
+                    <button onclick="addSupplier()" class="btn-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm mb-4" type="button">+ افزودن تامین‌کننده</button>
                     <div id="ops-supplier-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
                 </section>
 
@@ -1748,7 +1744,7 @@
                         <span id="admin-lead-count" class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">0</span>
                     </div>
                     <div class="mb-3">
-                        <input id="ops-lead-search" class="compact-input" placeholder="جستجوی قطعه، نام یا موبایل..." oninput="renderAdminLeads()">
+                        <input id="ops-lead-search" class="compact-input" placeholder="جستجوی قطعه، نام یا موبایل..." oninput="renderAdminLeads()" type="text">
                     </div>
                     <div id="admin-lead-list" class="space-y-2 max-h-96 overflow-y-auto text-sm text-gray-600">
                         <p>هنوز لیدی ثبت نشده است.</p>
@@ -1774,8 +1770,8 @@
 
                 <section id="ops-activity" class="ops-panel hidden">
                     <div class="flex flex-col md:flex-row gap-3 mb-3">
-                        <input id="ops-activity-filter" class="compact-input" placeholder="فیلتر فعالیت‌ها..." oninput="renderOpsActivity()">
-                        <button onclick="clearOpsActivity()" class="px-4 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-bold whitespace-nowrap">پاک کردن گزارش</button>
+                        <input id="ops-activity-filter" class="compact-input" placeholder="فیلتر فعالیت‌ها..." oninput="renderOpsActivity()" type="text">
+                        <button onclick="clearOpsActivity()" class="px-4 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-bold whitespace-nowrap" type="button">پاک کردن گزارش</button>
                     </div>
                     <div id="ops-activity-list" class="space-y-2 max-h-96 overflow-y-auto text-sm text-gray-600"></div>
                 </section>
@@ -1786,7 +1782,7 @@
                             <h4 class="font-bold text-gray-800">باشگاه مشتریان</h4>
                             <p class="text-xs text-gray-400 mt-1">هر خریدارِ دارای سفارش پرداخت‌شده خودکار عضو می‌شود؛ سطح بر اساس تعداد سفارش‌ها بالا می‌رود.</p>
                         </div>
-                        <button onclick="exportCustomerClub()" class="btn-primary text-white px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap"><i class="fas fa-file-excel mr-2"></i>خروجی اکسل</button>
+                        <button onclick="exportCustomerClub()" class="btn-primary text-white px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap" type="button"><i class="fas fa-file-excel mr-2"></i>خروجی اکسل</button>
                     </div>
                     <div id="club-stats" class="text-xs text-gray-500 mb-3"></div>
                     <div id="club-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
@@ -1799,7 +1795,7 @@
                             <input type="date" id="dailyDay" class="compact-input">
                         </div>
                         <div class="flex items-end">
-                            <button onclick="exportDailyReport()" class="btn-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm whitespace-nowrap"><i class="fas fa-file-excel mr-2"></i>خروجی اکسل روز</button>
+                            <button onclick="exportDailyReport()" class="btn-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm whitespace-nowrap" type="button"><i class="fas fa-file-excel mr-2"></i>خروجی اکسل روز</button>
                         </div>
                     </div>
                     <p class="text-xs text-gray-400 leading-5">فایل اکسل شامل سه شیت است: <b>خلاصه فروش</b> (از کجا فروختیم)، <b>اقلام فروش</b> و <b>باشگاه مشتریان</b>. با اکسل یا LibreOffice باز می‌شود.</p>

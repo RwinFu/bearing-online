@@ -27,7 +27,7 @@
 
 /* Floating animation */
 @keyframes float {
-    0%, 100% { transform: translateY(0px); }
+    0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-15px); }
 }
 .float-anim { animation: float 4s ease-in-out infinite; }
@@ -242,59 +242,6 @@ html[dir="rtl"] #back-to-top { right: auto; left: 24px; }
 }
 
 /* ===== SIGNATURE MOTION EFFECTS ===== */
-
-/* Custom cursor glow (desktop with fine pointer only; hidden on touch) */
-.cursor-dot, .cursor-ring { display: none; }
-@media (hover: hover) and (pointer: fine) {
-    .cursor-dot, .cursor-ring {
-        display: block;
-        position: fixed;
-        top: 0; left: 0;
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: 99999;
-        transform: translate(-50%, -50%);
-    }
-    .cursor-dot {
-        width: 9px; height: 9px;
-        background: var(--accent-orange);
-        border-radius: 2px;
-        box-shadow: 0 0 12px rgba(226,35,26,0.8);
-        transform: translate(-50%, -50%) rotate(45deg);
-    }
-    .cursor-ring {
-        width: 42px; height: 42px;
-        border: 1px solid rgba(10,92,196,0.65);
-        transition: width 0.2s, height 0.2s, background 0.2s;
-        box-shadow: inset 0 0 16px rgba(10,92,196,0.12), 0 0 18px rgba(10,92,196,0.18);
-    }
-    .cursor-ring::before,
-    .cursor-ring::after {
-        content: '';
-        position: absolute;
-        background: rgba(10,92,196,0.55);
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-    }
-    .cursor-ring::before { width: 56px; height: 1px; }
-    .cursor-ring::after { width: 1px; height: 56px; }
-    .cursor-ring.scanning {
-        border-color: rgba(226,35,26,0.85);
-        background: rgba(226,35,26,0.06);
-    }
-    .cursor-ring.hovering {
-        width: 72px; height: 72px;
-        background: rgba(10,92,196,0.08);
-        border-color: rgba(10,92,196,0.85);
-    }
-    body { cursor: none; }
-    a, button, .card-hover, .tilt-card, input, textarea, select, label { cursor: none; }
-    @keyframes cursorScan {
-        from { transform: translate(-50%, -50%) rotate(0deg); }
-        to { transform: translate(-50%, -50%) rotate(360deg); }
-    }
-}
 
 /* Cursor-following spotlight */
 .spotlight {

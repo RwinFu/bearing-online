@@ -190,7 +190,7 @@ function renderAdminLeads() {
                     <select ${editable ? '' : 'disabled'} onchange="setLeadStatus('${lead.id}',this.value)" class="compact-input md:w-40 text-sm ${editable ? '' : 'ops-locked'}">
                         ${Object.keys(statusFa).map(s => `<option value="${s}" ${lead.status === s ? 'selected' : ''}>${statusFa[s]}</option>`).join('')}
                     </select>
-                    ${editable ? `<button onclick="deleteLead('${lead.id}')" class="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-bold" title="حذف لید"><i class="fas fa-trash"></i></button>` : ''}
+                    ${editable ? `<button onclick="deleteLead('${lead.id}')" class="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-bold" title="حذف لید" type="button"><i class="fas fa-trash"></i></button>` : ''}
                 </div>
             </div>
             <div class="text-xs text-gray-500 mt-1">${escapeHTML(lead.name)} | <span dir="ltr">${escapeHTML(lead.phone || lead.email || '-')}</span>${lead.phone && lead.email ? ` · <span dir="ltr">${escapeHTML(lead.email)}</span>` : ''} | ${escapeHTML(lead.source)}</div>

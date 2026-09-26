@@ -92,7 +92,7 @@ function renderCart() {
                 <i class="fas fa-shopping-cart text-6xl text-gray-200 mb-6"></i>
                 <h3 class="text-2xl font-bold text-gray-800 mb-2" data-en="Your cart is empty" data-fa="سبد خرید شما خالی است">Your cart is empty</h3>
                 <p class="text-gray-500 mb-6" data-en="Browse our products and add items to your cart" data-fa="محصولات ما را مرور کنید و به سبد اضافه کنید">Browse our products and add items to your cart</p>
-                <button onclick="showPage('search'); AppState.searchResults = ProductDatabase; renderSearchResults();" class="btn-primary text-white px-8 py-4 rounded-xl font-medium">
+                <button onclick="showPage('search'); AppState.searchResults = ProductDatabase; renderSearchResults();" class="btn-primary text-white px-8 py-4 rounded-xl font-medium" type="button">
                     <span data-en="Browse Products" data-fa="مرور محصولات">Browse Products</span>
                 </button>
             </div>
@@ -142,18 +142,18 @@ function renderCart() {
                                     })()}
                                 </div>
                                 <div class="flex items-center gap-3 cart-line-controls">
-                                    <button onclick="updateCartLine('${item.id}', -1, this)" aria-label="${AppState.language === 'fa' ? 'کم کردن تعداد' : 'Decrease quantity'}" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">
+                                    <button onclick="updateCartLine('${item.id}', -1, this)" aria-label="${AppState.language === 'fa' ? 'کم کردن تعداد' : 'Decrease quantity'}" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition" type="button">
                                         <i class="fas fa-minus text-xs"></i>
                                     </button>
                                     <span class="w-8 text-center font-medium">${item.quantity}</span>
-                                    <button onclick="updateCartLine('${item.id}', 1, this)" aria-label="${AppState.language === 'fa' ? 'زیاد کردن تعداد' : 'Increase quantity'}" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">
+                                    <button onclick="updateCartLine('${item.id}', 1, this)" aria-label="${AppState.language === 'fa' ? 'زیاد کردن تعداد' : 'Increase quantity'}" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition" type="button">
                                         <i class="fas fa-plus text-xs"></i>
                                     </button>
                                 </div>
                                 <div class="text-right w-32">
                                     <div class="font-bold text-gray-800">${item.sell_mode === 'instant' ? `${formatPrice(item.itemTotal)} <span class="text-xs text-gray-500">${currencyLabel()}</span>` : `<span class="text-orange-600">${quoteLabel()}</span>`}</div>
                                 </div>
-                                <button onclick="removeCartLine('${item.id}', this)" class="text-gray-400 hover:text-red-500 transition">
+                                <button onclick="removeCartLine('${item.id}', this)" class="text-gray-400 hover:text-red-500 transition" type="button">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -180,15 +180,15 @@ function renderCart() {
                             <span>${formatPrice(totalPrice)} ${currencyLabel()}</span>
                         </div>
                     </div>
-                    <button onclick="showCheckout()" class="w-full btn-primary text-white py-4 rounded-xl font-medium mb-3">
+                    <button onclick="showCheckout()" class="w-full btn-primary text-white py-4 rounded-xl font-medium mb-3" type="button">
                         <i class="fas fa-credit-card mr-2"></i>
                         <span data-en="Proceed to Checkout" data-fa="ادامه به پرداخت">Proceed to Checkout</span>
                     </button>
-                    <button onclick="openLeadModal('cart-quote')" class="w-full btn-accent text-white py-4 rounded-xl font-medium">
+                    <button onclick="openLeadModal('cart-quote')" class="w-full btn-accent text-white py-4 rounded-xl font-medium" type="button">
                         <i class="fas fa-file-invoice mr-2"></i>
                         <span data-en="Request Quotation" data-fa="درخواست پیش‌فاکتور">Request Quotation</span>
                     </button>
-                    <button onclick="openLeadModal('consultation')" class="w-full mt-3 border-2 border-blue-100 bg-blue-50 text-blue-700 py-4 rounded-xl font-medium hover:border-blue-500 transition">
+                    <button onclick="openLeadModal('consultation')" class="w-full mt-3 border-2 border-blue-100 bg-blue-50 text-blue-700 py-4 rounded-xl font-medium hover:border-blue-500 transition" type="button">
                         <i class="fas fa-user-gear mr-2"></i>
                         <span data-en="Engineering consultation before purchase" data-fa="مشاوره مهندسی قبل از خرید">Engineering consultation before purchase</span>
                     </button>
