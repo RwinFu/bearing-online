@@ -446,20 +446,39 @@ async function waitFor(fn, ms = 2000) {
         return localized.length + ' nodes localized fa';
     });
 
+    await checkAsync('Shipping policy route, content, localization and support links', async () => {
+        window.location.hash = '#/shipping';
+        assert(await waitFor(() => visible('#page-shipping')), 'shipping deep link did not open');
+        assert($$('#page-shipping details').length === 8, 'expected all eight policy sections');
+        assert($('#page-shipping details').open, 'first section should be expanded');
+        assert($$('footer a[href="#/shipping"]').length === 1, 'footer policy link missing');
+        assert($$('.shipping-banner a[href="#/shipping"]').length === 1, 'home policy link missing');
+        assert($$('.why-benefit').length === 4, 'expected four service benefits');
+        for (const lang of ['en', 'fa']) {
+            G('AppState').language = lang;
+            window.applyLanguage();
+            assert($$('#page-shipping [data-en], .why-section [data-en]').every(el =>
+                el.textContent === el.getAttribute('data-' + lang)), 'editorial localization failed: ' + lang);
+        }
+        $('#page-shipping a[href="#/contact"]').click();
+        assert(await waitFor(() => visible('#page-contact')), 'support link did not navigate');
+        window.showPage('shipping');
+        assert(await waitFor(() => visible('#page-shipping')), 'programmatic route failed');
+        assert(window.location.hash === '#/shipping', 'shipping URL not synchronized');
+        return 'eight sections, both languages, footer and support links';
+    });
+
     // ---------------------------------------------------------------- hash routing
     await checkAsync('Hash routing: #/search, #/product, unknown hash', async () => {
         window.location.hash = '#/search';
         window.dispatchEvent(new window.HashChangeEvent('hashchange'));
-        await sleep(350);
-        assert(visible('#page-search'), '#/search did not open');
+        assert(await waitFor(() => visible('#page-search')), '#/search did not open');
         window.location.hash = '#/brands';
         window.dispatchEvent(new window.HashChangeEvent('hashchange'));
-        await sleep(350);
-        assert(visible('#page-brands'), '#/brands did not open');
+        assert(await waitFor(() => visible('#page-brands')), '#/brands did not open');
         window.location.hash = '#/does-not-exist';
         window.dispatchEvent(new window.HashChangeEvent('hashchange'));
-        await sleep(350);
-        assert(visible('#page-home'), 'unknown hash did not fall back home');
+        assert(await waitFor(() => visible('#page-home')), 'unknown hash did not fall back home');
         return 'ok';
     });
 
