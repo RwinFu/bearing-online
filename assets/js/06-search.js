@@ -553,7 +553,11 @@ function filterByBrand(brand) {
 }
 
 function toggleFilterGroup(button) {
-    const collapsed = button.closest('.filter-group').classList.toggle('collapsed');
+    const group = button.closest('.filter-group');
+    const collapsed = group.classList.toggle('collapsed');
+    const content = group.querySelector('.filter-content');
+    // Keep collapsed panels out of the tab order (invisible focus trap otherwise).
+    if (content) content.inert = collapsed;
     button.setAttribute('aria-expanded', String(!collapsed));
 }
 
@@ -564,9 +568,21 @@ function setQuickFilter(kind, value) {
     };
     const target = [...document.querySelectorAll(map[kind] || '')].find(input => input.value === value);
     if (target) {
-        target.checked = true;
+        target.checked = !target.checked;
         applyFilters();
     }
+}
+
+// Quick chips mirror their checkbox: active style + aria-pressed, so a second
+// tap on the same chip removes the filter instead of leaving it stuck on.
+function syncQuickFilterChips() {
+    document.querySelectorAll('.quick-filter-chip[data-qf-kind]').forEach(chip => {
+        const selector = chip.dataset.qfKind === 'brand' ? '.brand-filter' : '.type-filter';
+        const input = [...document.querySelectorAll(selector)].find(i => i.value === chip.dataset.qfValue);
+        const active = !!input?.checked;
+        chip.classList.toggle('active', active);
+        chip.setAttribute('aria-pressed', String(active));
+    });
 }
 
 function removeFilter(kind, value) {
@@ -602,32 +618,91 @@ function renderActiveFilters() {
     const bar = document.getElementById('filter-strength-bar');
     if (!container || !counter || !bar) return;
 
+    const fa = AppState.language === 'fa';
     const chips = [];
     if (AppState.categoryFilter) chips.push({ kind: 'category', value: '', label: getCategoryLabel(AppState.categoryFilter) });
     if (AppState.dimensionSearch) chips.push({ kind: 'hero-dimension', value: '', label: getDimensionLabel(AppState.dimensionSearch) });
     document.querySelectorAll('.brand-filter:checked').forEach(input => chips.push({ kind: 'brand', value: input.value, label: input.value }));
-    document.querySelectorAll('.type-filter:checked').forEach(input => chips.push({ kind: 'type', value: input.value, label: input.closest('label')?.textContent.trim().replace(/\d+$/,'').trim() || input.value }));
+    document.querySelectorAll('.type-filter:checked').forEach(input => chips.push({ kind: 'type', value: input.value, label: input.parentElement?.querySelector('span')?.textContent.trim() || input.value }));
     document.querySelectorAll('.tech-filter:checked').forEach(input => chips.push({ kind: 'tech', value: `${input.dataset.field}:${input.value}`, label: input.closest('label')?.textContent.trim() || input.value }));
 
     const dimIds = ['filter-d-min','filter-d-max','filter-D-min','filter-D-max','filter-B-min','filter-B-max'];
     const hasDim = dimIds.some(id => document.getElementById(id)?.value);
-    if (hasDim) chips.push({ kind: 'dimension', value: 'dimension', label: AppState.language === 'fa' ? 'ابعاد' : 'Size' });
-    if (document.getElementById('filter-only-stock')?.checked) chips.push({ kind: 'stock', value: 'stock', label: AppState.language === 'fa' ? 'فقط موجود تهران' : 'Tehran stock' });
+    if (hasDim) chips.push({ kind: 'dimension', value: 'dimension', label: fa ? 'ابعاد' : 'Size' });
+    if (document.getElementById('filter-only-stock')?.checked) chips.push({ kind: 'stock', value: 'stock', label: fa ? 'فقط موجود تهران' : 'Tehran stock' });
 
-    counter.textContent = AppState.language === 'fa' ? `${chips.length} فعال` : `${chips.length} active`;
+    counter.textContent = fa ? `${chips.length} فعال` : `${chips.length} active`;
     bar.style.width = `${Math.min(chips.length * 22, 100)}%`;
 
     if (!chips.length) {
-        container.innerHTML = `<span class="text-xs text-gray-400">${AppState.language === 'fa' ? 'فیلتری فعال نیست' : 'No active filters'}</span>`;
+        container.innerHTML = `<span class="text-xs text-gray-400">${fa ? 'فیلتری فعال نیست' : 'No active filters'}</span>`;
+        container.onclick = null;
         return;
     }
 
+    // Values travel through data-* attributes (never interpolated into JS code),
+    // so quotes in brands or codes cannot break the handler.
     container.innerHTML = chips.map(chip => `
         <span class="active-filter-chip">
             ${escapeHTML(chip.label)}
-            <button onclick="removeFilter('${chip.kind}', '${chip.value}')" aria-label="Remove filter" type="button">×</button>
+            <button type="button" data-filter-kind="${escapeHTML(chip.kind)}" data-filter-value="${escapeHTML(chip.value)}" aria-label="${escapeHTML(fa ? `حذف فیلتر ${chip.label}` : `Remove filter: ${chip.label}`)}">×</button>
         </span>
     `).join('');
+    container.onclick = (event) => {
+        const btn = event.target.closest('button[data-filter-kind]');
+        if (btn) removeFilter(btn.dataset.filterKind, btn.dataset.filterValue);
+    };
+}
+
+// Sidebar facet counts adapt to the current search: each group's numbers ignore
+// that group's own selection (standard faceted-search behaviour), so SKF=8 next
+// to "Bearing" instead of a stale catalogue total. Options that would match
+// nothing are greyed out and disabled unless they are already checked.
+function applySidebarFilters(results, filter, skipKind = null) {
+    if (skipKind !== 'brand' && filter.selectedBrands.length > 0) {
+        results = results.filter(p => filter.selectedBrands.includes(p.brand));
+    }
+    if (skipKind !== 'type' && filter.selectedTypes.length > 0) {
+        results = results.filter(p => filter.selectedTypes.includes(p.type));
+    }
+    if (skipKind !== 'stock' && filter.onlyStock) {
+        results = results.filter(p => p.stockStatus === 'in-stock' && p.stock > 0);
+    }
+    if (skipKind !== 'tech') {
+        Object.entries(filter.techFilters).forEach(([field, values]) => {
+            if (values.length) results = results.filter(p => values.includes(p[field]));
+        });
+    }
+    if (skipKind !== 'dim') {
+        const hasDimFilter = [filter.dMin, filter.dMax, filter.DMin, filter.DMax, filter.BMin, filter.BMax].some(value => value !== null);
+        if (hasDimFilter) {
+            results = results.filter(p => {
+                const tol = value => filter.dimUnit === 'inch' && value ? Math.max(0.5, value * 0.01) : 0.15;
+                const dOk = filter.dimMode === 'exact'
+                    ? dimensionWithin(p.d, filter.dMin, null, null, 'exact', tol(filter.dMin))
+                    : dimensionWithin(p.d, null, filter.dMin, filter.dMax, 'range');
+                const DOk = filter.dimMode === 'exact'
+                    ? dimensionWithin(p.D, filter.DMin, null, null, 'exact', tol(filter.DMin))
+                    : dimensionWithin(p.D, null, filter.DMin, filter.DMax, 'range');
+                const BOk = filter.dimMode === 'exact'
+                    ? dimensionWithin(p.B, filter.BMin, null, null, 'exact', tol(filter.BMin))
+                    : dimensionWithin(p.B, null, filter.BMin, filter.BMax, 'range');
+                return dOk && DOk && BOk;
+            });
+        }
+    }
+    return results;
+}
+
+// The product pool a facet group counts against: the current query, category and
+// hero dimensions + every sidebar filter except the skipped group.
+function getFacetBase(skipKind) {
+    const filter = getSidebarFilterState();
+    const query = AppState.textQuery || '';
+    let results = query ? searchProducts(query, getSelectedPartFields()) : [...ProductDatabase];
+    if (AppState.categoryFilter) results = results.filter(p => productMatchesCategory(p, AppState.categoryFilter));
+    results = applyDimensionResultSet(results, AppState.dimensionSearch);
+    return applySidebarFilters(results, filter, skipKind);
 }
 
 function updateFilterCounts() {
@@ -648,17 +723,47 @@ function updateFilterCounts() {
         const alive = ProductDatabase.some(p => p.brand === input.value);
         if (!alive) row.remove();
     });
+    const brandPool = getFacetBase('brand');
+    const typePool = getFacetBase('type');
     document.querySelectorAll('.filter-row input').forEach(input => {
         const row = input.closest('.filter-row');
         const countEl = row?.querySelector('.filter-count');
         if (!countEl) return;
         let count = 0;
-        if (input.classList.contains('brand-filter')) count = ProductDatabase.filter(p => p.brand === input.value).length;
-        if (input.classList.contains('type-filter')) count = ProductDatabase.filter(p => p.type === input.value).length;
+        if (input.classList.contains('brand-filter')) count = brandPool.filter(p => p.brand === input.value).length;
+        if (input.classList.contains('type-filter')) count = typePool.filter(p => p.type === input.value).length;
         countEl.textContent = count;
+        if (count === 0 && !input.checked) {
+            row.classList.add('is-zero');
+            input.disabled = true;
+        } else {
+            row.classList.remove('is-zero');
+            input.disabled = false;
+        }
     });
     const stockCount = document.getElementById('stock-filter-count');
-    if (stockCount) stockCount.textContent = ProductDatabase.filter(p => p.stockStatus === 'in-stock' && p.stock > 0).length;
+    if (stockCount) stockCount.textContent = getFacetBase('stock').filter(p => p.stockStatus === 'in-stock' && p.stock > 0).length;
+    syncQuickFilterChips();
+    updateCategoryCounts();
+    updateMobileResultsButton();
+}
+
+// Small "N products" badges on the category cards/tabs keep browsing honest.
+function updateCategoryCounts() {
+    const categories = ['industrial-bearing', 'automotive-bearing', 'housing-bushing', 'grease'];
+    const counts = Object.fromEntries(categories.map(cat => [cat, ProductDatabase.filter(p => productMatchesCategory(p, cat)).length]));
+    document.querySelectorAll('[data-category-count]').forEach(el => {
+        const count = counts[el.dataset.categoryCount];
+        if (count === undefined) return;
+        el.textContent = AppState.language === 'fa' ? `${formatNumber(count)} محصول` : `${formatNumber(count)} products`;
+    });
+}
+
+function updateMobileResultsButton() {
+    const btn = document.getElementById('mobile-show-results');
+    if (!btn) return;
+    const count = AppState.searchResults?.length ?? ProductDatabase.length;
+    btn.querySelector('span').textContent = AppState.language === 'fa' ? `نمایش ${formatNumber(count)} نتیجه` : `Show ${formatNumber(count)} results`;
 }
 
 function updateHomeStats() {
@@ -705,6 +810,17 @@ function applyDimensionResultSet(results, dim) {
     );
 }
 
+// Category semantics shared by the home cards, the hero "Category" tab and the
+// URL round-trip. 'grease' means grease PRODUCTS (type), not products whose
+// lubrication field happens to say "Grease" — that mislabel showed bearings.
+function productMatchesCategory(product, category) {
+    if (category === 'industrial-bearing') return product.type === 'bearing' && product.subtype !== 'pillow-block';
+    if (category === 'automotive-bearing') return product.type === 'bearing' && ['tapered', 'deep-groove'].includes(product.subtype);
+    if (category === 'housing-bushing') return product.subtype === 'pillow-block' || normalizeSearchValue(product.code).includes('ucp') || normalizeSearchValue(product.code).includes('lm');
+    if (category === 'grease') return product.type === 'grease';
+    return product.type === category || product.subtype === category;
+}
+
 function recomputeResults() {
     const filter = getSidebarFilterState();
     const query = AppState.textQuery || '';
@@ -712,47 +828,11 @@ function recomputeResults() {
     AppState.relevanceOrder = results.map(product => product.id);
 
     if (AppState.categoryFilter) {
-        const category = AppState.categoryFilter;
-        results = results.filter(p => {
-            if (category === 'industrial-bearing') return p.type === 'bearing' && p.subtype !== 'pillow-block';
-            if (category === 'automotive-bearing') return p.type === 'bearing' && ['tapered','deep-groove'].includes(p.subtype);
-            if (category === 'housing-bushing') return p.subtype === 'pillow-block' || normalizeSearchValue(p.code).includes('ucp') || normalizeSearchValue(p.code).includes('lm');
-            if (category === 'grease') return p.lubrication === 'Grease';
-            return p.type === category || p.subtype === category;
-        });
+        results = results.filter(p => productMatchesCategory(p, AppState.categoryFilter));
     }
 
-    if (filter.selectedBrands.length > 0) {
-        results = results.filter(p => filter.selectedBrands.includes(p.brand));
-    }
-    if (filter.selectedTypes.length > 0) {
-        results = results.filter(p => filter.selectedTypes.includes(p.type));
-    }
-    if (filter.onlyStock) {
-        results = results.filter(p => p.stockStatus === 'in-stock' && p.stock > 0);
-    }
-    Object.entries(filter.techFilters).forEach(([field, values]) => {
-        if (values.length) results = results.filter(p => values.includes(p[field]));
-    });
-
+    results = applySidebarFilters(results, filter);
     results = applyDimensionResultSet(results, AppState.dimensionSearch);
-
-    const hasDimFilter = [filter.dMin, filter.dMax, filter.DMin, filter.DMax, filter.BMin, filter.BMax].some(value => value !== null);
-    if (hasDimFilter) {
-        results = results.filter(p => {
-            const tol = value => filter.dimUnit === 'inch' && value ? Math.max(0.5, value * 0.01) : 0.15;
-            const dOk = filter.dimMode === 'exact'
-                ? dimensionWithin(p.d, filter.dMin, null, null, 'exact', tol(filter.dMin))
-                : dimensionWithin(p.d, null, filter.dMin, filter.dMax, 'range');
-            const DOk = filter.dimMode === 'exact'
-                ? dimensionWithin(p.D, filter.DMin, null, null, 'exact', tol(filter.DMin))
-                : dimensionWithin(p.D, null, filter.DMin, filter.DMax, 'range');
-            const BOk = filter.dimMode === 'exact'
-                ? dimensionWithin(p.B, filter.BMin, null, null, 'exact', tol(filter.BMin))
-                : dimensionWithin(p.B, null, filter.BMin, filter.BMax, 'range');
-            return dOk && DOk && BOk;
-        });
-    }
 
     AppState.searchResults = results;
     const input = document.getElementById('results-search-input');
@@ -760,6 +840,7 @@ function recomputeResults() {
     document.getElementById('search-input').value = query;
     renderActiveFilters();
     sortResults(false);
+    updateFilterCounts();
 }
 
 function applyFilters() {
@@ -823,13 +904,40 @@ function renderSearchResults() {
         tableContainer.classList.add('hidden');
         container.classList.remove('hidden');
         container.className = 'results-empty grid grid-cols-1 gap-6';
-        const title = AppState.language === 'fa' ? 'قطعه در دیتابیس پیدا نشد' : 'Part not found in the indexed database';
-        const desc = AppState.language === 'fa'
+        const fa = AppState.language === 'fa';
+        const chipsActive = AppState.categoryFilter || AppState.dimensionSearch
+            || document.querySelector('.brand-filter:checked, .type-filter:checked, .tech-filter:checked, #filter-only-stock:checked')
+            || ['filter-d-min','filter-d-max','filter-D-min','filter-D-max','filter-B-min','filter-B-max'].some(id => document.getElementById(id)?.value);
+        const searchMiss = !!(AppState.textQuery || AppState.dimensionSearch);
+        if (chipsActive && !searchMiss) {
+            // Filters narrowed the catalogue to zero — that is not a "part not
+            // found" moment; offer the way back first, sourcing second.
+            container.innerHTML = `
+                <div class="filters-empty rounded-2xl p-5 sm:p-6 text-center animate-slide-up">
+                    <div class="filters-empty-icon"><i class="fas fa-filter-circle-xmark" aria-hidden="true"></i></div>
+                    <h3 class="text-lg sm:text-xl font-extrabold mb-1 text-gray-800">${fa ? 'هیچ محصولی با این فیلترها پیدا نشد' : 'No products match these filters'}</h3>
+                    <p class="text-gray-500 text-sm mb-4 max-w-xl mx-auto leading-6">${fa
+                        ? 'ترکیب فیلترهای انتخاب‌شده خیلی محدود است. می‌توانید فیلترها را بردارید یا یکی از چیپ‌های بالای فهرست را حذف کنید.'
+                        : 'Your selected filters are too narrow. Clear them, or remove one of the chips above the list.'}</p>
+                    <div class="flex flex-col sm:flex-row gap-2 justify-center">
+                        <button onclick="clearFilters()" class="btn-primary text-white px-5 py-3 rounded-xl font-bold" type="button">
+                            <i class="fas fa-rotate-left" aria-hidden="true"></i>${fa ? 'حذف همه فیلترها' : 'Clear all filters'}
+                        </button>
+                        <button onclick="openLeadModal('failed-search')" class="btn-accent text-white px-5 py-3 rounded-xl font-bold" type="button">
+                            <i class="fas fa-bolt" aria-hidden="true"></i>${fa ? 'ثبت سفارش سریع این قطعه' : 'Create fast request for this part'}
+                        </button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        const title = fa ? 'قطعه در دیتابیس پیدا نشد' : 'Part not found in the indexed database';
+        const desc = fa
             ? 'این جستجو را به درخواست تامین تبدیل کنید. تیم مهندسی برینگ آنلاین کد معادل، برند جایگزین، قیمت نهایی و زمان تحویل را سریع اعلام می‌کند.'
             : 'Convert this search into a sourcing request. Bearing Online engineering will return equivalent codes, alternative brands, final price, and delivery time fast.';
-        const queryLabel = AppState.language === 'fa' ? 'جستجوی شما' : 'Your search';
-        const sendLabel = AppState.language === 'fa' ? 'ثبت سفارش سریع این قطعه' : 'Create fast request for this part';
-        const consultLabel = AppState.language === 'fa' ? 'مشاوره مهندسی رایگان' : 'Free engineering consultation';
+        const queryLabel = fa ? 'جستجوی شما' : 'Your search';
+        const sendLabel = fa ? 'ثبت سفارش سریع این قطعه' : 'Create fast request for this part';
+        const consultLabel = fa ? 'مشاوره مهندسی رایگان' : 'Free engineering consultation';
         container.innerHTML = `
             <div class="lead-card rounded-2xl p-4 sm:p-5 text-white animate-slide-up">
                 <div class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 text-white/70 text-xs mb-2 w-fit max-w-full">
@@ -838,7 +946,7 @@ function renderSearchResults() {
                 </div>
                 <h3 class="text-lg sm:text-xl font-extrabold mb-1">${title}</h3>
                 <p class="text-white/70 text-xs sm:text-sm mb-3 max-w-2xl leading-5">${desc}</p>
-                <button onclick="clearFilters()" class="mb-3 underline text-sm" type="button">${AppState.language === 'fa' ? 'پاک کردن جستجو و فیلترها' : 'Clear search and filters'}</button>
+                <button onclick="clearFilters()" class="mb-3 underline text-sm" type="button">${fa ? 'پاک کردن جستجو و فیلترها' : 'Clear search and filters'}</button>
                 <div class="flex flex-col sm:flex-row gap-2">
                     <button onclick="openLeadModal('failed-search')" class="btn-accent magnetic text-white px-4 py-2.5 rounded-xl font-bold text-sm" type="button">
                         <i class="fas fa-bolt mr-2"></i>${sendLabel}
@@ -890,6 +998,13 @@ function renderSearchResults() {
     } else {
         container.classList.add('hidden');
         tableContainer.classList.remove('hidden');
+        const tfa = AppState.language === 'fa';
+        const tLabels = {
+            cart: tfa ? 'افزودن به سبد' : 'Add to cart',
+            rfq: tfa ? 'استعلام قیمت' : 'Request a quote',
+            compare: tfa ? 'مقایسه' : 'Compare',
+            save: tfa ? 'ذخیره در علاقه‌مندی‌ها' : 'Save product'
+        };
         tableBody.innerHTML = AppState.searchResults.map(p => `
             <tr class="border-b border-gray-100 hover:bg-gray-50 transition cursor-pointer" onclick="showProductDetail('${p.id}')">
                 <td class="px-4 py-4">
@@ -904,12 +1019,12 @@ function renderSearchResults() {
                 <td class="px-4 py-4 font-bold ${p.sell_mode === 'instant' ? 'text-gray-800' : 'text-orange-600'}">${p.sell_mode === 'instant' ? `${formatPrice(p.priceUSD)} <span class="text-xs text-gray-500">${currencyLabel()}</span>` : quoteLabel()}</td>
                 <td class="px-4 py-4">
                     <div class="flex gap-2">
-                        ${p.sell_mode === 'instant' ? `<button onclick="event.stopPropagation(); addToCart('${p.id}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Add to cart" type="button"><i class="fas fa-cart-plus"></i></button>` : `<button onclick="event.stopPropagation(); requestQuote('${p.id}')" class="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition" title="RFQ" type="button"><i class="fas fa-file-invoice"></i></button>`}
-                        <button onclick="event.stopPropagation(); toggleCompare('${p.id}')" class="p-2 ${AppState.compareList.includes(p.id) ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:bg-gray-100'} rounded-lg transition" title="Compare" type="button">
-                            <i class="fas fa-balance-scale"></i>
+                        ${p.sell_mode === 'instant' ? `<button onclick="event.stopPropagation(); addToCart('${p.id}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="${tLabels.cart}" aria-label="${tLabels.cart}" type="button"><i class="fas fa-cart-plus" aria-hidden="true"></i></button>` : `<button onclick="event.stopPropagation(); requestQuote('${p.id}')" class="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition" title="${tLabels.rfq}" aria-label="${tLabels.rfq}" type="button"><i class="fas fa-file-invoice" aria-hidden="true"></i></button>`}
+                        <button onclick="event.stopPropagation(); toggleCompare('${p.id}')" class="p-2 ${AppState.compareList.includes(p.id) ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:bg-gray-100'} rounded-lg transition" title="${tLabels.compare}" aria-label="${tLabels.compare}" type="button">
+                            <i class="fas fa-balance-scale" aria-hidden="true"></i>
                         </button>
-                        <button onclick="event.stopPropagation(); toggleWishlist('${p.id}')" class="p-2 ${AppState.wishlist.includes(p.id) ? 'text-red-600 bg-red-50' : 'text-gray-400 hover:bg-gray-100'} rounded-lg transition" title="Save" type="button">
-                            <i class="fas fa-heart"></i>
+                        <button onclick="event.stopPropagation(); toggleWishlist('${p.id}')" class="p-2 ${AppState.wishlist.includes(p.id) ? 'text-red-600 bg-red-50' : 'text-gray-400 hover:bg-gray-100'} rounded-lg transition" title="${tLabels.save}" aria-label="${tLabels.save}" type="button">
+                            <i class="fas fa-heart" aria-hidden="true"></i>
                         </button>
                     </div>
                 </td>

@@ -14,6 +14,10 @@ function applyLanguage() {
         el.placeholder = el.getAttribute(`data-placeholder-${AppState.language}`);
     });
 
+    document.querySelectorAll('[data-aria-en]').forEach(el => {
+        el.setAttribute('aria-label', el.getAttribute(`data-aria-${AppState.language}`));
+    });
+
     document.getElementById('lang-toggle').textContent = AppState.language === 'en' ? 'فارسی' : 'English';
 }
 
@@ -24,6 +28,8 @@ function toggleLanguage() {
     updateBrandCarouselCaption();
     renderActiveFilters();
     renderSearchResults();
+    if (typeof updateCategoryCounts === 'function') updateCategoryCounts();
+    if (typeof updateMobileResultsButton === 'function') updateMobileResultsButton();
     if (!document.getElementById('page-cart').classList.contains('hidden')) renderCart();
     if (!document.getElementById('page-compare').classList.contains('hidden')) renderCompare();
     if (!document.getElementById('page-account').classList.contains('hidden')) showAccount();

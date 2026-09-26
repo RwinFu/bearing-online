@@ -812,12 +812,68 @@ html[dir="rtl"] .filter-row:hover { transform: translateX(2px); }
     color: #334155;
     font-size: 12px;
     font-weight: 800;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
 }
 .quick-filter-chip:hover {
     border-color: rgba(10,92,196,0.35);
     color: #0a5cc4;
     background: rgba(10,92,196,0.06);
+}
+.quick-filter-chip.active {
+    border-color: rgba(10,92,196,0.45);
+    color: #0a5cc4;
+    background: rgba(10,92,196,0.12);
+}
+/* Facet options that would match zero products with the current filters. */
+.filter-row.is-zero {
+    opacity: 0.45;
+}
+.filter-row.is-zero input[type="checkbox"] {
+    cursor: not-allowed;
+}
+.filter-row.is-zero .filter-count {
+    background: transparent;
+    color: #94a3b8;
+}
+/* Product-count chips on the home category cards and the hero category tab. */
+.category-count-badge,
+.search-category-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(10,92,196,0.08);
+    color: #0a5cc4;
+    font-size: 12px;
+    font-weight: 800;
+}
+.search-category-count {
+    margin-top: 8px;
+    background: rgba(10,92,196,0.07);
+}
+/* Empty state when filters narrow the catalogue to nothing. */
+.filters-empty {
+    background: #fff;
+    border: 1px dashed #c9d5e8;
+    color: #334155;
+}
+.filters-empty-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 12px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10,92,196,0.08);
+    color: #0a5cc4;
+    font-size: 22px;
+}
+/* The sticky mobile "show results" action lives in the filter panel only. */
+#mobile-show-results {
+    display: none;
 }
 .filter-strength {
     height: 6px;

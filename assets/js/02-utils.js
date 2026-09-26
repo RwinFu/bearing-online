@@ -31,7 +31,9 @@ function hasProductImage(product) {
 }
 
 function productTypeIcon(type) {
-    return type === 'bearing' ? 'circle-notch' : type === 'linear' ? 'grip-lines' : type === 'coupling' ? 'link' : type === 'grease' ? 'droplet' : 'cogs';
+    // 'circle-notch' looked like a loading spinner on cards without a photo;
+    // the wheel icon reads as a bearing instead.
+    return type === 'bearing' ? 'dharmachakra' : type === 'linear' ? 'grip-lines' : type === 'coupling' ? 'link' : type === 'grease' ? 'droplet' : 'cogs';
 }
 
 // Grease uses a free-text label; everything else uses the d×D×B dimensions.

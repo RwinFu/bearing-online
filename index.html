@@ -263,7 +263,7 @@
                                     <span data-vector-page data-en="Code, brand, name, size" data-fa="کد، برند، نام، ابعاد">کد، برند، نام، ابعاد</span>
                                 </div>
                                 <div class="relative search-entry">
-                                    <input type="search" id="search-input" dir="auto" maxlength="250" autocomplete="off" role="combobox" aria-label="جستجوی کد، نام یا ابعاد قطعه" aria-autocomplete="list" aria-expanded="false" aria-controls="autocomplete-dropdown"
+                                    <input type="search" id="search-input" dir="auto" maxlength="250" autocomplete="off" role="combobox" data-aria-en="Search by part code, name or size" data-aria-fa="جستجوی کد، نام یا ابعاد قطعه" aria-label="جستجوی کد، نام یا ابعاد قطعه" aria-autocomplete="list" aria-expanded="false" aria-controls="autocomplete-dropdown"
                                         class="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none search-glow transition"
                                         data-placeholder-en="Enter code or name: 6205, SKF-6205, bearing, 25x52x15..."
                                         data-placeholder-fa="کد، نام یا ابعاد؛ مثلاً ۶۲۰۵ یا SKF-6205"
@@ -274,7 +274,7 @@
                                         <span data-en="Search" data-fa="جستجو">جستجو</span>
                                     </button>
                                     <!-- Autocomplete Dropdown -->
-                                    <div id="autocomplete-dropdown" role="listbox" aria-label="پیشنهادهای جستجو" class="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 hidden z-50 max-h-80 overflow-y-auto">
+                                    <div id="autocomplete-dropdown" role="listbox" data-aria-en="Search suggestions" data-aria-fa="پیشنهادهای جستجو" aria-label="پیشنهادهای جستجو" class="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 hidden z-50 max-h-80 overflow-y-auto">
                                     </div>
                                 </div>
                                 <div class="mt-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -373,18 +373,22 @@
                                     <button onclick="searchByType('industrial-bearing')" class="magnetic p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-center group" type="button">
                                         <i class="fas fa-circle-notch text-3xl text-gray-400 group-hover:text-blue-500 mb-3"></i>
                                         <span class="block font-medium text-gray-700" data-en="Industrial bearings" data-fa="برینگ‌های صنعتی">برینگ‌های صنعتی</span>
+                                        <span class="search-category-count" data-category-count="industrial-bearing"></span>
                                     </button>
                                     <button onclick="searchByType('grease')" class="magnetic p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-center group" type="button">
                                         <i class="fas fa-droplet text-3xl text-gray-400 group-hover:text-blue-500 mb-3"></i>
                                         <span class="block font-medium text-gray-700" data-en="Grease" data-fa="گریس">گریس</span>
+                                        <span class="search-category-count" data-category-count="grease"></span>
                                     </button>
                                     <button onclick="searchByType('automotive-bearing')" class="magnetic p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-center group" type="button">
                                         <i class="fas fa-car-side text-3xl text-gray-400 group-hover:text-blue-500 mb-3"></i>
                                         <span class="block font-medium text-gray-700" data-en="Automotive bearings" data-fa="برینگ‌های خودرویی">برینگ‌های خودرویی</span>
+                                        <span class="search-category-count" data-category-count="automotive-bearing"></span>
                                     </button>
                                     <button onclick="searchByType('housing-bushing')" class="magnetic p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition text-center group" type="button">
                                         <i class="fas fa-ring text-3xl text-gray-400 group-hover:text-blue-500 mb-3"></i>
                                         <span class="block font-medium text-gray-700" data-en="Housings & bushings" data-fa="یاتاقان و بوش">یاتاقان و بوش</span>
+                                        <span class="search-category-count" data-category-count="housing-bushing"></span>
                                     </button>
                                 </div>
                             </div>
@@ -461,36 +465,40 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 stagger reveal">
                         <!-- Industrial Bearings -->
-                        <div class="card-hover tilt-card bg-gray-50 rounded-2xl p-8 text-center cursor-pointer" onclick="searchByType('industrial-bearing')">
+                        <a href="#/search?category=industrial-bearing" class="card-hover tilt-card bg-gray-50 rounded-2xl p-8 text-center cursor-pointer block no-underline">
                             <img src="assets/img/products/skf-6205.jpg" alt="SKF 6205" class="w-full h-36 object-cover rounded-xl shadow-lg mb-6" loading="lazy">
                             <h4 data-vector-page class="text-xl font-bold text-gray-800 mb-2" data-en="Industrial Bearings" data-fa="برینگ‌های صنعتی">برینگ‌های صنعتی</h4>
                             <p class="text-gray-500 text-sm" data-en="Ball, roller, spherical" data-fa="بلبرینگ، رولبرینگ، بشکه‌ای">بلبرینگ، رولبرینگ، بشکه‌ای</p>
-                        </div>
+                            <span class="category-count-badge" data-category-count="industrial-bearing"></span>
+                        </a>
 
                         <!-- Grease -->
-                        <div class="card-hover tilt-card bg-gray-50 rounded-2xl p-8 text-center cursor-pointer" onclick="searchByType('grease')">
+                        <a href="#/search?category=grease" class="card-hover tilt-card bg-gray-50 rounded-2xl p-8 text-center cursor-pointer block no-underline">
                             <img src="assets/img/products/skf-lgmt3-04.jpg" alt="SKF LGMT 3" class="w-full h-36 object-cover object-center rounded-xl shadow-lg mb-6" loading="lazy">
                             <h4 data-vector-page class="text-xl font-bold text-gray-800 mb-2" data-en="Grease" data-fa="گریس">گریس</h4>
                             <p class="text-gray-500 text-sm" data-en="Industrial bearing lubrication" data-fa="روانکاری برینگ صنعتی">روانکاری برینگ صنعتی</p>
-                        </div>
+                            <span class="category-count-badge" data-category-count="grease"></span>
+                        </a>
 
                         <!-- Automotive Bearings -->
-                        <div class="card-hover tilt-card bg-gray-50 rounded-2xl p-8 text-center cursor-pointer" onclick="searchByType('automotive-bearing')">
+                        <a href="#/search?category=automotive-bearing" class="card-hover tilt-card bg-gray-50 rounded-2xl p-8 text-center cursor-pointer block no-underline">
                             <div class="w-full h-36 mx-auto mb-6 rounded-xl flex items-center justify-center shadow-lg" style="background:linear-gradient(135deg,#0a2358,#1348c8);">
                                 <i class="fas fa-car-side text-4xl text-white"></i>
                             </div>
                             <h4 data-vector-page class="text-xl font-bold text-gray-800 mb-2" data-en="Automotive Bearings" data-fa="برینگ‌های خودرویی">برینگ‌های خودرویی</h4>
                             <p class="text-gray-500 text-sm" data-en="Wheel, clutch, engine" data-fa="چرخ، کلاچ، موتور">چرخ، کلاچ، موتور</p>
-                        </div>
+                            <span class="category-count-badge" data-category-count="automotive-bearing"></span>
+                        </a>
 
                         <!-- Housings & Bushings -->
-                        <div class="card-hover tilt-card bg-gray-50 rounded-2xl p-8 text-center cursor-pointer" onclick="searchByType('housing-bushing')">
+                        <a href="#/search?category=housing-bushing" class="card-hover tilt-card bg-gray-50 rounded-2xl p-8 text-center cursor-pointer block no-underline">
                             <div class="w-full h-36 mx-auto mb-6 rounded-xl flex items-center justify-center shadow-lg" style="background:linear-gradient(135deg,#1348c8,#e8a81d);">
                                 <i class="fas fa-ring text-4xl text-white"></i>
                             </div>
                             <h4 data-vector-page class="text-xl font-bold text-gray-800 mb-2" data-en="Housings & Bushings" data-fa="یاتاقان و بوش">یاتاقان و بوش</h4>
                             <p class="text-gray-500 text-sm" data-en="UCP, sleeves, bushings" data-fa="UCP، بوش، غلاف">UCP، بوش، غلاف</p>
-                        </div>
+                            <span class="category-count-badge" data-category-count="housing-bushing"></span>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -626,7 +634,7 @@
                 </button>
                 <div class="flex flex-col lg:flex-row gap-8">
                     <!-- Filters Sidebar -->
-                    <aside id="filters-aside" class="lg:w-72 flex-shrink-0 filters-collapsed" aria-label="فیلتر نتایج">
+                    <aside id="filters-aside" class="lg:w-72 flex-shrink-0 filters-collapsed" data-aria-en="Result filters" data-aria-fa="فیلتر نتایج" aria-label="فیلتر نتایج">
                         <div class="filter-shell rounded-2xl shadow-sm p-5 lg:sticky lg:top-24">
                             <div class="flex items-start justify-between gap-3 mb-4">
                                 <div>
@@ -657,19 +665,19 @@
                             <div class="mb-4">
                                 <p class="text-xs font-bold text-gray-500 mb-2" data-en="Quick picks" data-fa="انتخاب سریع">انتخاب سریع</p>
                                 <div class="flex flex-wrap gap-2">
-                                    <button onclick="setQuickFilter('brand','SKF')" class="quick-filter-chip" type="button">SKF</button>
-                                    <button onclick="setQuickFilter('brand','HKT')" class="quick-filter-chip" type="button">HKT</button>
-                                    <button onclick="setQuickFilter('type','bearing')" class="quick-filter-chip" data-en="Bearings" data-fa="برینگ‌ها" type="button">برینگ‌ها</button>
+                                    <button onclick="setQuickFilter('brand','SKF')" data-qf-kind="brand" data-qf-value="SKF" aria-pressed="false" class="quick-filter-chip" type="button">SKF</button>
+                                    <button onclick="setQuickFilter('brand','HKT')" data-qf-kind="brand" data-qf-value="HKT" aria-pressed="false" class="quick-filter-chip" type="button">HKT</button>
+                                    <button onclick="setQuickFilter('type','bearing')" data-qf-kind="type" data-qf-value="bearing" aria-pressed="false" class="quick-filter-chip" data-en="Bearings" data-fa="برینگ‌ها" type="button">برینگ‌ها</button>
                                 </div>
                             </div>
 
                             <div class="filter-group">
-                                <button class="filter-toggle" onclick="toggleFilterGroup(this)" type="button">
+                                <button class="filter-toggle" onclick="toggleFilterGroup(this)" type="button" aria-expanded="true" aria-controls="filter-content-brand">
                                     <span data-en="Brand" data-fa="برند">برند</span>
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
-                                <div class="filter-content space-y-1 max-h-56 overflow-y-auto pr-1">
-                                    <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="brand-filter" value="SKF" onchange="applyFilters()"><span>SKF</span></span><span class="filter-count">9</span></label>
+                                <div id="filter-content-brand" class="filter-content space-y-1 max-h-56 overflow-y-auto pr-1">
+                                    <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="brand-filter" value="SKF" onchange="applyFilters()"><span>SKF</span></span><span class="filter-count">10</span></label>
                                     <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="brand-filter" value="FAG" onchange="applyFilters()"><span>FAG</span></span><span class="filter-count">2</span></label>
                                     <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="brand-filter" value="HKT" onchange="applyFilters()"><span>HKT</span></span><span class="filter-count">2</span></label>
                                     <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="brand-filter" value="Ringspann" onchange="applyFilters()"><span>Ringspann</span></span><span class="filter-count">1</span></label>
@@ -682,25 +690,25 @@
                             </div>
 
                             <div class="filter-group">
-                                <button class="filter-toggle" onclick="toggleFilterGroup(this)" type="button">
+                                <button class="filter-toggle" onclick="toggleFilterGroup(this)" type="button" aria-expanded="true" aria-controls="filter-content-type">
                                     <span data-en="Part type" data-fa="نوع قطعه">نوع قطعه</span>
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
-                                <div class="filter-content space-y-1">
-                                    <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="type-filter" value="bearing" onchange="applyFilters()"><span data-en="Bearings" data-fa="برینگ و یاتاقان">برینگ و یاتاقان</span></span><span class="filter-count">18</span></label>
+                                <div id="filter-content-type" class="filter-content space-y-1">
+                                    <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="type-filter" value="bearing" onchange="applyFilters()"><span data-en="Bearings" data-fa="برینگ و یاتاقان">برینگ و یاتاقان</span></span><span class="filter-count">19</span></label>
                                     <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="type-filter" value="grease" onchange="applyFilters()"><span data-en="Greases" data-fa="گریس">گریس</span></span><span class="filter-count">1</span></label>
                                     <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="type-filter" value="linear" onchange="applyFilters()"><span data-en="Linear guides" data-fa="گاید خطی">گاید خطی</span></span><span class="filter-count">4</span></label>
-                                    <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="type-filter" value="coupling" onchange="applyFilters()"><span data-en="Couplings" data-fa="کوپلینگ">کوپلینگ</span></span><span class="filter-count">5</span></label>
-                                    <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="type-filter" value="gearbox" onchange="applyFilters()"><span data-en="Gearboxes" data-fa="گیربکس">گیربکس</span></span><span class="filter-count">3</span></label>
+                                    <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="type-filter" value="coupling" onchange="applyFilters()"><span data-en="Couplings" data-fa="کوپلینگ">کوپلینگ</span></span><span class="filter-count">6</span></label>
+                                    <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="type-filter" value="gearbox" onchange="applyFilters()"><span data-en="Gearboxes" data-fa="گیربکس">گیربکس</span></span><span class="filter-count">4</span></label>
                                 </div>
                             </div>
 
                             <div class="filter-group">
-                                <button class="filter-toggle" onclick="toggleFilterGroup(this)" type="button">
+                                <button class="filter-toggle" onclick="toggleFilterGroup(this)" type="button" aria-expanded="true" aria-controls="filter-content-dims">
                                     <span data-en="Size" data-fa="ابعاد">ابعاد</span>
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
-                                <div class="filter-content space-y-3">
+                                <div id="filter-content-dims" class="filter-content space-y-3">
                                     <div class="segmented w-full justify-between">
                                         <input type="radio" id="filter-dim-exact" name="filter-dim-mode" value="exact" onchange="applyFilters()">
                                         <label for="filter-dim-exact" class="flex-1 text-center" data-en="Exact" data-fa="دقیق">دقیق</label>
@@ -716,26 +724,26 @@
                                     <div class="grid grid-cols-1 gap-3">
                                         <div>
                                             <label class="block text-xs font-bold text-gray-500 mb-1" data-en="Inner diameter" data-fa="قطر داخل">قطر داخل</label>
-                                            <div class="grid grid-cols-2 gap-2"><input type="text" inputmode="decimal" dir="ltr" aria-label="filter-d-min" id="filter-d-min" class="compact-input text-sm" data-placeholder-en="Exact / from" data-placeholder-fa="دقیق / از" placeholder="دقیق / از" onchange="applyFilters()"><input type="text" inputmode="decimal" dir="ltr" aria-label="filter-d-max" id="filter-d-max" class="compact-input text-sm" data-placeholder-en="To" data-placeholder-fa="تا" placeholder="تا" onchange="applyFilters()"></div>
+                                            <div class="grid grid-cols-2 gap-2"><input type="text" inputmode="decimal" dir="ltr" aria-label="قطر داخل" data-aria-en="Bore d — exact / from" data-aria-fa="قطر داخل — دقیق / از" id="filter-d-min" class="compact-input text-sm" data-placeholder-en="Exact / from" data-placeholder-fa="دقیق / از" placeholder="دقیق / از" onchange="applyFilters()"><input type="text" inputmode="decimal" dir="ltr" aria-label="قطر داخل تا" data-aria-en="Bore d — to" data-aria-fa="قطر داخل — تا" id="filter-d-max" class="compact-input text-sm" data-placeholder-en="To" data-placeholder-fa="تا" placeholder="تا" onchange="applyFilters()"></div>
                                         </div>
                                         <div>
                                             <label class="block text-xs font-bold text-gray-500 mb-1" data-en="Outer diameter" data-fa="قطر خارج">قطر خارج</label>
-                                            <div class="grid grid-cols-2 gap-2"><input type="text" inputmode="decimal" dir="ltr" aria-label="filter-D-min" id="filter-D-min" class="compact-input text-sm" data-placeholder-en="Exact / from" data-placeholder-fa="دقیق / از" placeholder="دقیق / از" onchange="applyFilters()"><input type="text" inputmode="decimal" dir="ltr" aria-label="filter-D-max" id="filter-D-max" class="compact-input text-sm" data-placeholder-en="To" data-placeholder-fa="تا" placeholder="تا" onchange="applyFilters()"></div>
+                                            <div class="grid grid-cols-2 gap-2"><input type="text" inputmode="decimal" dir="ltr" aria-label="قطر خارج" data-aria-en="Outer dia. D — exact / from" data-aria-fa="قطر خارج — دقیق / از" id="filter-D-min" class="compact-input text-sm" data-placeholder-en="Exact / from" data-placeholder-fa="دقیق / از" placeholder="دقیق / از" onchange="applyFilters()"><input type="text" inputmode="decimal" dir="ltr" aria-label="قطر خارج تا" data-aria-en="Outer dia. D — to" data-aria-fa="قطر خارج — تا" id="filter-D-max" class="compact-input text-sm" data-placeholder-en="To" data-placeholder-fa="تا" placeholder="تا" onchange="applyFilters()"></div>
                                         </div>
                                         <div>
                                             <label class="block text-xs font-bold text-gray-500 mb-1" data-en="Width" data-fa="عرض">عرض</label>
-                                            <div class="grid grid-cols-2 gap-2"><input type="text" inputmode="decimal" dir="ltr" aria-label="filter-B-min" id="filter-B-min" class="compact-input text-sm" data-placeholder-en="Exact / from" data-placeholder-fa="دقیق / از" placeholder="دقیق / از" onchange="applyFilters()"><input type="text" inputmode="decimal" dir="ltr" aria-label="filter-B-max" id="filter-B-max" class="compact-input text-sm" data-placeholder-en="To" data-placeholder-fa="تا" placeholder="تا" onchange="applyFilters()"></div>
+                                            <div class="grid grid-cols-2 gap-2"><input type="text" inputmode="decimal" dir="ltr" aria-label="عرض" data-aria-en="Width B — exact / from" data-aria-fa="عرض — دقیق / از" id="filter-B-min" class="compact-input text-sm" data-placeholder-en="Exact / from" data-placeholder-fa="دقیق / از" placeholder="دقیق / از" onchange="applyFilters()"><input type="text" inputmode="decimal" dir="ltr" aria-label="عرض تا" data-aria-en="Width B — to" data-aria-fa="عرض — تا" id="filter-B-max" class="compact-input text-sm" data-placeholder-en="To" data-placeholder-fa="تا" placeholder="تا" onchange="applyFilters()"></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="filter-group collapsed">
-                                <button class="filter-toggle" onclick="toggleFilterGroup(this)" type="button">
+                                <button class="filter-toggle" onclick="toggleFilterGroup(this)" type="button" aria-expanded="false" aria-controls="filter-content-tech">
                                     <span data-en="Technical filters" data-fa="فیلترهای فنی">فیلترهای فنی</span>
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
-                                <div class="filter-content space-y-4">
+                                <div id="filter-content-tech" class="filter-content space-y-4" inert>
                                     <div>
                                         <p class="text-xs font-bold text-gray-500 mb-2" data-en="Cage type" data-fa="نوع قفسه">نوع قفسه</p>
                                         <div class="flex flex-wrap gap-2">
@@ -781,6 +789,10 @@
                                 </div>
                             </div>
 
+                            <!-- Mobile-only: apply and jump to results -->
+                            <button id="mobile-show-results" onclick="closeMobileFiltersAndScroll()" class="btn-primary text-white w-full mt-5 py-3 rounded-xl font-bold" type="button">
+                                <i class="fas fa-check" aria-hidden="true"></i><span>نمایش نتایج</span>
+                            </button>
 
                         </div>
                     </aside>
@@ -802,18 +814,18 @@
                                 <span class="text-gray-600" data-en="results" data-fa="نتیجه">results</span>
                             </div>
                             <div class="flex items-center gap-4">
-                                <select id="sort-select" aria-label="مرتب‌سازی نتایج" class="px-4 py-2 border rounded-lg text-gray-600 focus:outline-none focus:border-blue-500" onchange="sortResults()">
+                                <select id="sort-select" data-aria-en="Sort results" data-aria-fa="مرتب‌سازی نتایج" aria-label="مرتب‌سازی نتایج" class="px-4 py-2 border rounded-lg text-gray-600 focus:outline-none focus:border-blue-500" onchange="sortResults()">
                                     <option value="relevance" data-en="Relevance" data-fa="مرتبط‌ترین">Relevance</option>
                                     <option value="price-asc" data-en="Price: Low to High" data-fa="قیمت: کم به زیاد">Price: Low to High</option>
                                     <option value="price-desc" data-en="Price: High to Low" data-fa="قیمت: زیاد به کم">Price: High to Low</option>
                                     <option value="name" data-en="Name" data-fa="نام">Name</option>
                                 </select>
                                 <div class="flex gap-2">
-                                    <button aria-label="نمای کارتی" aria-pressed="true" onclick="setViewMode('grid')" class="view-mode-btn p-2 rounded-lg bg-blue-100 text-blue-600" data-mode="grid" type="button">
-                                        <i class="fas fa-th"></i>
+                                    <button data-aria-en="Grid view" data-aria-fa="نمای کارتی" aria-label="نمای کارتی" aria-pressed="true" onclick="setViewMode('grid')" class="view-mode-btn p-2 rounded-lg bg-blue-100 text-blue-600" data-mode="grid" type="button">
+                                        <i class="fas fa-th" aria-hidden="true"></i>
                                     </button>
-                                    <button aria-label="نمای جدولی" aria-pressed="false" onclick="setViewMode('table')" class="view-mode-btn p-2 rounded-lg hover:bg-gray-100" data-mode="table" type="button">
-                                        <i class="fas fa-list"></i>
+                                    <button data-aria-en="Table view" data-aria-fa="نمای جدولی" aria-label="نمای جدولی" aria-pressed="false" onclick="setViewMode('table')" class="view-mode-btn p-2 rounded-lg hover:bg-gray-100" data-mode="table" type="button">
+                                        <i class="fas fa-list" aria-hidden="true"></i>
                                     </button>
                                 </div>
                             </div>

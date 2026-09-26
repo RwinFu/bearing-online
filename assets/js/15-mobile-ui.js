@@ -29,6 +29,21 @@ function toggleMobileFilters() {
     const collapsed = aside.classList.toggle('filters-collapsed');
     btn.classList.toggle('expanded', !collapsed);
     btn.setAttribute('aria-expanded', String(!collapsed));
+    if (!collapsed) {
+        const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        aside.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+    }
+}
+
+// Sticky "Show N results" button inside the mobile filter panel.
+function closeMobileFiltersAndScroll() {
+    const aside = document.getElementById('filters-aside');
+    if (aside && !aside.classList.contains('filters-collapsed')) toggleMobileFilters();
+    const target = document.querySelector('.results-main');
+    if (target) {
+        const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+    }
 }
 
 // Hero 3D motion: mouse-driven depth tilt + layered float on homepage copy
