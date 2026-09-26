@@ -48,17 +48,12 @@ const SUBTYPE_EN = {
     'general-purpose': 'General Purpose'
 };
 const SEAL_FA = { Open: 'باز', '2RS': 'دو طرف سیل', '2RS1': 'دو طرف سیل', ZZ: 'دو طرف شیلد', '2Z': 'دو طرف شیلد', Sealed: 'آب‌بندی‌شده', 'N/A': '—' };
-// Bilingual labels: Persian (English) — show both languages regardless of current UI language.
+// Category labels follow the active UI language: Persian in fa mode,
+// English in en mode — no second-language "box" next to the label anymore.
 function faType(t) {
-    const fa = TYPE_FA[t] || t;
-    const en = TYPE_EN[t] || '';
-    if (en && en.toLowerCase() !== fa.toLowerCase()) return `${fa} <span dir="ltr" style="color:#64748b;font-weight:500;font-size:0.85em">(${en})</span>`;
-    return fa;
+    return AppState.language === 'fa' ? (TYPE_FA[t] || t) : (TYPE_EN[t] || t);
 }
 function faSubtype(s) {
-    const fa = SUBTYPE_FA[s] || s;
-    const en = SUBTYPE_EN[s] || '';
-    if (en && en.toLowerCase() !== fa.toLowerCase()) return `${fa} <span dir="ltr" style="color:#64748b;font-weight:500;font-size:0.85em">(${en})</span>`;
-    return fa;
+    return AppState.language === 'fa' ? (SUBTYPE_FA[s] || s) : (SUBTYPE_EN[s] || s);
 }
 function faSeal(s) { return AppState.language === 'fa' ? (SEAL_FA[s] || s) : s; }

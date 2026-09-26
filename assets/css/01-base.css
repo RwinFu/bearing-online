@@ -143,3 +143,10 @@ html[dir="rtl"] body {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
 }
+
+/* Search-results table: align headers to the reading-start edge so the
+   table reads correctly in both RTL (fa) and LTR (en) without hard-coded
+   text-left. Overrides the utility class on the <th> elements. */
+#results-table-container thead th {
+    text-align: start;
+}

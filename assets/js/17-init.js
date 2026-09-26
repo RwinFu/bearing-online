@@ -66,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Escape') {
             closeAdminPanel();
             closeLeadModal();
-            document.getElementById('product-modal').classList.add('hidden');
         }
     });
 

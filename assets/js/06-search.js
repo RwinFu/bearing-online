@@ -456,7 +456,7 @@ function executeAutocomplete(value) {
             </div>
             <div class="text-right">
                 <div class="mb-1">${getStockBadge(p)}</div>
-                <div class="text-sm font-medium text-blue-600">${p.sell_mode === 'instant' ? formatPrice(p.priceUSD) + (AppState.language === 'fa' ? ' تومان' : ' Toman') : (AppState.language === 'fa' ? 'استعلام' : 'RFQ')}</div>
+                <div class="text-sm font-medium text-blue-600">${p.sell_mode === 'instant' ? formatPrice(p.priceUSD) + ' ' + currencyLabel() : quoteLabel()}</div>
             </div>
         </div>
     `).join('');
@@ -688,7 +688,9 @@ function getSidebarFilterState() {
     const DMax = toMillimeter(document.getElementById('filter-D-max').value, dimUnit);
     const BMin = toMillimeter(document.getElementById('filter-B-min').value, dimUnit);
     const BMax = toMillimeter(document.getElementById('filter-B-max').value, dimUnit);
-    return { selectedBrands, selectedTypes, selectedOrigins, techFilters, onlyStock, dimMode, dimUnit, dMin, dMax, DMin, DMax, BMin, BMax };
+    // No origin filter exists in the sidebar; the previous undefined
+    // `selectedOrigins` reference crashed every recomputeResults() call.
+    return { selectedBrands, selectedTypes, techFilters, onlyStock, dimMode, dimUnit, dMin, dMax, DMin, DMax, BMin, BMax };
 }
 
 function applyDimensionResultSet(results, dim) {
@@ -878,7 +880,7 @@ function renderSearchResults() {
                     <div class="product-card-footer flex items-center justify-between">
                         <div>
                             <span class="text-2xl font-bold ${p.sell_mode === 'instant' ? 'text-gray-800' : 'text-orange-600'}">${p.sell_mode === 'instant' ? formatPrice(p.priceUSD) : (AppState.language === 'fa' ? 'استعلام' : 'RFQ')}</span>
-                            ${p.sell_mode === 'instant' ? `<span class="text-sm text-gray-500"> ${AppState.language === 'fa' ? 'تومان' : 'Toman'}</span>` : ''}
+                            ${p.sell_mode === 'instant' ? `<span class="text-sm text-gray-500"> ${currencyLabel()}</span>` : ''}
                         </div>
                         ${p.sell_mode === 'instant' ? `<button onclick="event.stopPropagation(); addToCart('${p.id}')" aria-label="${AppState.language === 'fa' ? 'افزودن به سبد' : 'Add to cart'}" class="btn-primary text-white px-4 py-2 rounded-lg"><i class="fas fa-cart-plus"></i></button>` : `<button onclick="event.stopPropagation(); requestQuote('${p.id}')" class="btn-accent text-white px-4 py-2 rounded-lg text-sm">${AppState.language === 'fa' ? 'استعلام' : 'RFQ'}</button>`}
                     </div>
@@ -899,7 +901,7 @@ function renderSearchResults() {
                 <td dir="ltr" class="px-4 py-4 text-gray-600">${formatDimensions(p)}</td>
                 <td class="px-4 py-4 text-gray-600">${faType(p.type)}</td>
                 <td class="px-4 py-4">${getStockBadge(p)}</td>
-                <td class="px-4 py-4 font-bold ${p.sell_mode === 'instant' ? 'text-gray-800' : 'text-orange-600'}">${p.sell_mode === 'instant' ? `${formatPrice(p.priceUSD)} <span class="text-xs text-gray-500">${AppState.language === 'fa' ? 'تومان' : 'Toman'}</span>` : (AppState.language === 'fa' ? 'استعلام' : 'RFQ')}</td>
+                <td class="px-4 py-4 font-bold ${p.sell_mode === 'instant' ? 'text-gray-800' : 'text-orange-600'}">${p.sell_mode === 'instant' ? `${formatPrice(p.priceUSD)} <span class="text-xs text-gray-500">${currencyLabel()}</span>` : quoteLabel()}</td>
                 <td class="px-4 py-4">
                     <div class="flex gap-2">
                         ${p.sell_mode === 'instant' ? `<button onclick="event.stopPropagation(); addToCart('${p.id}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Add to cart"><i class="fas fa-cart-plus"></i></button>` : `<button onclick="event.stopPropagation(); requestQuote('${p.id}')" class="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition" title="RFQ"><i class="fas fa-file-invoice"></i></button>`}

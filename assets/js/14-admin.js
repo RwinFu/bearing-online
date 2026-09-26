@@ -2,9 +2,11 @@
 // =============================================
 // ADMIN / OPERATIONS BACKEND (prototype RBAC)
 // =============================================
+// suppliers.write is granted to manager + warehouse (انباردار) — the panel's
+// own UI text says "فقط مدیر/انباردار" — so supplier add/edit/delete works.
 const STAFF_ROLES = {
-    manager: { fa: 'مدیر', permissions: ['pricing.write', 'stock.write', 'tech.write', 'rfq.write', 'complaints.write', 'orders.view', 'staff.view'] },
-    warehouse: { fa: 'انباردار', permissions: ['stock.write', 'orders.view'] },
+    manager: { fa: 'مدیر', permissions: ['pricing.write', 'stock.write', 'suppliers.write', 'tech.write', 'rfq.write', 'complaints.write', 'orders.view', 'staff.view'] },
+    warehouse: { fa: 'انباردار', permissions: ['stock.write', 'suppliers.write', 'orders.view'] },
     technical: { fa: 'مشاور فنی', permissions: ['tech.write', 'complaints.write', 'orders.view'] },
     inquiry: { fa: 'مشاور استعلام', permissions: ['rfq.write', 'orders.view'] },
     customer: { fa: 'مشتری', permissions: [] }
@@ -358,6 +360,12 @@ function addProduct() {
     const d = num('ops-new-d'), D = num('ops-new-D'), B = num('ops-new-B');
     const rawType = document.getElementById('ops-new-type')?.value || 'bearing';
     const type = ['bearing', 'linear', 'coupling', 'gearbox', 'grease'].includes(rawType) ? rawType : 'bearing';
+    // Optional multi-select of the suppliers this new part is sourced from;
+    // empty means in-house warehouse stock.
+    const supSelect = document.getElementById('ops-new-suppliers');
+    const supplierIds = supSelect
+        ? [...supSelect.selectedOptions].map(o => o.value).filter(v => v && v !== 'own')
+        : [];
     const product = {
         id: 'CUSTOM-' + Date.now(),
         code: typeof normalizePartCodeDisplay === 'function' ? normalizePartCodeDisplay(code) : code,
@@ -375,9 +383,9 @@ function addProduct() {
         cageType: 'Steel', sealType: 'Open', lubrication: 'Grease',
         internalClearance: 'C0', accuracyClass: 'P0',
         leadTimeFa: stock > 0 ? 'ارسال امروز' : 'استعلام',
-        stockSource: 'own',
-        supplierId: '',
-        supplierIds: [],
+        stockSource: supplierIds.length ? 'supplier' : 'own',
+        supplierId: supplierIds[0] || '',
+        supplierIds,
         searchMeta: { equivalent: false, suffixMatch: '' }
     };
     refreshProductAvailability(product);
@@ -387,6 +395,7 @@ function addProduct() {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
+    if (supSelect) [...supSelect.options].forEach(o => { o.selected = false; });
     const det = document.getElementById('ops-add-product');
     if (det) det.open = false;
     opsLog('product.add', `${brand} ${code}`);

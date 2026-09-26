@@ -94,14 +94,26 @@ function showProductDetail(productId) {
 
                     <div class="bg-gray-50 rounded-xl p-6 mb-6">
                         <div class="flex items-baseline gap-2">
-                            <span class="text-4xl font-bold ${product.sell_mode === 'instant' ? 'text-gray-800' : 'text-orange-600'}">${product.sell_mode === 'instant' ? formatPrice(product.priceUSD) : 'استعلام قیمت'}</span>
-                            ${product.sell_mode === 'instant' ? '<span class="text-lg text-gray-500">تومان</span>' : ''}
+                            <span class="text-4xl font-bold ${product.sell_mode === 'instant' ? 'text-gray-800' : 'text-orange-600'}">${product.sell_mode === 'instant' ? formatPrice(product.priceUSD) : (AppState.language === 'fa' ? 'استعلام قیمت' : 'Price on request')}</span>
+                            ${product.sell_mode === 'instant' ? `<span class="text-lg text-gray-500">${currencyLabel()}</span>` : ''}
                         </div>
                         <p class="text-sm text-gray-400 mt-1" data-en="Price includes import duties" data-fa="قیمت شامل هزینه واردات">Price includes import duties</p>
                     </div>
 
+                    ${(() => {
+                        // Multi-source parts: let the buyer pick which supplier's stock to order from.
+                        const names = productSupplierNames(product);
+                        if (!names || names.length < 2) return '';
+                        return `
+                    <div class="mb-4 max-w-xs">
+                        <label class="block text-sm font-bold text-gray-600 mb-2" data-en="Sourced from" data-fa="منبع تأمین">Sourced from</label>
+                        <select id="product-supplier-select" class="compact-input" aria-label="${AppState.language === 'fa' ? 'منبع تأمین' : 'Sourced from'}">
+                            ${names.map(n => `<option value="${escapeHTML(n)}">${escapeHTML(n)}</option>`).join('')}
+                        </select>
+                    </div>`;
+                    })()}
                     <div class="flex flex-col md:flex-row gap-4 mb-8">
-                        ${product.sell_mode === 'instant' ? `<button onclick="addToCart('${product.id}')" class="flex-1 btn-primary magnetic text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2"><i class="fas fa-cart-plus"></i><span data-en="Add to Cart" data-fa="افزودن به سبد">افزودن به سبد</span></button>` : ''}
+                        ${product.sell_mode === 'instant' ? `<button onclick="addToCart('${product.id}', document.getElementById('product-supplier-select')?.value || undefined)" class="flex-1 btn-primary magnetic text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2"><i class="fas fa-cart-plus"></i><span data-en="Add to Cart" data-fa="افزودن به سبد">افزودن به سبد</span></button>` : ''}
                         <button onclick="requestQuote('${product.id}')" class="flex-1 btn-accent magnetic text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2">
                             <i class="fas fa-file-invoice"></i>
                             <span data-en="Request Quote" data-fa="درخواست قیمت">Request Quote</span>
@@ -121,9 +133,11 @@ function showProductDetail(productId) {
                             <i class="fas fa-heart"></i>
                             <span data-en="Save" data-fa="نشان کردن">نشان کردن</span>
                         </button>
-                        <button onclick="openProductDatasheet('${product.id}')" class="px-4 py-2 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:text-blue-600 transition flex items-center gap-2" title="${productDatasheetUrl(product).url}">
+                        <!-- Single datasheet entry point: quick access, shows which maker's sheet opens. -->
+                        <button onclick="openProductDatasheet('${product.id}')" class="px-4 py-2 border-2 border-blue-100 bg-blue-50/60 text-blue-700 rounded-lg hover:border-blue-500 hover:text-blue-800 transition flex items-center gap-2" title="${productDatasheetUrl(product).url}">
                             <i class="fas fa-file-pdf"></i>
                             <span data-en="Datasheet" data-fa="دیتاشیت">Datasheet</span>
+                            <span dir="ltr" class="text-xs font-semibold text-blue-400">${productDatasheetUrl(product).brand}</span>
                             <i class="fas fa-external-link-alt text-xs"></i>
                         </button>
                     </div>
@@ -160,10 +174,8 @@ function showProductDetail(productId) {
                     </div>
                     <div class="bg-blue-50/60 rounded-xl p-4">
                         <h4 class="text-sm font-medium text-gray-500 mb-2" data-en="Datasheet" data-fa="دیتاشیت">Datasheet</h4>
-                        <button onclick="openProductDatasheet('${product.id}')" class="text-sm text-blue-700 font-bold hover:underline break-all text-right" dir="ltr">
-                            <i class="fas fa-file-pdf ml-1"></i>${productDatasheetUrl(product).brand} · ${product.code}
-                        </button>
-                        <p class="text-xs text-gray-400 mt-2 leading-5" data-en="Opens the manufacturer's official datasheet for this part number in a new tab." data-fa="دیتاشیت رسمی سازنده برای همین شماره قطعه در تب جدید باز می‌شود.">دیتاشیت رسمی سازنده برای همین شماره قطعه در تب جدید باز می‌شود.</p>
+                        <p class="text-sm text-gray-600 leading-6" data-en="Open the manufacturer's official datasheet for this exact part number with the Datasheet button above — it links straight to the maker's catalog." data-fa="دیتاشیت رسمی سازنده برای همین شماره قطعه با دکمه «دیتاشیت» در بالای صفحه باز می‌شود و شما را مستقیماً به کاتالوگ سازنده می‌برد.">دیتاشیت رسمی سازنده برای همین شماره قطعه با دکمه «دیتاشیت» در بالای صفحه باز می‌شود و شما را مستقیماً به کاتالوگ سازنده می‌برد.</p>
+                        <p class="text-xs text-gray-400 mt-2 leading-5" dir="ltr">${productDatasheetUrl(product).brand} · ${product.code}</p>
                     </div>
                 </div>
             </div>
@@ -179,7 +191,7 @@ function showProductDetail(productId) {
                                 <span class="font-bold text-gray-800" dir="ltr">${eq.brand} ${eq.code}</span>
                             </div>
                             <div class="text-sm text-gray-500 mb-1">${faSubtype(eq.subtype)} · ${faType(eq.type)}</div>
-                            <div class="text-blue-600 font-medium">${eq.sell_mode === 'instant' ? formatPrice(eq.priceUSD) + ' تومان' : (AppState.language === 'fa' ? 'استعلام' : 'RFQ')}</div>
+                            <div class="text-blue-600 font-medium">${eq.sell_mode === 'instant' ? formatPrice(eq.priceUSD) + ' ' + currencyLabel() : quoteLabel()}</div>
                         </div>
                     `).join('')}
                 </div>

@@ -2,11 +2,16 @@
 // =============================================
 // CART SYSTEM
 // =============================================
-function addToCart(productId, supplierId, quantity = 1, silent = false) {
+function addToCart(productId, supplier, quantity = 1, silent = false) {
     const product = ProductDatabase.find(p => p.id === productId);
     if (!product) return;
     const qty = Math.max(1, Math.min(999, parseInt(quantity, 10) || 1));
-    const chosen = 'انبار خودمان';
+    // The line keeps the source it was ordered from ('انبار خودمان' for
+    // in-house stock, otherwise the supplier's name). Without an explicit
+    // choice the product's first configured source wins — a multi-source
+    // part is no longer silently charged to the in-house warehouse.
+    const names = (typeof productSupplierNames === 'function') ? productSupplierNames(product) : null;
+    const chosen = supplier || (names && names.length ? names[0] : 'انبار خودمان');
     const existingItem = AppState.cart.find(item => item.id === productId && (item.supplier || 'انبار خودمان') === chosen);
     if (existingItem) {
         existingItem.quantity = Math.min(999, existingItem.quantity + qty);
@@ -121,6 +126,20 @@ function renderCart() {
                                 <div class="flex-1">
                                     <h4 class="font-bold text-gray-800" dir="ltr">${item.brand} ${item.code}</h4>
                                     <p class="text-sm text-gray-500" dir="ltr">${productSizeLabel(item)}</p>
+                                    ${(() => {
+                                        const names = (typeof productSupplierNames === 'function') ? productSupplierNames(item) : null;
+                                        const current = item.supplier || 'انبار خودمان';
+                                        if (!names || !names.length) return `<p class="text-xs text-gray-400 mt-1">${AppState.language === 'fa' ? 'منبع: انبار خودمان' : 'Source: own warehouse'}</p>`;
+                                        if (names.length < 2) return `<p class="text-xs text-gray-400 mt-1">${AppState.language === 'fa' ? 'منبع' : 'Source'}: ${escapeHTML(names[0])}</p>`;
+                                        const options = names.includes(current) ? names : [current, ...names];
+                                        return `
+                                        <div class="flex items-center gap-2 mt-1.5">
+                                            <label class="text-xs text-gray-500 whitespace-nowrap" for="cart-supplier-select">${AppState.language === 'fa' ? 'منبع:' : 'Source:'}</label>
+                                            <select id="cart-supplier-select" onchange="setCartSupplier('${item.id}', this.value)" class="compact-input text-xs" style="max-width:170px" aria-label="${AppState.language === 'fa' ? 'تغییر منبع تأمین' : 'Change source'}">
+                                                ${options.map(n => `<option value="${escapeHTML(n)}" ${n === current ? 'selected' : ''}>${escapeHTML(n)}</option>`).join('')}
+                                            </select>
+                                        </div>`;
+                                    })()}
                                 </div>
                                 <div class="flex items-center gap-3 cart-line-controls">
                                     <button onclick="updateCartLine('${item.id}', -1, this)" aria-label="${AppState.language === 'fa' ? 'کم کردن تعداد' : 'Decrease quantity'}" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">
@@ -132,7 +151,7 @@ function renderCart() {
                                     </button>
                                 </div>
                                 <div class="text-right w-32">
-                                    <div class="font-bold text-gray-800">${item.sell_mode === 'instant' ? `${formatPrice(item.itemTotal)} <span class="text-xs text-gray-500">تومان</span>` : '<span class="text-orange-600">استعلام</span>'}</div>
+                                    <div class="font-bold text-gray-800">${item.sell_mode === 'instant' ? `${formatPrice(item.itemTotal)} <span class="text-xs text-gray-500">${currencyLabel()}</span>` : `<span class="text-orange-600">${quoteLabel()}</span>`}</div>
                                 </div>
                                 <button onclick="removeCartLine('${item.id}', this)" class="text-gray-400 hover:text-red-500 transition">
                                     <i class="fas fa-trash"></i>
@@ -149,7 +168,7 @@ function renderCart() {
                     <div class="space-y-4 mb-6">
                         <div class="flex justify-between text-gray-600">
                             <span data-en="Subtotal" data-fa="جمع جزء">Subtotal</span>
-                            <span>${formatPrice(totalPrice)} تومان</span>
+                            <span>${formatPrice(totalPrice)} ${currencyLabel()}</span>
                         </div>
                         <div class="flex justify-between text-gray-600">
                             <span data-en="Shipping" data-fa="ارسال">Shipping</span>
@@ -158,7 +177,7 @@ function renderCart() {
                         <hr>
                         <div class="flex justify-between text-xl font-bold text-gray-800">
                             <span data-en="Total" data-fa="جمع کل">Total</span>
-                            <span>${formatPrice(totalPrice)} تومان</span>
+                            <span>${formatPrice(totalPrice)} ${currencyLabel()}</span>
                         </div>
                     </div>
                     <button onclick="showCheckout()" class="w-full btn-primary text-white py-4 rounded-xl font-medium mb-3">
