@@ -996,13 +996,23 @@ function restoreSearchRoute(params) {
 }
 
 function getCategoryLabel(category) {
+    if (typeof categoryLabelFull === 'function') {
+        const full = categoryLabelFull(category);
+        if (full) return full;
+    }
     const labels = {
-        'industrial-bearing': ['برینگ صنعتی', 'Industrial bearings'],
-        'automotive-bearing': ['برینگ خودرویی', 'Automotive bearings'],
-        'housing-bushing': ['یاتاقان و بوش', 'Housings & bushings'],
-        grease: ['گریس', 'Grease']
+        'industrial-bearing': ['برینگ‌های صنعتی', 'Industrial Bearings'],
+        'automotive-bearing': ['برینگ‌های خودرویی', 'Automotive Bearings'],
+        'housing-bushing': ['یاتاقان و بوش', 'Housings & Bushings'],
+        bearing: ['بلبرینگ', 'Ball Bearing'],
+        grease: ['گریس', 'Grease'],
+        linear: ['گاید خطی', 'Linear Guide'],
+        coupling: ['کوپلینگ', 'Coupling'],
+        gearbox: ['گیربکس', 'Gearbox']
     };
-    return labels[category]?.[AppState.language === 'fa' ? 0 : 1] || faType(category);
+    const pair = labels[category];
+    if (!pair) return faType(category);
+    return `<span class="bilingual-fa">${pair[0]}</span><span class="bilingual-sep">/</span><span class="bilingual-en">${pair[1]}</span>`;
 }
 
 function getDimensionLabel(dim) {
