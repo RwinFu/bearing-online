@@ -112,6 +112,7 @@ function submitLead(event) {
 function submitContactForm(event) {
     event.preventDefault();
     const name = document.getElementById('contact-name')?.value.trim() || '';
+    const email = document.getElementById('contact-email')?.value.trim() || '';
     const phone = document.getElementById('contact-phone')?.value.trim() || '';
     const subject = document.getElementById('contact-subject')?.value || '';
     const message = document.getElementById('contact-message')?.value.trim() || '';
@@ -127,6 +128,7 @@ function submitContactForm(event) {
         quantity: 1,
         dimensions: { d: '', D: '', B: '' },
         name,
+        email,
         phone: phone || (contact ? contact.phone : ''),
         notes: message,
         fileName: '',
@@ -191,7 +193,7 @@ function renderAdminLeads() {
                     ${editable ? `<button onclick="deleteLead('${lead.id}')" class="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-bold" title="حذف لید"><i class="fas fa-trash"></i></button>` : ''}
                 </div>
             </div>
-            <div class="text-xs text-gray-500 mt-1">${escapeHTML(lead.name)} | <span dir="ltr">${escapeHTML(lead.phone)}</span> | ${escapeHTML(lead.source)}</div>
+            <div class="text-xs text-gray-500 mt-1">${escapeHTML(lead.name)} | <span dir="ltr">${escapeHTML(lead.phone || lead.email || '-')}</span>${lead.phone && lead.email ? ` · <span dir="ltr">${escapeHTML(lead.email)}</span>` : ''} | ${escapeHTML(lead.source)}</div>
             ${lead.dimensions && (lead.dimensions.d || lead.dimensions.D || lead.dimensions.B) ? `<div class="text-xs text-gray-500">ابعاد: d=${escapeHTML(lead.dimensions.d) || '-'} D=${escapeHTML(lead.dimensions.D) || '-'} B=${escapeHTML(lead.dimensions.B) || '-'}</div>` : ''}
             ${lead.notes ? `<div class="text-xs text-gray-500 mt-1">یادداشت مشتری: ${escapeHTML(lead.notes)}</div>` : ''}
             ${lead.fileName ? `<div class="text-xs text-blue-600">File: ${escapeHTML(lead.fileName)}</div>` : ''}

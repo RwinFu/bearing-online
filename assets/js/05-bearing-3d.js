@@ -385,8 +385,12 @@ function initBearing3D() {
 }
 
 function showBearingFallback() {
-    document.getElementById('bearingFallback').style.display = 'flex';
-    document.getElementById('bearingStage').classList.add('is-fallback');
+    const fb = document.getElementById('bearingFallback');
+    if (fb) fb.style.display = 'flex';
+    const stage = document.getElementById('bearingStage');
+    if (stage) stage.classList.add('is-fallback');
+    // The 3D viewer is unavailable: disable its controls instead of letting
+    // them pretend to work on a dead canvas.
     document.querySelectorAll('.bearing-controls button, .bearing-presets button, #bearingExplodeRange').forEach(control => { control.disabled = true; });
 }
 

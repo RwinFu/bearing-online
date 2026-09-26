@@ -20,6 +20,10 @@ function formatNumber(num) {
     return cachedNumberFormatter('en-US').format(num);
 }
 
+// Language-aware money/quote labels so dynamic templates stay bilingual.
+function currencyLabel() { return AppState.language === 'fa' ? 'تومان' : 'Toman'; }
+function quoteLabel() { return AppState.language === 'fa' ? 'استعلام' : 'RFQ'; }
+
 // Product photos: real catalogue images live in assets/img/products/. Legacy
 // products keep a generic image key ('bearing', ...) which has no file behind it.
 function hasProductImage(product) {

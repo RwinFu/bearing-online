@@ -134,8 +134,8 @@ header .nav-logo { flex-shrink: 0; }
     .cart-line .w-20 { width: 60px; height: 60px; }
     .checkout-summary { position: static; }
     .checkout-step-card { padding: 20px; }
-    #lead-modal > div, #admin-modal > div, #product-modal > div { padding: 12px; }
-    #lead-modal .shadow-2xl, #admin-modal .shadow-2xl, #product-modal .shadow-2xl { max-height: 90dvh; overflow-y: auto; }
+    #lead-modal > div, #admin-modal > div { padding: 12px; }
+    #lead-modal .shadow-2xl, #admin-modal .shadow-2xl { max-height: 90dvh; overflow-y: auto; }
     #lead-modal form, #lead-modal .lead-card { padding: 20px; }
     #notification-container { left: 12px; right: 12px; max-width: none; }
     #notification-container > div { padding: 16px; }

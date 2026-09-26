@@ -4,3 +4,6 @@ node_modules/
 
 # Local audit screenshots and browser scratch scripts
 .arena/
+
+# Agent design/testing skills (local tooling, not part of the shipped site)
+.claude/

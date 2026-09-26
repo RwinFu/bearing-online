@@ -1027,6 +1027,72 @@
                 </div>
             </div>
 
+            <!-- Interactive 3D bearing viewer (05-bearing-3d.js drives #bearingStage) -->
+            <div class="max-w-5xl mx-auto px-4 pt-12 pb-4">
+                <div class="text-center mb-8">
+                    <span class="editorial-eyebrow" data-fa="نمای تعاملی" data-en="INTERACTIVE VIEW">نمای تعاملی</span>
+                    <h3 class="text-2xl md:text-3xl font-bold text-gray-800 mt-2" data-fa="بلبرینگ 6205 را از نزدیک ببینید" data-en="See the 6205 bearing up close">بلبرینگ 6205 را از نزدیک ببینید</h3>
+                    <p class="text-gray-500 mt-3 max-w-2xl mx-auto leading-7" data-fa="مدل سه‌بعدی بلبرینگ شیار عمیق SKF 6205: با ماوس یا انگشت بچرخانید، بزرگ‌نمایی کنید و با نوار «پاره‌سازی» لایه‌های داخلی — ریل، کیج، ساچمه‌ها و آب‌بندها — را جدا ببینید." data-en="A 3D model of the SKF 6205 deep-groove ball bearing: rotate it with your mouse or a finger, zoom in, and use the explode bar to separate the layers — raceways, cage, balls and seals.">مدل سه‌بعدی بلبرینگ شیار عمیق SKF 6205: با ماوس یا انگشت بچرخانید، بزرگ‌نمایی کنید و با نوار «پاره‌سازی» لایه‌های داخلی — ریل، کیج، ساچمه‌ها و آب‌بندها — را جدا ببینید.</p>
+                </div>
+
+                <div id="bearingStage" class="bearing-stage" tabindex="0" aria-label="Interactive 3D bearing viewer">
+                    <div id="bearingViewport"></div>
+                    <div class="bearing-vignette"></div>
+
+                    <!-- HUD: live controls (left) + view presets (right) -->
+                    <div class="bearing-hud">
+                        <div class="bearing-pill bearing-controls">
+                            <span class="live-dot" aria-hidden="true"></span>
+                            <span data-fa="نمای زنده" data-en="LIVE VIEW">نمای زنده</span>
+                            <!-- Icon-only buttons: no data-fa/data-en — applyLanguage would replace the icon with text. -->
+                            <button id="bearingDirBtn" type="button" aria-label="Reverse rotation direction" title="عکس کردن جهت چرخش"><i class="fas fa-exchange-alt"></i></button>
+                            <button id="bearingPauseBtn" type="button" aria-label="Pause or resume rotation" aria-pressed="false" title="توقف / ادامه"><i class="fas fa-pause"></i></button>
+                            <button id="bearingExplodeBtn" type="button" aria-label="Exploded view" aria-pressed="false" title="نمای پاره‌شده"><i class="fas fa-expand-alt"></i></button>
+                            <button id="bearingZoomIn" type="button" aria-label="Zoom in" title="بزرگ‌نمایی"><i class="fas fa-plus"></i></button>
+                            <button id="bearingZoomOut" type="button" aria-label="Zoom out" title="کوچک‌نمایی"><i class="fas fa-minus"></i></button>
+                            <button id="bearingResetBtn" type="button" aria-label="Reset view" title="بازنشانی نما"><i class="fas fa-crosshairs"></i></button>
+                        </div>
+                        <div class="bearing-pill bearing-presets">
+                            <button type="button" data-bearing-view="open" onclick="setBearingView('open')" data-fa="باز" data-en="Open" aria-pressed="true">باز</button>
+                            <button type="button" data-bearing-view="exploded" onclick="setBearingView('exploded')" data-fa="پاره‌شده" data-en="Exploded" aria-pressed="false">پاره‌شده</button>
+                        </div>
+                    </div>
+
+                    <!-- Explode slider -->
+                    <div class="bearing-explodebar">
+                        <i class="fas fa-layer-group" aria-hidden="true"></i>
+                        <span data-fa="پاره‌سازی" data-en="EXPLODE">پاره‌سازی</span>
+                        <input type="range" id="bearingExplodeRange" min="0" max="100" value="0" step="1" aria-label="Explode the bearing">
+                        <span id="bearingExplodeValue" dir="ltr">0%</span>
+                    </div>
+
+                    <!-- Model caption -->
+                    <div class="bearing-caption">
+                        <div class="bearing-model-tag" dir="ltr">6205 · DEEP GROOVE</div>
+                        <div class="bearing-model-name">
+                            <span data-fa="بلبرینگ شیار عمیق SKF 6205" data-en="SKF 6205 Deep Groove Ball Bearing">بلبرینگ شیار عمیق SKF 6205</span>
+                            <small dir="ltr">25 × 52 × 15 mm</small>
+                        </div>
+                        <div class="bearing-hint" data-fa="کشیدن برای چرخش · دابل‌کلیک برای بازنشانی" data-en="Drag to rotate · double-click to reset">کشیدن برای چرخش · دابل‌کلیک برای بازنشانی</div>
+                    </div>
+
+                    <!-- Shown when WebGL is unavailable -->
+                    <div id="bearingFallback" class="bearing-fallback">
+                        <i class="fas fa-cube text-4xl mb-1" aria-hidden="true"></i>
+                        <p data-fa="مرورگر شما از نمایش سه‌بعدی (WebGL) پشتیبانی نمی‌کند یا آن را غیرفعال کرده است." data-en="Your browser does not support 3D display (WebGL), or it is disabled.">مرورگر شما از نمایش سه‌بعدی (WebGL) پشتیبانی نمی‌کند یا آن را غیرفعال کرده است.</p>
+                        <p class="text-sm font-normal opacity-80" data-fa="مدل بلبرینگ 6205: قطر داخل ۲۵، قطر خارج ۵۲، عرض ۱۵ میلی‌متر — سرعت مجاز ۱۳٬۰۰۰ دور در دقیقه." data-en="Bearing 6205: 25 mm bore, 52 mm outer diameter, 15 mm wide — 13,000 rpm speed rating.">مدل بلبرینگ 6205: قطر داخل ۲۵، قطر خارج ۵۲، عرض ۱۵ میلی‌متر — سرعت مجاز ۱۳٬۰۰۰ دور در دقیقه.</p>
+                    </div>
+                </div>
+
+                <!-- Material legend -->
+                <div class="bearing-legend">
+                    <span><i style="background:#d6dce6"></i><span data-fa="استیل کروم — ریل و ساچمه‌ها" data-en="Chrome steel — raceways &amp; balls">استیل کروم — ریل و ساچمه‌ها</span></span>
+                    <span><i style="background:#cba453"></i><span data-fa="برنج کیج" data-en="Brass cage">برنج کیج</span></span>
+                    <span><i style="background:#1e2126"></i><span data-fa="آب‌بند لاستیکی NBR" data-en="NBR rubber seals">آب‌بند لاستیکی NBR</span></span>
+                    <span><i style="background:#00f7ff"></i><span data-fa="علامت‌های ریل" data-en="Raceway markers">علامت‌های ریل</span></span>
+                </div>
+            </div>
+
             <div class="about-editorial">
                 <div class="max-w-4xl mx-auto px-4 py-12 lg:py-16">
                     <div class="about-lead-block">
@@ -1119,32 +1185,32 @@
                     <div class="lg:col-span-2">
                         <div class="bg-white rounded-2xl shadow-lg p-8">
                             <h3 class="text-2xl font-bold text-gray-800 mb-6" data-en="Send us a message" data-fa="پیام بفرستید">Send us a message</h3>
-                            <form class="space-y-6">
+                            <form id="contact-form" onsubmit="submitContactForm(event)" class="space-y-6">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2" data-en="Full Name" data-fa="نام و نام خانوادگی">Full Name</label>
-                                        <input type="text" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2" for="contact-name" data-en="Full Name" data-fa="نام و نام خانوادگی">Full Name</label>
+                                        <input type="text" id="contact-name" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2" data-en="Email" data-fa="ایمیل">Email</label>
-                                        <input type="email" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2" for="contact-email" data-en="Email" data-fa="ایمیل">Email</label>
+                                        <input type="email" id="contact-email" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none">
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2" data-en="Phone" data-fa="تلفن">Phone</label>
-                                    <input type="tel" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="contact-phone" data-en="Phone" data-fa="تلفن">Phone</label>
+                                    <input type="tel" id="contact-phone" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none" placeholder="+98 912 ...">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2" data-en="Subject" data-fa="موضوع">Subject</label>
-                                    <select class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="contact-subject" data-en="Subject" data-fa="موضوع">Subject</label>
+                                    <select id="contact-subject" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none">
                                         <option data-en="Request a Quote" data-fa="درخواست قیمت">Request a Quote</option>
                                         <option data-en="Technical Support" data-fa="پشتیبانی فنی">Technical Support</option>
                                         <option data-en="General Inquiry" data-fa="پرسش عمومی">General Inquiry</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2" data-en="Message" data-fa="پیام">Message</label>
-                                    <textarea rows="5" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"></textarea>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="contact-message" data-en="Message" data-fa="پیام">Message</label>
+                                    <textarea rows="5" id="contact-message" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"></textarea>
                                 </div>
                                 <button type="submit" class="btn-primary text-white px-8 py-4 rounded-xl font-medium w-full md:w-auto">
                                     <i class="fas fa-paper-plane mr-2"></i>
@@ -1654,6 +1720,10 @@
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">عرض B</label><input id="ops-new-B" type="number" min="0" step="any" class="compact-input" placeholder="15"></div>
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">قیمت دلاری *</label><input id="ops-new-price" type="number" min="0" step="any" class="compact-input" placeholder="8.5"></div>
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">موجودی اولیه</label><input id="ops-new-stock" type="number" min="0" step="1" class="compact-input" placeholder="0"></div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-500 mb-1">منبع تأمین (چند انتخاب — Ctrl/Shift) <span class="font-normal text-gray-400">خالی = انبار خودمان</span></label>
+                                <select id="ops-new-suppliers" multiple size="3" class="compact-input"></select>
+                            </div>
                             <div class="md:col-span-2 flex items-end"><button onclick="addProduct()" class="btn-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm w-full md:w-auto">ثبت کالا در کاتالوگ</button></div>
                         </div>
                     </details>
@@ -1734,17 +1804,6 @@
                     </div>
                     <p class="text-xs text-gray-400 leading-5">فایل اکسل شامل سه شیت است: <b>خلاصه فروش</b> (از کجا فروختیم)، <b>اقلام فروش</b> و <b>باشگاه مشتریان</b>. با اکسل یا LibreOffice باز می‌شود.</p>
                 </section>
-            </div>
-        </div>
-    </div>
-
-    <!-- Product Quick View Modal -->
-    <div id="product-modal" class="fixed inset-0 z-50 hidden modal-overlay overflow-y-auto">
-        <div class="min-h-screen flex items-start justify-center p-4 py-12">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full animate-slide-up">
-                <div id="product-modal-content">
-                    <!-- Product modal content will be rendered here -->
-                </div>
             </div>
         </div>
     </div>
