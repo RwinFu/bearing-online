@@ -36,11 +36,7 @@ function getStockBadge(product) {
         inquiry: { icon: 'fa-circle-question', cls: 'inquiry', fa: 'نیازمند استعلام', en: 'Inquiry' }
     };
     const item = map[product.stockStatus] || map.inquiry;
-    const suppliers = productSupplierNames(product);
-    const source = suppliers && suppliers.indexOf('انبار خودمان') === -1
-        ? `<span class="stock-source-chip"><i class="fas fa-store"></i>${suppliers.map(escapeHTML).join('، ')}</span>`
-        : '';
-    return `<span class="stock-badge ${item.cls}"><i class="fas ${item.icon}"></i>${AppState.language === 'fa' ? item.fa : item.en}</span>${source}`;
+    return `<span class="stock-badge ${item.cls}"><i class="fas ${item.icon}"></i>${AppState.language === 'fa' ? item.fa : item.en}</span>`;
 }
 
 function toInchFraction(mm) {
@@ -312,7 +308,7 @@ function searchProducts(query, fields = getSelectedPartFields()) {
     const parsed = parseSearchQuery(query);
     return ProductDatabase.filter(product => {
         const ids = getProductIdentifiers(product);
-        const text = normalizeSearchValue(`${getSearchableText(product)} ${ORIGIN_FA[product.origin] || ''} ${SUBTYPE_FA[product.subtype] || ''}`);
+        const text = normalizeSearchValue(`${getSearchableText(product)} ${SUBTYPE_FA[product.subtype] || ''}`);
         return parsed.words.every(token => getTokenAlternatives(token).some(alt => text.includes(normalizeSearchValue(alt)))) &&
             parsed.codes.every(code => fields.some(field => normalizeSearchValue(ids[field]).includes(normalizeSearchValue(code)))) &&
             parsed.suffixes.every(suffix => suffixCompatible(suffix, product)) &&
@@ -345,8 +341,9 @@ function getIdentifierLabel(key) {
 }
 
 function getSelectedPartFields() {
-    const selected = [...document.querySelectorAll('.part-field:checked')].map(input => input.value);
-    return selected.length ? selected : ['reference', 'article', 'mpn'];
+    // Always search all identifier fields so the single visible checkbox still finds
+    // by code/MPN; the UI only exposes "کد مرجع" per product request.
+    return ['reference', 'article', 'mpn'];
 }
 
 function productMatchesPartQuery(product, query, fields = getSelectedPartFields()) {
@@ -454,7 +451,7 @@ function executeAutocomplete(value) {
                 </div>
                 <div>
                     <div class="font-medium text-gray-800" dir="ltr">${p.brand} ${p.code} ${p.searchMeta?.equivalent ? `<span class="mr-2 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs">${AppState.language === 'fa' ? 'معادل' : 'Equivalent'}</span>` : ''}</div>
-                    <div class="text-sm text-gray-500" dir="ltr">${p.type === 'grease' ? (p.dimensionsLabel || '') : `${p.d}×${p.D}×${p.B} mm`} | ${getIdentifierLabel('mpn')}: ${getProductIdentifiers(p).mpn}</div>
+                    <div class="text-sm text-gray-500">${p.type === 'grease' ? (p.dimensionsLabel || '') : `<span dir="ltr">${p.d}×${p.D}×${p.B} mm</span>`} · ${faSubtype(p.subtype)} · ${faType(p.type)}</div>
                 </div>
             </div>
             <div class="text-right">
@@ -538,7 +535,7 @@ function resetProductFilters() {
     document.getElementById('filter-unit-mm').checked = true;
     const input = document.getElementById('search-input');
     if (input) input.value = '';
-    document.querySelectorAll('.brand-filter, .type-filter, .origin-filter, .tech-filter').forEach(cb => cb.checked = false);
+    document.querySelectorAll('.brand-filter, .type-filter, .tech-filter').forEach(cb => cb.checked = false);
     ['filter-d-min','filter-d-max','filter-D-min','filter-D-max','filter-B-min','filter-B-max'].forEach(id => {
         const el = document.getElementById(id);
         if (el) { el.value = ''; el.removeAttribute('aria-invalid'); }
@@ -563,8 +560,7 @@ function toggleFilterGroup(button) {
 function setQuickFilter(kind, value) {
     const map = {
         brand: '.brand-filter',
-        type: '.type-filter',
-        origin: '.origin-filter'
+        type: '.type-filter'
     };
     const target = [...document.querySelectorAll(map[kind] || '')].find(input => input.value === value);
     if (target) {
@@ -592,8 +588,8 @@ function removeFilter(kind, value) {
             if (input.dataset.field === field && input.value === val) input.checked = false;
         });
     } else {
-        const selector = kind === 'brand' ? '.brand-filter' : kind === 'type' ? '.type-filter' : '.origin-filter';
-        document.querySelectorAll(selector).forEach(input => {
+        const selector = kind === 'brand' ? '.brand-filter' : '.type-filter';
+        if (selector) document.querySelectorAll(selector).forEach(input => {
             if (input.value === value) input.checked = false;
         });
     }
@@ -611,7 +607,6 @@ function renderActiveFilters() {
     if (AppState.dimensionSearch) chips.push({ kind: 'hero-dimension', value: '', label: getDimensionLabel(AppState.dimensionSearch) });
     document.querySelectorAll('.brand-filter:checked').forEach(input => chips.push({ kind: 'brand', value: input.value, label: input.value }));
     document.querySelectorAll('.type-filter:checked').forEach(input => chips.push({ kind: 'type', value: input.value, label: input.closest('label')?.textContent.trim().replace(/\d+$/,'').trim() || input.value }));
-    document.querySelectorAll('.origin-filter:checked').forEach(input => chips.push({ kind: 'origin', value: input.value, label: input.closest('label')?.textContent.trim().replace(/\d+$/,'').trim() || input.value }));
     document.querySelectorAll('.tech-filter:checked').forEach(input => chips.push({ kind: 'tech', value: `${input.dataset.field}:${input.value}`, label: input.closest('label')?.textContent.trim() || input.value }));
 
     const dimIds = ['filter-d-min','filter-d-max','filter-D-min','filter-D-max','filter-B-min','filter-B-max'];
@@ -646,23 +641,11 @@ function updateFilterCounts() {
         row.innerHTML = `<span class="flex items-center gap-2"><input type="checkbox" class="brand-filter" value="${escapeHTML(brand)}" onchange="applyFilters()"><span>${escapeHTML(brand)}</span></span><span class="filter-count"></span>`;
         list?.appendChild(row);
     });
-    const originList = document.querySelector('.origin-filter')?.closest('.filter-content');
-    const shownOrigins = [...document.querySelectorAll('.origin-filter')].map(input => input.value);
-    [...new Set(ProductDatabase.map(product => product.origin).filter(Boolean))].filter(origin => !shownOrigins.includes(origin)).sort().forEach(origin => {
-        const row = document.createElement('label');
-        row.className = 'filter-row';
-        row.dataset.dynamic = 'origin';
-        row.innerHTML = `<span class="flex items-center gap-2"><input type="checkbox" class="origin-filter" value="${escapeHTML(origin)}" onchange="applyFilters()"><span>${escapeHTML(faOrigin(origin))}</span></span><span class="filter-count"></span>`;
-        originList?.appendChild(row);
-    });
     // Prune dynamically added rows whose option vanished from the catalogue
-    // (e.g. after the manager deletes the last product of a brand).
     document.querySelectorAll('.filter-row[data-dynamic]').forEach(row => {
         const input = row.querySelector('input');
         if (!input) return;
-        const alive = row.dataset.dynamic === 'origin'
-            ? ProductDatabase.some(p => p.origin === input.value)
-            : ProductDatabase.some(p => p.brand === input.value);
+        const alive = ProductDatabase.some(p => p.brand === input.value);
         if (!alive) row.remove();
     });
     document.querySelectorAll('.filter-row input').forEach(input => {
@@ -672,7 +655,6 @@ function updateFilterCounts() {
         let count = 0;
         if (input.classList.contains('brand-filter')) count = ProductDatabase.filter(p => p.brand === input.value).length;
         if (input.classList.contains('type-filter')) count = ProductDatabase.filter(p => p.type === input.value).length;
-        if (input.classList.contains('origin-filter')) count = ProductDatabase.filter(p => p.origin === input.value).length;
         countEl.textContent = count;
     });
     const stockCount = document.getElementById('stock-filter-count');
@@ -690,7 +672,6 @@ function updateHomeStats() {
 function getSidebarFilterState() {
     const selectedBrands = [...document.querySelectorAll('.brand-filter:checked')].map(cb => cb.value);
     const selectedTypes = [...document.querySelectorAll('.type-filter:checked')].map(cb => cb.value);
-    const selectedOrigins = [...document.querySelectorAll('.origin-filter:checked')].map(cb => cb.value);
     const techFilters = [...document.querySelectorAll('.tech-filter:checked')].reduce((acc, input) => {
         const field = input.dataset.field;
         acc[field] = acc[field] || [];
@@ -744,9 +725,6 @@ function recomputeResults() {
     }
     if (filter.selectedTypes.length > 0) {
         results = results.filter(p => filter.selectedTypes.includes(p.type));
-    }
-    if (filter.selectedOrigins.length > 0) {
-        results = results.filter(p => filter.selectedOrigins.includes(p.origin));
     }
     if (filter.onlyStock) {
         results = results.filter(p => p.stockStatus === 'in-stock' && p.stock > 0);
@@ -892,9 +870,9 @@ function renderSearchResults() {
                 <div class="p-6">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-600">${p.brand}</span>
-                        <span class="px-2 py-1 text-xs font-medium rounded bg-gray-100 text-gray-600">${faOrigin(p.origin)}</span>
                     </div>
                     <h4 dir="ltr" class="product-code text-lg font-bold text-gray-800 mb-2 hover:text-blue-600">${p.code} ${p.searchMeta?.equivalent ? `<span class="mr-2 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs">${AppState.language === 'fa' ? 'معادل' : 'Equivalent'}</span>` : ''}</h4>
+                    <p class="product-type-bilingual text-sm text-gray-600 mb-2">${faSubtype(p.subtype)} · ${faType(p.type)}</p>
                     <p class="product-dimensions text-sm text-gray-500 mb-3" dir="ltr">${formatDimensions(p)}</p>
                     <div class="mb-4">${getStockBadge(p)}</div>
                     <div class="product-card-footer flex items-center justify-between">
@@ -944,7 +922,7 @@ function getSearchRoute() {
     if (AppState.textQuery) params.set('q', AppState.textQuery);
     if (AppState.categoryFilter) params.set('category', AppState.categoryFilter);
     if (AppState.dimensionSearch) params.set('dim', JSON.stringify(AppState.dimensionSearch));
-    ['brand', 'type', 'origin', 'tech'].forEach(kind => {
+    ['brand', 'type', 'tech'].forEach(kind => {
         document.querySelectorAll(`.${kind}-filter:checked`).forEach(input => {
             params.append(kind, kind === 'tech' ? `${input.dataset.field}:${input.value}` : input.value);
         });
@@ -988,7 +966,7 @@ function restoreSearchRoute(params) {
             AppState.dimensionSearch = safe;
         }
     } catch (_) { /* Ignore malformed optional dimension state. */ }
-    ['brand', 'type', 'origin', 'tech'].forEach(kind => {
+    ['brand', 'type', 'tech'].forEach(kind => {
         const values = params.getAll(kind);
         document.querySelectorAll(`.${kind}-filter`).forEach(input => {
             input.checked = values.includes(kind === 'tech' ? `${input.dataset.field}:${input.value}` : input.value);

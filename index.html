@@ -282,20 +282,14 @@
                                     </div>
                                 </div>
                                 <div class="mt-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                                    <p class="text-sm text-gray-500" data-en="Optional filters. Usually leave all selected." data-fa="اختیاری است؛ معمولاً همه روشن بماند">اختیاری است؛ معمولاً همه روشن بماند</p>
+                                    <p class="text-sm text-gray-500" data-en="Search by reference code." data-fa="جستجو بر اساس کد مرجع.">جستجو بر اساس کد مرجع.</p>
                                     <div class="flex flex-wrap gap-2">
                                         <label>
-                                            <input type="checkbox" class="scope-input part-field" value="article" checked onchange="handleSearchInput(document.getElementById('search-input').value)">
-                                            <span class="scope-chip"><i class="fas fa-circle-dot"></i><span data-en="Part code" data-fa="شماره قطعه">شماره قطعه</span></span>
-                                        </label>
-                                        <label>
                                             <input type="checkbox" class="scope-input part-field" value="reference" checked onchange="handleSearchInput(document.getElementById('search-input').value)">
-                                            <span class="scope-chip"><i class="fas fa-fingerprint"></i><span data-en="Internal ref." data-fa="کد مرجع">کد مرجع</span></span>
+                                            <span class="scope-chip"><i class="fas fa-fingerprint"></i><span data-en="Reference code" data-fa="کد مرجع">کد مرجع</span></span>
                                         </label>
-                                        <label>
-                                            <input type="checkbox" class="scope-input part-field" value="mpn" checked onchange="handleSearchInput(document.getElementById('search-input').value)">
-                                            <span class="scope-chip"><i class="fas fa-industry"></i><span data-en="Maker code" data-fa="کد سازنده">کد سازنده</span></span>
-                                        </label>
+                                        <input type="checkbox" class="scope-input part-field" value="article" checked style="display:none" onchange="handleSearchInput(document.getElementById('search-input').value)">
+                                        <input type="checkbox" class="scope-input part-field" value="mpn" checked style="display:none" onchange="handleSearchInput(document.getElementById('search-input').value)">
                                     </div>
                                 </div>
                             </div>
@@ -670,7 +664,6 @@
                                     <button onclick="setQuickFilter('brand','SKF')" class="quick-filter-chip">SKF</button>
                                     <button onclick="setQuickFilter('brand','HKT')" class="quick-filter-chip">HKT</button>
                                     <button onclick="setQuickFilter('type','bearing')" class="quick-filter-chip" data-en="Bearings" data-fa="برینگ‌ها">برینگ‌ها</button>
-                                    <button onclick="setQuickFilter('origin','Germany')" class="quick-filter-chip" data-en="Germany" data-fa="آلمان">آلمان</button>
                                 </div>
                             </div>
 
@@ -792,19 +785,7 @@
                                 </div>
                             </div>
 
-                            <div class="filter-group collapsed">
-                                <button class="filter-toggle" onclick="toggleFilterGroup(this)">
-                                    <span data-en="Origin" data-fa="کشور سازنده">کشور سازنده</span>
-                                    <i class="fas fa-chevron-down"></i>
-                                </button>
-                                <div class="filter-content space-y-1">
-                                    <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="origin-filter" value="Germany" onchange="applyFilters()"><span data-en="Germany" data-fa="آلمان">آلمان</span></span><span class="filter-count">5</span></label>
-                                    <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="origin-filter" value="Japan" onchange="applyFilters()"><span data-en="Japan" data-fa="ژاپن">ژاپن</span></span><span class="filter-count">7</span></label>
-                                    <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="origin-filter" value="Sweden" onchange="applyFilters()"><span data-en="Sweden" data-fa="سوئد">سوئد</span></span><span class="filter-count">10</span></label>
-                                    <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="origin-filter" value="China" onchange="applyFilters()"><span data-en="China" data-fa="چین">چین</span></span><span class="filter-count">1</span></label>
-                                    <label class="filter-row"><span class="flex items-center gap-2"><input type="checkbox" class="origin-filter" value="Korea" onchange="applyFilters()"><span data-en="Korea" data-fa="کره">کره</span></span><span class="filter-count">2</span></label>
-                                </div>
-                            </div>
+
                         </div>
                     </aside>
 
@@ -1041,75 +1022,85 @@
         <section id="page-about" class="page-section hidden">
             <div class="gradient-hero tech-grid py-16">
                 <div class="max-w-7xl mx-auto px-4 text-center">
-                    <h2 class="text-4xl font-bold text-white mb-4" data-en="About Bearing Online" data-fa="درباره برینگ آنلاین">درباره برینگ آنلاین</h2>
-                    <p class="text-xl text-white/70" data-en="Specialized online bearing store with engineering support" data-fa="فروشگاه تخصصی آنلاین برینگ با پشتیبانی مهندسی">فروشگاه تخصصی آنلاین برینگ با پشتیبانی مهندسی</p>
+                    <h2 class="text-4xl font-bold text-white mb-4">درباره برینگ آنلاین</h2>
+                    <p class="text-xl text-white/70">تجربه صنعتی، در دسترس‌تر از همیشه</p>
                 </div>
             </div>
-            <div class="about-full">
-                <div class="about-overlay max-w-4xl mx-auto px-4 pt-14 lg:pt-20 pb-6 text-center">
-                    <span class="about-eyebrow" data-en="Our Story — Live 3D" data-fa="داستان ما — نمای زنده سه‌بعدی">داستان ما — نمای زنده سه‌بعدی</span>
-                    <h3 class="about-title" data-en="Our Story" data-fa="داستان ما">داستان <span class="grad">ما</span></h3>
-                    <p class="about-lead mb-4" data-en="Bearing Online is a specialized online store for industrial and automotive bearings, housings, bushings, grease, and power-transmission parts. Search by code, brand, name, or dimensions, compare technical options, and check out stocked items online." data-fa="برینگ آنلاین فروشگاه تخصصی آنلاین برینگ‌های صنعتی و خودرویی، یاتاقان و بوش، گریس و قطعات انتقال قدرت است. با کد، برند، نام یا ابعاد جستجو کنید، گزینه‌های فنی را مقایسه کنید و کالای موجود را آنلاین بخرید.">برینگ آنلاین فروشگاه تخصصی آنلاین برینگ‌های صنعتی و خودرویی، یاتاقان و بوش، گریس و قطعات انتقال قدرت است. با کد، برند، نام یا ابعاد جستجو کنید، گزینه‌های فنی را مقایسه کنید و کالای موجود را آنلاین بخرید.</p>
-                    <p class="about-lead mb-6" data-en="For rare or inquiry-only parts, you can turn an unsuccessful search into an RFQ. Our engineering team returns equivalents, final pricing, and delivery time quickly." data-fa="برای قطعات خاص یا استعلامی، می‌توانید جستجوی ناموفق را به درخواست تامین تبدیل کنید و تیم مهندسی ما معادل، قیمت نهایی و زمان تحویل را سریع اعلام می‌کند.">برای قطعات خاص یا استعلامی، می‌توانید جستجوی ناموفق را به درخواست تامین تبدیل کنید و تیم مهندسی ما معادل، قیمت نهایی و زمان تحویل را سریع اعلام می‌کند.</p>
-                    <div class="grid grid-cols-2 gap-6 max-w-md mx-auto">
-                        <div class="about-stat">
-                            <div class="num">15+</div>
-                            <div class="lbl" data-en="Years Experience" data-fa="سال تجربه">سال تجربه</div>
-                        </div>
-                        <div class="about-stat">
-                            <div class="num">5000+</div>
-                            <div class="lbl" data-en="Happy Customers" data-fa="مشتری راضی">مشتری راضی</div>
-                        </div>
+
+            <div class="about-editorial">
+                <div class="max-w-4xl mx-auto px-4 py-12 lg:py-16">
+                    <div class="about-lead-block">
+                        <h1 class="about-main-title">درباره بیرینگ آنلاین</h1>
+                        <p class="about-main-subtitle">تجربه صنعتی، در دسترس‌تر از همیشه</p>
                     </div>
-                </div>
-                <div class="about-bearing-wrap">
-                    <div class="bearing-stage" id="bearingStage">
-                        <div id="bearingViewport" class="bearing-viewport" tabindex="0" role="img" aria-label="مدل تعاملی بلبرینگ؛ با کلیدهای جهت بچرخانید و با مثبت و منفی زوم کنید"></div>
-                        <div class="bearing-hud">
-                            <div class="bearing-pill"><span class="live-dot"></span><span data-en="Live 3D" data-fa="نمای سه‌بعدی زنده">نمای سه‌بعدی زنده</span></div>
-                            <div class="bearing-pill bearing-controls" role="group" aria-label="کنترل نمایش سه‌بعدی">
-                                <button id="bearingDirBtn" aria-label="تغییر جهت چرخش" type="button" title="Direction"><i class="fas fa-arrows-rotate"></i></button>
-                                <button id="bearingPauseBtn" aria-label="توقف یا ادامه چرخش" type="button" title="Pause"><i class="fas fa-pause"></i></button>
-                                <button id="bearingExplodeBtn" aria-label="نمای بازشده قطعات" type="button" title="Exploded view"><i class="fas fa-layer-group"></i></button>
-                                <button id="bearingZoomIn" aria-label="بزرگ‌نمایی" type="button" title="Zoom in"><i class="fas fa-plus"></i></button>
-                                <button id="bearingResetBtn" type="button" title="Reset view" aria-label="بازنشانی نما"><i class="fas fa-house"></i></button>
-                                <button id="bearingZoomOut" aria-label="کوچک‌نمایی" type="button" title="Zoom out"><i class="fas fa-minus"></i></button>
+
+                    <div class="about-prose">
+                        <p>بیرینگ آنلاین یک مرجع تخصصی برای تأمین و فروش انواع بلبرینگ، رولبرینگ، یاتاقان و قطعات صنعتی است؛ مجموعه‌ای که با هدف ساده‌تر، سریع‌تر و مطمئن‌تر کردن فرایند خرید تجهیزات صنعتی شکل گرفته است.</p>
+
+                        <p>این مجموعه حاصل توسعه بیش از یک دهه تجربه «پرشیا رباط ماشین» در مهندسی خرید، بازرگانی خارجی و تأمین تجهیزات و قطعات یدکی صنایع کشور است. امروز این دانش و تجربه در بیرینگ آنلاین با یک بستر تخصصی و در دسترس ترکیب شده تا مشتریان بتوانند قطعه موردنیاز خود را با اطلاعات دقیق‌تر، مشاوره تخصصی و اطمینان بیشتر تهیه کنند.</p>
+
+                        <h2>از پرشیا رباط ماشین تا بیرینگ آنلاین</h2>
+
+                        <p>فعالیت ما با تأمین تجهیزات و قطعات موردنیاز صنایع سنگین آغاز شد. همکاری با مجموعه‌های صنعتی و تولیدی در حوزه‌های معدن، سیمان، فولاد، نفت، گاز و پتروشیمی، شناخت عمیقی از نیازهای واقعی واحدهای فنی، تعمیرات، نگهداری و تدارکات در اختیار ما قرار داد.</p>
+
+                        <p>تجربه سال‌ها فعالیت در بازار داخلی و بازرگانی بین‌المللی نشان داد که تأمین یک بیرینگ مناسب، تنها به پیدا کردن یک کد فنی محدود نمی‌شود. اصالت کالا، مشخصات دقیق محصول، شرایط کاری دستگاه، زمان تحویل و قابلیت اعتماد به تأمین‌کننده، همگی در یک انتخاب صحیح نقش دارند.</p>
+
+                        <p>بیرینگ آنلاین با تکیه بر همین تجربه شکل گرفت؛ بستری تخصصی که فاصله میان دانش فنی، شبکه تأمین و خرید آنلاین را کمتر می‌کند.</p>
+
+                        <h2>چه محصولاتی تأمین می‌کنیم؟</h2>
+
+                        <p>حوزه فعالیت بیرینگ آنلاین شامل تأمین و عرضه انواع تجهیزات انتقال حرکت و قطعات مصرفی صنایع است؛ از جمله:</p>
+
+                        <ul class="about-list">
+                            <li>انواع بلبرینگ‌های صنعتی و عمومی</li>
+                            <li>رولبرینگ‌های مخروطی، استوانه‌ای، بشکه‌ای و سوزنی</li>
+                            <li>بلبرینگ‌های شیار عمیق، خودتنظیم، تماس زاویه‌ای و کف‌گرد</li>
+                            <li>انواع یاتاقان و متعلقات مرتبط</li>
+                            <li>قطعات یدکی و تجهیزات موردنیاز ماشین‌آلات صنعتی</li>
+                            <li>محصولات خاص یا کم‌یاب بر اساس کد فنی و درخواست مشتری</li>
+                        </ul>
+
+                        <p>محصولات موردنیاز مشتریان از میان برندهای شناخته‌شده اروپایی و آسیایی و متناسب با مشخصات فنی، کاربرد و بودجه پروژه تأمین می‌شوند.</p>
+
+                        <h2>رویکرد ما در تأمین قطعات صنعتی</h2>
+
+                        <p>در بیرینگ آنلاین، فروش کالا پایان کار نیست. تلاش ما این است که مشتری پیش از خرید، اطلاعات کافی برای یک انتخاب درست در اختیار داشته باشد و پس از ثبت سفارش نیز از پاسخ‌گویی و پیگیری مناسب برخوردار شود.</p>
+
+                        <p>اصول کاری ما بر چهار محور استوار است:</p>
+
+                        <h3>اصالت و کیفیت کالا</h3>
+                        <p>در قطعات صنعتی، کیفیت مستقیماً بر عملکرد تجهیزات و تداوم تولید اثر می‌گذارد. به همین دلیل، اصالت و سلامت کالا یکی از مهم‌ترین معیارهای ما در انتخاب منابع تأمین است.</p>
+
+                        <h3>دقت در مشخصات فنی</h3>
+                        <p>تفاوت در یک پسوند، میزان لقی، نوع آب‌بند یا کلاس دقت می‌تواند کاربرد یک بیرینگ را تغییر دهد. کارشناسان ما تلاش می‌کنند سفارش‌ها با کد و مشخصات فنی موردنیاز مشتری تطبیق داده شوند.</p>
+
+                        <h3>پاسخ‌گویی تخصصی</h3>
+                        <p>هدف ما ارائه پاسخ روشن و کاربردی در کوتاه‌ترین زمان ممکن است. اگر درباره انتخاب برند، معادل فنی، ابعاد یا کاربرد یک محصول مطمئن نیستید، می‌توانید پیش از خرید از راهنمایی کارشناسان بیرینگ آنلاین استفاده کنید.</p>
+
+                        <h3>تأمین سریع و قابل پیگیری</h3>
+                        <p>با استفاده از ظرفیت بازار داخلی و شبکه تأمین بین‌المللی مجموعه، تلاش می‌کنیم محصولات موجود و سفارش‌های تخصصی را با زمان و هزینه مناسب تأمین کنیم و مشتری را در جریان مراحل سفارش قرار دهیم.</p>
+
+                        <h2>همراه صنایع و متخصصان</h2>
+
+                        <p>خدمات بیرینگ آنلاین برای طیف گسترده‌ای از مشتریان طراحی شده است؛ از کارخانه‌ها، واحدهای تولیدی و شرکت‌های پیمانکاری گرفته تا مسئولان خرید، کارشناسان تعمیرات و نگهداری، فروشندگان قطعات صنعتی و مصرف‌کنندگان فنی.</p>
+
+                        <p>ما می‌دانیم که توقف یک دستگاه یا خط تولید می‌تواند هزینه‌های قابل‌توجهی ایجاد کند. به همین دلیل، سرعت در پاسخ‌گویی، دقت در شناسایی قطعه و تعهد به زمان تأمین برای ما اهمیت ویژه‌ای دارد.</p>
+
+                        <h2>مأموریت بیرینگ آنلاین</h2>
+
+                        <p>مأموریت ما تبدیل شدن به مرجعی قابل‌اعتماد برای جست‌وجو، انتخاب و تأمین بیرینگ و قطعات صنعتی در ایران است؛ مرجعی که تجربه بازرگانی سنتی را با شفافیت، سرعت و دسترسی آسان در فضای آنلاین همراه می‌کند.</p>
+
+                        <p>می‌خواهیم مشتریان بیرینگ آنلاین هنگام خرید یک قطعه صنعتی، تنها یک محصول دریافت نکنند؛ بلکه از انتخاب درست، اصالت کالا و همراهی یک تیم باتجربه اطمینان داشته باشند.</p>
+
+                        <div class="about-closing">
+                            <h2>بیرینگ آنلاین؛ همراه مطمئن حرکت صنعت</h2>
+                            <p>هر چرخش مطمئن از یک انتخاب دقیق آغاز می‌شود. بیرینگ آنلاین با پشتوانه بیش از یک دهه تجربه صنعتی، دانش فنی و شبکه تأمین داخلی و بین‌المللی، در کنار شماست تا قطعه مناسب را با اطمینان بیشتر تهیه کنید.</p>
+                            <p class="about-cta-text">برای استعلام موجودی، دریافت مشاوره فنی یا تأمین محصولات خاص، با کارشناسان بیرینگ آنلاین در ارتباط باشید.</p>
+                            <div class="about-cta-buttons">
+                                <a href="tel:+982188709158" class="about-btn about-btn-primary"><i class="fas fa-phone ml-2"></i>تماس با کارشناسان</a>
+                                <a href="https://wa.me/989123224260" target="_blank" class="about-btn about-btn-whatsapp"><i class="fab fa-whatsapp ml-2"></i>پشتیبانی واتس‌اپ</a>
                             </div>
                         </div>
-                        <div class="bearing-vignette"></div>
-                        <div class="bearing-scan"></div>
-                        <div class="bearing-explodebar">
-                            <i class="fas fa-layer-group" style="color:#e8a81d"></i>
-                            <label for="bearingExplodeRange" data-en="Exploded view" data-fa="بازکردن قطعات">بازکردن قطعات</label>
-                            <input id="bearingExplodeRange" type="range" min="0" max="100" value="0" step="1">
-                            <output id="bearingExplodeValue" for="bearingExplodeRange">0%</output>
-                        </div>
-                        <div class="bearing-presets" role="group" aria-label="حالت نمایش بلبرینگ">
-                            <button type="button" data-bearing-view="open" onclick="setBearingView('open')" data-en="Inside the bearing" data-fa="ساختار داخلی">ساختار داخلی</button>
-                            <button type="button" data-bearing-view="assembled" onclick="setBearingView('assembled')" data-en="Assembled" data-fa="مونتاژ کامل">مونتاژ کامل</button>
-                            <button type="button" data-bearing-view="exploded" onclick="setBearingView('exploded')" data-en="Exploded" data-fa="نمای انفجاری">نمای انفجاری</button>
-                        </div>
-                        <div class="bearing-caption">
-                            <div class="bearing-model-tag" dir="ltr">6205 · 25×52×15</div>
-                            <div class="bearing-model-name"><span dir="ltr">6205 · INTERACTIVE</span><small data-en="Drag or use arrow keys to rotate · + / − to zoom · Scroll the page freely" data-fa="برای چرخش بکشید یا از کلیدهای جهت استفاده کنید · زوم با + و −">برای چرخش بکشید یا از کلیدهای جهت استفاده کنید · زوم با + و −</small></div>
-                        </div>
-                        <div class="bearing-fallback" id="bearingFallback">
-                            <div class="fallback-bearing" aria-hidden="true"><div></div></div>
-                            <span data-en="3D is unavailable on this device. Static preview shown." data-fa="نمای سه‌بعدی در این دستگاه در دسترس نیست؛ پیش‌نمایش ثابت نمایش داده می‌شود.">نمای سه‌بعدی در این دستگاه در دسترس نیست؛ پیش‌نمایش ثابت نمایش داده می‌شود.</span>
-                        </div>
-                    </div>
-                    <div class="about-frame"></div>
-                    <div class="spec-chip c1"><i class="fas fa-circle-dot"></i><span dir="ltr">Ø 52 mm · Outer</span></div>
-                    <div class="spec-chip c2"><i class="fas fa-circle-dot"></i><span>9× <span data-en="chrome balls" data-fa="ساچمه کروم">ساچمه کروم</span></span></div>
-                    <div class="spec-chip c3"><i class="fas fa-circle-dot"></i><span dir="ltr">Ø 25 mm · Bore</span></div>
-                </div>
-                <div class="max-w-4xl mx-auto px-4 pt-6 pb-14 lg:pb-20">
-                    <div class="bearing-legend about-legend" style="justify-content:center">
-                        <span><i style="background:#c7d0e0"></i><span data-en="Outer ring" data-fa="رینگ بیرونی">رینگ بیرونی</span></span>
-                        <span><i style="background:#f4f6fa;border:1px solid #9aa7c0"></i><span data-en="Balls (chrome)" data-fa="ساچمه‌ها (کروم)">ساچمه‌ها (کروم)</span></span>
-                        <span><i style="background:#b08d3e"></i><span data-en="Brass cage" data-fa="قفسه برنجی">قفسه برنجی</span></span>
-                        <span><i style="background:#23262c;border:1px solid #555"></i><span data-en="Rubber seal" data-fa="آب‌بند لاستیکی">آب‌بند لاستیکی</span></span>
-                        <span><i style="background:#8b93a5"></i><span data-en="Inner ring" data-fa="رینگ داخلی">رینگ داخلی</span></span>
                     </div>
                 </div>
             </div>
@@ -1289,9 +1280,9 @@
                 <div class="policy-body">
                 <p data-fa="پیش از باز کردن بسته‌بندی اصلی یا نصب قطعه، موارد زیر را با سفارش و نیاز فنی دستگاه تطبیق دهید:" data-en="Before opening the original packaging or installing the part, verify the following against your order and equipment requirements:">پیش از باز کردن بسته‌بندی اصلی یا نصب قطعه، موارد زیر را با سفارش و نیاز فنی دستگاه تطبیق دهید:</p>
                 <ul>
-                <li data-fa="کد کامل فنی محصول، همراه با تمام پیشوندها و پسوندها" data-en="The full product code, including all prefixes and suffixes">کد کامل فنی محصول، همراه با تمام پیشوندها و پسوندها</li>
-                <li data-fa="برند و کشور سازنده" data-en="Brand and country of manufacture">برند و کشور سازنده</li>
-                <li data-fa="قطر داخلی، قطر خارجی و عرض قطعه" data-en="Bore, outside diameter and width">قطر داخلی، قطر خارجی و عرض قطعه</li>
+                                <li data-fa="کد کامل فنی محصول، همراه با تمام پیشوندها و پسوندها" data-en="The full product code, including all prefixes and suffixes">کد کامل فنی محصول، همراه با تمام پیشوندها و پسوندها</li>
+                                <li data-fa="برند" data-en="Brand">برند</li>
+                                <li data-fa="قطر داخلی، قطر خارجی و عرض قطعه" data-en="Bore, outside diameter and width">قطر داخلی، قطر خارجی و عرض قطعه</li>
                 <li data-fa="نوع آب‌بند، لقی، کلاس دقت و سایر مشخصات فنی" data-en="Seal type, clearance, precision class and other specifications">نوع آب‌بند، لقی، کلاس دقت و سایر مشخصات فنی</li>
                 <li data-fa="تعداد کالا و اقلام همراه" data-en="Quantity and included accessories">تعداد کالا و اقلام همراه</li>
                 </ul>
@@ -1582,7 +1573,6 @@
                     <button data-ops-tab="stock" onclick="switchOpsTab('stock')">انبار و موجودی</button>
                     <button data-ops-tab="tech" onclick="switchOpsTab('tech')">مشاوره فنی / لیدها <span id="ops-count-tech" class="ops-badge" hidden></span></button>
                     <button data-ops-tab="rfq" onclick="switchOpsTab('rfq')">استعلام‌ها / RFQ <span id="ops-count-rfq" class="ops-badge" hidden></span></button>
-                    <button data-ops-tab="suppliers" onclick="switchOpsTab('suppliers')">تامین‌کنندگان انبار</button>
                     <button data-ops-tab="complaints" onclick="switchOpsTab('complaints')">شکایات <span id="ops-count-complaints" class="ops-badge" hidden></span></button>
                     <button data-ops-tab="orders" onclick="switchOpsTab('orders')">سفارش‌ها <span id="ops-count-orders" class="ops-badge" hidden></span></button>
                     <button data-ops-tab="activity" onclick="switchOpsTab('activity')">گزارش فعالیت</button>
@@ -1659,13 +1649,11 @@
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">برند *</label><input id="ops-new-brand" class="compact-input" placeholder="SKF"></div>
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">کد قطعه *</label><input id="ops-new-code" class="compact-input" placeholder="6205-2RS"></div>
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">نوع قطعه</label><select id="ops-new-type" class="compact-input"><option value="bearing">برینگ و یاتاقان</option><option value="grease">گریس</option><option value="linear">گاید خطی</option><option value="coupling">کوپلینگ</option><option value="gearbox">گیربکس</option></select></div>
-                            <div><label class="block text-xs font-bold text-gray-500 mb-1">کشور سازنده</label><input id="ops-new-origin" class="compact-input" placeholder="Sweden"></div>
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">قطر داخل d</label><input id="ops-new-d" type="number" min="0" step="any" class="compact-input" placeholder="25"></div>
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">قطر خارج D</label><input id="ops-new-D" type="number" min="0" step="any" class="compact-input" placeholder="52"></div>
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">عرض B</label><input id="ops-new-B" type="number" min="0" step="any" class="compact-input" placeholder="15"></div>
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">قیمت دلاری *</label><input id="ops-new-price" type="number" min="0" step="any" class="compact-input" placeholder="8.5"></div>
                             <div><label class="block text-xs font-bold text-gray-500 mb-1">موجودی اولیه</label><input id="ops-new-stock" type="number" min="0" step="1" class="compact-input" placeholder="0"></div>
-                            <div class="md:col-span-2"><label class="block text-xs font-bold text-gray-500 mb-1">تامین‌کننده‌ها (چندتایی مجاز)</label><select id="ops-new-suppliers" class="compact-input" multiple size="3"><option value="">— انبار خودمان (خالی بماند) —</option></select></div>
                             <div class="md:col-span-2 flex items-end"><button onclick="addProduct()" class="btn-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm w-full md:w-auto">ثبت کالا در کاتالوگ</button></div>
                         </div>
                     </details>

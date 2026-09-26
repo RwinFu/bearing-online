@@ -34,15 +34,31 @@ function toggleLanguage() {
 }
 
 const TYPE_FA = { bearing: 'برینگ', linear: 'گاید خطی', coupling: 'کوپلینگ', gearbox: 'گیربکس', grease: 'گریس' };
+const TYPE_EN = { bearing: 'Bearing', linear: 'Linear Guide', coupling: 'Coupling', gearbox: 'Gearbox', grease: 'Grease' };
 const SUBTYPE_FA = {
     'deep-groove': 'شیار عمیق', spherical: 'بشکه‌ای', tapered: 'مخروطی', 'pillow-block': 'یاتاقان',
     miniature: 'مینیاتوری', standard: 'استاندارد', bushing: 'بوش', jaw: 'فکی', oldham: 'اولدهام',
     bellows: 'آکاردئونی', chain: 'زنجیری', freewheel: 'فری‌ویل', planetary: 'خورشیدی', worm: 'حل‌زونی', bevel: 'کرانویل',
     'general-purpose': 'عمومی'
 };
-const ORIGIN_FA = { Germany: 'آلمان', Japan: 'ژاپن', Sweden: 'سوئد', China: 'چین', Korea: 'کره', Taiwan: 'تایوان', France: 'فرانسه', USA: 'آمریکا', Italy: 'ایتالیا' };
+const SUBTYPE_EN = {
+    'deep-groove': 'Deep Groove', spherical: 'Spherical Roller', tapered: 'Tapered Roller', 'pillow-block': 'Pillow Block',
+    miniature: 'Miniature', standard: 'Standard', bushing: 'Bushing', jaw: 'Jaw', oldham: 'Oldham',
+    bellows: 'Bellows', chain: 'Chain', freewheel: 'Freewheel', planetary: 'Planetary', worm: 'Worm', bevel: 'Bevel',
+    'general-purpose': 'General Purpose'
+};
 const SEAL_FA = { Open: 'باز', '2RS': 'دو طرف سیل', '2RS1': 'دو طرف سیل', ZZ: 'دو طرف شیلد', '2Z': 'دو طرف شیلد', Sealed: 'آب‌بندی‌شده', 'N/A': '—' };
-function faType(t) { return AppState.language === 'fa' ? (TYPE_FA[t] || t) : t; }
-function faSubtype(s) { return AppState.language === 'fa' ? (SUBTYPE_FA[s] || s) : s; }
-function faOrigin(o) { return AppState.language === 'fa' ? (ORIGIN_FA[o] || o) : o; }
+// Bilingual labels: Persian (English) — show both languages regardless of current UI language.
+function faType(t) {
+    const fa = TYPE_FA[t] || t;
+    const en = TYPE_EN[t] || '';
+    if (en && en.toLowerCase() !== fa.toLowerCase()) return `${fa} <span dir="ltr" style="color:#64748b;font-weight:500;font-size:0.85em">(${en})</span>`;
+    return fa;
+}
+function faSubtype(s) {
+    const fa = SUBTYPE_FA[s] || s;
+    const en = SUBTYPE_EN[s] || '';
+    if (en && en.toLowerCase() !== fa.toLowerCase()) return `${fa} <span dir="ltr" style="color:#64748b;font-weight:500;font-size:0.85em">(${en})</span>`;
+    return fa;
+}
 function faSeal(s) { return AppState.language === 'fa' ? (SEAL_FA[s] || s) : s; }
