@@ -140,8 +140,8 @@ function renderCompare() {
                         ${products.map(p => `<td class="p-4 text-center">${p.weight} kg</td>`).join('')}
                     </tr>
                     <tr class="border-b border-gray-50 bg-gray-50">
-                        <td class="p-4 text-gray-600" data-en="Origin" data-fa="کشور سازنده">Origin</td>
-                        ${products.map(p => `<td class="p-4 text-center">${faOrigin(p.origin)}</td>`).join('')}
+                        <td class="p-4 text-gray-600" data-en="Type" data-fa="نوع">Type</td>
+                        ${products.map(p => `<td class="p-4 text-center">${faSubtype(p.subtype)} · ${faType(p.type)}</td>`).join('')}
                     </tr>
                     <tr class="border-b border-gray-50">
                         <td class="p-4 text-gray-600" data-en="Seal Type" data-fa="نوع آب‌بند">Seal Type</td>

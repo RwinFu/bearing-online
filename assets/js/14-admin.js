@@ -3,8 +3,8 @@
 // ADMIN / OPERATIONS BACKEND (prototype RBAC)
 // =============================================
 const STAFF_ROLES = {
-    manager: { fa: 'مدیر', permissions: ['pricing.write', 'stock.write', 'suppliers.write', 'tech.write', 'rfq.write', 'complaints.write', 'orders.view', 'staff.view'] },
-    warehouse: { fa: 'انباردار', permissions: ['stock.write', 'suppliers.write', 'orders.view'] },
+    manager: { fa: 'مدیر', permissions: ['pricing.write', 'stock.write', 'tech.write', 'rfq.write', 'complaints.write', 'orders.view', 'staff.view'] },
+    warehouse: { fa: 'انباردار', permissions: ['stock.write', 'orders.view'] },
     technical: { fa: 'مشاور فنی', permissions: ['tech.write', 'complaints.write', 'orders.view'] },
     inquiry: { fa: 'مشاور استعلام', permissions: ['rfq.write', 'orders.view'] },
     customer: { fa: 'مشتری', permissions: [] }
@@ -80,7 +80,6 @@ function renderOpsConsole() {
         if (can('stock.write')) access.push('انبار');
         if (can('tech.write')) access.push('مشاوره فنی');
         if (can('rfq.write')) access.push('استعلام');
-        if (can('suppliers.write')) access.push('تامین‌کنندگان');
         if (can('complaints.write')) access.push('شکایات');
         note.textContent = `نقش فعال: ${STAFF_ROLES[AppState.staffRole].fa}${AppState.staffName ? ' | ' + AppState.staffName : ''} — دسترسی: ${access.join('، ') || 'فقط مشاهده'}`;
     }
@@ -119,8 +118,7 @@ function renderOpsOverview() {
         <button class="ops-kpi" onclick="switchOpsTab('rfq')"><b>${waitingRFQ}</b><span>استعلام در انتظار</span></button>
         <button class="ops-kpi" onclick="switchOpsTab('tech')"><b>${newLeads}</b><span>لید جدید</span></button>
         <button class="ops-kpi" onclick="switchOpsTab('complaints')"><b>${newComplaints}</b><span>شکایت جدید</span></button>
-        <div class="ops-kpi"><b>${formatToman(stockValue)}</b><span>ارزش موجودی (تومان)</span></div>
-        <div class="ops-kpi"><b>${MockDB.suppliers.length}</b><span>تامین‌کننده</span></div>`;
+        <div class="ops-kpi"><b>${formatToman(stockValue)}</b><span>ارزش موجودی (تومان)</span></div>`;
     const lowItems = ProductDatabase.filter(p => (p.available_to_sell || 0) <= 2).slice(0, 8);
     low.innerHTML = lowItems.map(p => `<div class="flex items-center justify-between gap-2 p-2 rounded-lg ${p.available_to_sell === 0 ? 'bg-red-50' : 'bg-orange-50'}"><span class="font-bold text-gray-700">${escapeHTML(p.brand)} ${escapeHTML(p.code)}</span><span class="text-xs ${p.available_to_sell === 0 ? 'text-red-600' : 'text-orange-600'} font-bold">${p.available_to_sell === 0 ? 'ناموجود' : 'فقط ' + p.available_to_sell + ' عدد'}</span></div>`).join('') || '<p class="text-xs text-gray-400">موجودی همه کالاها مناسب است.</p>';
     recent.innerHTML = MockDB.events.slice(0, 5).map(e => `<div class="text-xs text-gray-500"><b class="text-gray-700">${escapeHTML(e.action)}</b>${e.detail ? ' — ' + escapeHTML(e.detail) : ''} <span class="text-gray-400">(${escapeHTML(e.staff)} | ${escapeHTML(e.at)})</span></div>`).join('') || '<p class="text-xs text-gray-400">فعالیتی ثبت نشده است.</p>';
@@ -249,36 +247,20 @@ function renderOpsStock() {
     const countEl = document.getElementById('ops-stock-count');
     if (countEl) countEl.textContent = `نمایش ${rows.length} از ${all.length} کالا (کل کاتالوگ: ${ProductDatabase.length})`;
     container.innerHTML = rows.map(p => {
-        const src = p.stockSource || 'own';
         supplierBookkeeping(p);
-        const pSuppliers = productSuppliers(p);
         return `
         <div class="p-3 bg-white rounded-xl border border-gray-100">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                <div><b>${escapeHTML(p.brand)} ${escapeHTML(p.code)}</b>
+                <div><b dir="ltr">${escapeHTML(p.brand)} ${escapeHTML(p.code)}</b>
                     <div class="text-xs text-gray-400">قابل فروش: ${p.available_to_sell} | ${p.sell_mode === 'instant' ? 'خرید آنلاین' : 'استعلامی'} | ${formatToman(p.unit_price_toman)} تومان</div>
-                    <div class="text-xs text-blue-600 mt-1">منابع تامین: ${src === 'own' ? 'انبار خودمان' : escapeHTML(pSuppliers.map(s => s.name).join('، ') || supplierName(p.supplierId))}</div>
                 </div>
                 ${manager ? `<button onclick="deleteProduct('${p.id}')" class="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-bold self-start" title="حذف کالا از کاتالوگ"><i class="fas fa-trash ml-1"></i>حذف</button>` : ''}
             </div>
-            ${stockEditable ? `<div class="flex flex-wrap items-center gap-1.5 mt-3">
-                <span class="text-xs text-gray-500">منابع تامین:</span>
-                ${suppliers.map(s => {
-                    const on = pSuppliers.some(ps => ps.id === s.id);
-                    return `<button type="button" onclick="toggleProductSupplier('${p.id}','${s.id}')" aria-pressed="${on}" class="ops-sup-toggle ${on ? 'on' : ''}">${on ? '×' : '+'} ${escapeHTML(s.name)}</button>`;
-                }).join('')}
-                ${pSuppliers.length ? `<button type="button" onclick="replaceProductSuppliers('${p.id}')" class="ops-sup-toggle ops-sup-clear">برگشت به انبار خودمان</button>` : ''}
-                <span class="text-[11px] text-gray-400">برای حذف یک منبع، روی نشان فعال (×) بزنید.</span>
-            </div>` : ''}
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 mt-3">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
                 <label class="text-xs text-gray-500">موجودی<input type="number" min="0" value="${p.stock_on_hand}" ${stockEditable ? '' : 'disabled'} onchange="updateStock('${p.id}','stock_on_hand',this.value)" class="compact-input mt-1 ${stockEditable ? '' : 'ops-locked'}"></label>
                 <label class="text-xs text-gray-500">رزرو<input type="number" min="0" value="${p.stock_reserved}" ${stockEditable ? '' : 'disabled'} onchange="updateStock('${p.id}','stock_reserved',this.value)" class="compact-input mt-1 ${stockEditable ? '' : 'ops-locked'}"></label>
                 <label class="text-xs text-gray-500">قیمت دلاری ($)<input type="number" min="0" step="any" value="${p.priceUSD}" ${priceEditable ? '' : 'disabled'} onchange="updateProductPrice('${p.id}',this.value)" class="compact-input mt-1 ${priceEditable ? '' : 'ops-locked'}"></label>
                 <label class="text-xs text-gray-500">تحویل (روز)<input type="number" min="0" step="1" value="${p.lead_time_days ?? ''}" ${stockEditable ? '' : 'disabled'} onchange="updateLeadTime('${p.id}',this.value)" class="compact-input mt-1 ${stockEditable ? '' : 'ops-locked'}"></label>
-                <label class="text-xs text-gray-500">افزودن منبع<select ${stockEditable ? '' : 'disabled'} onchange="setProductSource('${p.id}',this.value);this.value=''" class="compact-input mt-1 ${stockEditable ? '' : 'ops-locked'}">
-                    <option value="">+ افزودن…</option>
-                    ${suppliers.map(s => `<option value="${s.id}">${escapeHTML(s.name)}</option>`).join('')}
-                </select></label>
             </div>
         </div>`;
     }).join('') || '<p class="text-sm text-gray-400">محصولی پیدا نشد.</p>';
@@ -376,15 +358,11 @@ function addProduct() {
     const d = num('ops-new-d'), D = num('ops-new-D'), B = num('ops-new-B');
     const rawType = document.getElementById('ops-new-type')?.value || 'bearing';
     const type = ['bearing', 'linear', 'coupling', 'gearbox', 'grease'].includes(rawType) ? rawType : 'bearing';
-    const origin = cleanText(document.getElementById('ops-new-origin')?.value);
-    const supplierIds = [...(document.getElementById('ops-new-suppliers')?.selectedOptions || [])]
-        .map(option => option.value)
-        .filter(id => id && id !== 'own');
     const product = {
         id: 'CUSTOM-' + Date.now(),
         code: typeof normalizePartCodeDisplay === 'function' ? normalizePartCodeDisplay(code) : code,
         brand, type, subtype: 'standard', d, D, B,
-        priceUSD: price, speedRating: 0, loadRating: 0, weight: 0.1, origin,
+        priceUSD: price, speedRating: 0, loadRating: 0, weight: 0.1, origin: '',
         seal: 'Open', clearance: 'C0', image: type,
         stock_on_hand: stock, stock_reserved: 0,
         unit_price_toman: moneyTomanFromUSD(price),
@@ -397,20 +375,18 @@ function addProduct() {
         cageType: 'Steel', sealType: 'Open', lubrication: 'Grease',
         internalClearance: 'C0', accuracyClass: 'P0',
         leadTimeFa: stock > 0 ? 'ارسال امروز' : 'استعلام',
-        stockSource: supplierIds.length ? 'supplier' : 'own',
-        supplierId: supplierIds[0] || '',
-        supplierIds,
+        stockSource: 'own',
+        supplierId: '',
+        supplierIds: [],
         searchMeta: { equivalent: false, suffixMatch: '' }
     };
     refreshProductAvailability(product);
     ProductDatabase.push(product);
     MockDB.customProducts.push(product);
-    ['ops-new-brand', 'ops-new-code', 'ops-new-d', 'ops-new-D', 'ops-new-B', 'ops-new-price', 'ops-new-stock', 'ops-new-origin'].forEach(id => {
+    ['ops-new-brand', 'ops-new-code', 'ops-new-d', 'ops-new-D', 'ops-new-B', 'ops-new-price', 'ops-new-stock'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
-    const supSel = document.getElementById('ops-new-suppliers');
-    if (supSel) supSel.selectedIndex = -1;
     const det = document.getElementById('ops-add-product');
     if (det) det.open = false;
     opsLog('product.add', `${brand} ${code}`);

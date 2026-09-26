@@ -6,11 +6,7 @@ function addToCart(productId, supplierId, quantity = 1, silent = false) {
     const product = ProductDatabase.find(p => p.id === productId);
     if (!product) return;
     const qty = Math.max(1, Math.min(999, parseInt(quantity, 10) || 1));
-    const suppliers = productSupplierNames(product) || [];
-    // When a product has several suppliers, the chosen supplier must be recorded
-    // on the cart line; otherwise it defaults to the first (or own warehouse).
-    const ext = suppliers.filter(name => name !== 'انبار خودمان');
-    const chosen = supplierId && ext.includes(supplierId) ? supplierId : (ext[0] || 'انبار خودمان');
+    const chosen = 'انبار خودمان';
     const existingItem = AppState.cart.find(item => item.id === productId && (item.supplier || 'انبار خودمان') === chosen);
     if (existingItem) {
         existingItem.quantity = Math.min(999, existingItem.quantity + qty);
@@ -117,21 +113,14 @@ function renderCart() {
                     </div>
                     <div class="divide-y divide-gray-100">
                         ${cartItems.map(item => {
-                            const src = productSupplierNames(item) || [];
-                            const ext = src.filter(name => name !== 'انبار خودمان');
-                            const supplierSelect = ext.length > 0 ? `
-                                <select onchange="setCartSupplier('${item.id}', this.value)" class="compact-input mt-1 text-xs" aria-label="تامین‌کننده">
-                                    ${src.map(name => `<option value="${escapeHTML(name)}" ${(item.supplier || 'انبار خودمان') === name ? 'selected' : ''}>${escapeHTML(name)}</option>`).join('')}
-                                </select>` : '';
                             return `
                             <div class="p-6 flex items-center gap-6 cart-line" data-supplier="${escapeHTML(item.supplier || 'انبار خودمان')}">
                                 <div class="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
                                     ${hasProductImage(item) ? `<img src="${item.image}" alt="" class="w-full h-full object-contain">` : `<i class="fas fa-${productTypeIcon(item.type)} text-2xl text-gray-300"></i>`}
                                 </div>
                                 <div class="flex-1">
-                                    <h4 class="font-bold text-gray-800">${item.brand} ${item.code}</h4>
+                                    <h4 class="font-bold text-gray-800" dir="ltr">${item.brand} ${item.code}</h4>
                                     <p class="text-sm text-gray-500" dir="ltr">${productSizeLabel(item)}</p>
-                                    <div class="text-xs text-gray-500 mt-1">تامین‌کننده: <b class="text-gray-700">${escapeHTML(item.supplier || 'انبار خودمان')}</b>${supplierSelect}</div>
                                 </div>
                                 <div class="flex items-center gap-3 cart-line-controls">
                                     <button onclick="updateCartLine('${item.id}', -1, this)" aria-label="${AppState.language === 'fa' ? 'کم کردن تعداد' : 'Decrease quantity'}" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition">

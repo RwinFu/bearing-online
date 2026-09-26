@@ -82,18 +82,14 @@ function showProductDetail(productId) {
                 <div class="p-8">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-600">${product.brand}</span>
-                        <span class="px-3 py-1 text-sm font-medium rounded-full bg-gray-100 text-gray-600">${faOrigin(product.origin)}</span>
                     </div>
 
-                    <h1 class="text-3xl font-bold text-gray-800 mb-2">${product.code}</h1>
-                    <p class="text-gray-500 mb-6">${faSubtype(product.subtype)} ${faType(product.type)}</p>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2" dir="ltr">${product.code}</h1>
+                    <p class="text-gray-600 mb-6 text-base">${faSubtype(product.subtype)} · ${faType(product.type)}</p>
                     <div class="mb-5">${getStockBadge(product)}</div>
-                    ${productSupplierNames(product) ? `<div class="mb-5 text-sm text-gray-500">منابع تامین: <b class="text-gray-700">${productSupplierNames(product).map(escapeHTML).join('، ')}</b></div>` : ''}
 
-                    <div class="grid grid-cols-2 gap-3 mb-6 text-sm">
-                        <div class="bg-blue-50 rounded-xl p-3"><div class="text-gray-500">${getIdentifierLabel('reference')}</div><div class="font-bold text-gray-800">${getProductIdentifiers(product).reference}</div></div>
-                        <div class="bg-blue-50 rounded-xl p-3"><div class="text-gray-500">${getIdentifierLabel('article')}</div><div class="font-bold text-gray-800">${getProductIdentifiers(product).article}</div></div>
-                        <div class="bg-gray-50 rounded-xl p-3 col-span-2"><div class="text-gray-500">${getIdentifierLabel('mpn')}</div><div class="font-bold text-gray-800">${getProductIdentifiers(product).mpn}</div></div>
+                    <div class="grid grid-cols-1 gap-3 mb-6 text-sm">
+                        <div class="bg-blue-50 rounded-xl p-4"><div class="text-gray-500 text-xs mb-1">${getIdentifierLabel('reference')}</div><div class="font-bold text-gray-800 text-lg" dir="ltr">${getProductIdentifiers(product).reference}</div></div>
                     </div>
 
                     <div class="bg-gray-50 rounded-xl p-6 mb-6">
@@ -160,7 +156,6 @@ function showProductDetail(productId) {
                         <table class="w-full text-sm">
                             <tr><td class="py-1 text-gray-600" data-en="Seal Type" data-fa="نوع آب‌بند">Seal Type</td><td class="py-1 font-medium text-right">${product.seal}</td></tr>
                             <tr><td class="py-1 text-gray-600" data-en="Clearance" data-fa="لقی">Clearance</td><td class="py-1 font-medium text-right">${product.clearance}</td></tr>
-                            <tr><td class="py-1 text-gray-600" data-en="Origin" data-fa="کشور سازنده">Origin</td><td class="py-1 font-medium text-right">${faOrigin(product.origin)}</td></tr>
                         </table>
                     </div>
                     <div class="bg-blue-50/60 rounded-xl p-4">
@@ -181,10 +176,10 @@ function showProductDetail(productId) {
                     ${equivalents.map(eq => `
                         <div class="border-2 border-gray-100 rounded-xl p-4 hover:border-blue-500 transition cursor-pointer" onclick="showProductDetail('${eq.id}')">
                             <div class="flex items-center justify-between mb-2">
-                                <span class="font-bold text-gray-800">${eq.brand} ${eq.code}</span>
-                                <span class="text-sm text-gray-500">${eq.origin}</span>
+                                <span class="font-bold text-gray-800" dir="ltr">${eq.brand} ${eq.code}</span>
                             </div>
-                            <div class="text-blue-600 font-medium">${formatPrice(eq.priceUSD)} تومان</div>
+                            <div class="text-sm text-gray-500 mb-1">${faSubtype(eq.subtype)} · ${faType(eq.type)}</div>
+                            <div class="text-blue-600 font-medium">${eq.sell_mode === 'instant' ? formatPrice(eq.priceUSD) + ' تومان' : (AppState.language === 'fa' ? 'استعلام' : 'RFQ')}</div>
                         </div>
                     `).join('')}
                 </div>
