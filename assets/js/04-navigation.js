@@ -7,8 +7,8 @@ function showPage(pageId) {
     closeAutocomplete();
     closeMobileMenu();
     clearTimeout(pageTransitionTimer);
-    if (!AppState.routing && ['home','search','cart','compare','wishlist','brands','services','about','contact','checkout','account'].includes(pageId)) {
-        const simple = { home:'#/home', search:'#/search', cart:'#/cart', compare:'#/compare', wishlist:'#/wishlist', brands:'#/brands', services:'#/services', about:'#/about', contact:'#/contact', checkout:'#/checkout', account:'#/account' };
+    if (!AppState.routing && ['home','search','cart','compare','wishlist','brands','services','about','contact','shipping','checkout','account'].includes(pageId)) {
+        const simple = { home:'#/home', search:'#/search', cart:'#/cart', compare:'#/compare', wishlist:'#/wishlist', brands:'#/brands', services:'#/services', about:'#/about', contact:'#/contact', shipping:'#/shipping', checkout:'#/checkout', account:'#/account' };
         if (pageId === 'search') simple.search = getSearchRoute();
         if (pageId === 'account') {
             // keep current account tab in hash if already on account
@@ -52,7 +52,7 @@ function showPage(pageId) {
 
 function updateHashRoute(page, payload = '') {
     const routes = {
-        home: '#/home', search: '#/search', cart: '#/cart', compare: '#/compare', wishlist: '#/wishlist', brands: '#/brands', services: '#/services', about: '#/about', contact: '#/contact', checkout: '#/checkout', account: '#/account'
+        home: '#/home', search: '#/search', cart: '#/cart', compare: '#/compare', wishlist: '#/wishlist', brands: '#/brands', services: '#/services', about: '#/about', contact: '#/contact', shipping: '#/shipping', checkout: '#/checkout', account: '#/account'
     };
     let hash = routes[page] || '#/home';
     if (page === 'search') {
@@ -81,6 +81,7 @@ function routeFromHash() {
         else if (route === 'brands') showPage('brands');
         else if (route === 'services') showPage('services');
         else if (route === 'about') showPage('about');
+        else if (route === 'shipping') showPage('shipping');
         else if (route === 'contact') showPage('contact');
         else if (route.startsWith('checkout/success/')) {
             const orderNo = decodeURIComponent(route.split('/')[2] || '');
