@@ -164,6 +164,30 @@ async function waitFor(fn, ms = 2000) {
         assert(marks.every(mark => mark.querySelector('.vector-wordmark-fallback')), 'wordmark fallback missing');
         return marks.length + ' progressive wordmarks';
     });
+    check('Text stays native without canvas or 3D animation engines', () => {
+        assert(!$('#page-vector-canvas'), 'full-page text canvas still present');
+        assert(!$('.vector-hero-title canvas, .vector-wordmark canvas'), 'wordmark canvas still present');
+        assert(typeof window.initVectorWordmarks === 'undefined', 'wordmark loop still shipped');
+        assert(typeof window.initPageVectorLayer === 'undefined', 'page text loop still shipped');
+        assert(typeof window.initHero3D === 'undefined', 'hero tilt engine still shipped');
+        const state = G('AppState');
+        const original = state.language;
+        try {
+            for (const lang of ['en', 'fa']) {
+                state.language = lang;
+                window.applyLanguage();
+                const title = $('[data-vector-title] h2');
+                assert(title.textContent === title.getAttribute('data-' + lang), 'title language mismatch');
+                $$('.vector-wordmark-fallback').forEach(mark => {
+                    assert(mark.textContent === mark.getAttribute('data-' + lang), 'brand language mismatch');
+                });
+            }
+        } finally {
+            state.language = original;
+            window.applyLanguage();
+        }
+        return 'native text and both languages verified';
+    });
     check('Footer year is dynamic (fix #10)', () => {
         assert(txt('#footer-year') === String(new Date().getFullYear()), 'footer year: ' + txt('#footer-year'));
         return txt('#footer-year');

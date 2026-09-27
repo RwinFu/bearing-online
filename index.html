@@ -147,7 +147,7 @@
                             <use href="#boLogoLockup"></use>
                         </svg>
                         <div class="vector-wordmark" data-vector-wordmark data-text-fa="برینگ آنلاین" data-text-en="BEARING ONLINE">
-                            <span class="vector-wordmark-fallback">برینگ آنلاین</span>
+                            <span class="vector-wordmark-fallback" data-fa="برینگ آنلاین" data-en="BEARING ONLINE">برینگ آنلاین</span>
                         </div>
                     </div>
                     <h1 class="sr-only" data-en="Bearing Online" data-fa="برینگ آنلاین">برینگ آنلاین</h1>
@@ -219,8 +219,6 @@
 
         <!-- HOME PAGE -->
         <section id="page-home" class="page-section">
-            <!-- Full-page vector motion layer: the hero wordmark effect, extended page-wide -->
-            <canvas id="page-vector-canvas" aria-hidden="true" focusable="false"></canvas>
             <!-- Hero Section -->
             <div class="hero-bright py-20 md:py-32 relative overflow-hidden">
                 <!-- Floating decorative gears -->
@@ -233,16 +231,16 @@
                         <div class="orb w-72 h-72 bottom-0 right-1/4" style="background:#e8a81d;"></div>
                         <div class="hero-kicker mb-6">
                             <span class="hero-kicker-dot"></span>
-                            <span data-vector-page data-en="Engineering sourcing desk is active" data-fa="میز تامین و مشاوره مهندسی فعال است">میز تامین و مشاوره مهندسی فعال است</span>
+                            <span data-en="Engineering sourcing desk is active" data-fa="میز تامین و مشاوره مهندسی فعال است">میز تامین و مشاوره مهندسی فعال است</span>
                         </div>
                         <div class="vector-hero-title mb-5" data-vector-title>
                             <h2 class="text-4xl md:text-6xl font-extrabold hero-title-clear" data-en="Find your industrial bearing fast" data-fa="بلبرینگ صنعتی خود را سریع پیدا کنید">بلبرینگ صنعتی خود را سریع پیدا کنید</h2>
                         </div>
                         <p class="text-lg md:text-xl max-w-3xl mx-auto hero-subtitle-clear" data-en="Search by part code, brand, name or dimensions. Can’t find it? Send a sourcing request to our engineering team." data-fa="با کد قطعه، برند، نام یا ابعاد جستجو کنید. قطعه را پیدا نکردید؟ درخواست تامین را برای تیم مهندسی ما بفرستید.">با کد قطعه، برند، نام یا ابعاد جستجو کنید. قطعه را پیدا نکردید؟ درخواست تامین را برای تیم مهندسی ما بفرستید.</p>
                         <div class="hero-proof-row">
-                            <span class="hero-proof-chip" data-vector-page data-en="Bearings, housings, bushings" data-fa="برینگ، یاتاقان و بوش">برینگ، یاتاقان و بوش</span>
-                            <span class="hero-proof-chip" data-vector-page data-en="Instant checkout for stocked items" data-fa="پرداخت آنلاین برای کالای موجود">پرداخت آنلاین برای کالای موجود</span>
-                            <span class="hero-proof-chip" data-vector-page data-en="RFQ for rare parts" data-fa="استعلام سریع برای قطعات خاص">استعلام سریع برای قطعات خاص</span>
+                            <span class="hero-proof-chip" data-en="Bearings, housings, bushings" data-fa="برینگ، یاتاقان و بوش">برینگ، یاتاقان و بوش</span>
+                            <span class="hero-proof-chip" data-en="Instant checkout for stocked items" data-fa="پرداخت آنلاین برای کالای موجود">پرداخت آنلاین برای کالای موجود</span>
+                            <span class="hero-proof-chip" data-en="RFQ for rare parts" data-fa="استعلام سریع برای قطعات خاص">استعلام سریع برای قطعات خاص</span>
                         </div>
                     </div>
 
@@ -259,8 +257,8 @@
                             <!-- Part Number Search -->
                             <div id="search-part" class="search-panel">
                                 <div class="search-panel-title">
-                                    <strong data-vector-page data-en="Start with anything you have" data-fa="هر اطلاعاتی از قطعه دارید وارد کنید">هر اطلاعاتی از قطعه دارید وارد کنید</strong>
-                                    <span data-vector-page data-en="Code, brand, name, size" data-fa="کد، برند، نام، ابعاد">کد، برند، نام، ابعاد</span>
+                                    <strong data-en="Start with anything you have" data-fa="هر اطلاعاتی از قطعه دارید وارد کنید">هر اطلاعاتی از قطعه دارید وارد کنید</strong>
+                                    <span data-en="Code, brand, name, size" data-fa="کد، برند، نام، ابعاد">کد، برند، نام، ابعاد</span>
                                 </div>
                                 <div class="relative search-entry">
                                     <input type="search" id="search-input" dir="auto" maxlength="250" autocomplete="off" role="combobox" data-aria-en="Search by part code, name or size" data-aria-fa="جستجوی کد، نام یا ابعاد قطعه" aria-label="جستجوی کد، نام یا ابعاد قطعه" aria-autocomplete="list" aria-expanded="false" aria-controls="autocomplete-dropdown"
@@ -423,7 +421,7 @@
 
                             <div class="mt-6 pt-5 border-t border-gray-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                                 <div>
-                                    <h4 class="font-bold text-gray-800" data-vector-page data-en="No time to search?" data-fa="وقت جستجو ندارید؟">No time to search?</h4>
+                                    <h4 class="font-bold text-gray-800" data-en="No time to search?" data-fa="وقت جستجو ندارید؟">No time to search?</h4>
                                     <p class="text-sm text-gray-500" data-en="Send the code or photo. Every missing part becomes a fast sourcing lead." data-fa="کد یا عکس قطعه را بفرستید. هر قطعه ناموجود به درخواست تامین سریع تبدیل می‌شود.">Send the code or photo. Every missing part becomes a fast sourcing lead.</p>
                                 </div>
                                 <button onclick="openLeadModal('quick-order')" class="btn-accent magnetic text-white px-5 py-3 rounded-xl font-bold whitespace-nowrap" type="button">
@@ -438,31 +436,31 @@
                     <div class="hero-stats vector-engineering-panel mt-16 max-w-5xl mx-auto" data-engineering-panel>
                         <div class="stats-panel-heading">
                             <span class="stats-panel-live"><i></i><span data-en="LIVE SUPPLY NETWORK" data-fa="شبکه تأمین فعال">شبکه تأمین فعال</span></span>
-                            <span data-vector-page data-en="Verified capability at a glance" data-fa="توان تأمین برینگ آنلاین در یک نگاه">توان تأمین برینگ آنلاین در یک نگاه</span>
+                            <span data-en="Verified capability at a glance" data-fa="توان تأمین برینگ آنلاین در یک نگاه">توان تأمین برینگ آنلاین در یک نگاه</span>
                         </div>
                         <div class="stats-vector-grid">
                             <div class="stat-vector-card animate-slide-up" style="animation-delay: 0.2s">
                                 <span class="stat-index">01</span><i class="fas fa-database stat-vector-icon"></i>
                                 <div id="indexed-product-counter" dir="ltr" class="stat-num counter" data-count="0" data-suffix="">0</div>
-                                <div class="stat-label" data-vector-page data-en="Registered products" data-fa="محصول ثبت‌شده">محصول ثبت‌شده</div>
+                                <div class="stat-label" data-en="Registered products" data-fa="محصول ثبت‌شده">محصول ثبت‌شده</div>
                                 <div class="stat-sub" data-en="20,000+ sourceable part numbers" data-fa="بیش از ۲۰٬۰۰۰ کد قابل تأمین">بیش از ۲۰٬۰۰۰ کد قابل تأمین</div>
                             </div>
                             <div class="stat-vector-card animate-slide-up" style="animation-delay: 0.3s">
                                 <span class="stat-index">02</span><i class="fas fa-certificate stat-vector-icon"></i>
                                 <div dir="ltr" class="stat-num counter" data-count="25" data-suffix="+">0</div>
-                                <div class="stat-label" data-vector-page data-en="Sourceable brands" data-fa="برند قابل تأمین">برند قابل تأمین</div>
+                                <div class="stat-label" data-en="Sourceable brands" data-fa="برند قابل تأمین">برند قابل تأمین</div>
                                 <div class="stat-sub" data-en="Global and specialist makers" data-fa="برندهای جهانی و تخصصی">برندهای جهانی و تخصصی</div>
                             </div>
                             <div class="stat-vector-card animate-slide-up" style="animation-delay: 0.4s">
                                 <span class="stat-index">03</span><i class="fas fa-compass-drafting stat-vector-icon"></i>
                                 <div dir="ltr" class="stat-num counter" data-count="17" data-suffix="+">0</div>
-                                <div class="stat-label" data-vector-page data-en="Years of experience" data-fa="سال تجربه تخصصی">سال تجربه تخصصی</div>
+                                <div class="stat-label" data-en="Years of experience" data-fa="سال تجربه تخصصی">سال تجربه تخصصی</div>
                                 <div class="stat-sub" data-en="Serving industry since 2009" data-fa="همراه صنعت از سال ۱۳۸۸">همراه صنعت از سال ۱۳۸۸</div>
                             </div>
                             <div class="stat-vector-card animate-slide-up" style="animation-delay: 0.5s">
                                 <span class="stat-index">04</span><i class="fas fa-industry stat-vector-icon"></i>
                                 <div dir="ltr" class="stat-num counter" data-count="5000" data-suffix="+">0</div>
-                                <div class="stat-label" data-vector-page data-en="Industrial customers" data-fa="مشتری صنعتی">مشتری صنعتی</div>
+                                <div class="stat-label" data-en="Industrial customers" data-fa="مشتری صنعتی">مشتری صنعتی</div>
                                 <div class="stat-sub" data-en="Support before and after purchase" data-fa="پشتیبانی پیش و پس از خرید">پشتیبانی پیش و پس از خرید</div>
                             </div>
                         </div>
@@ -474,7 +472,7 @@
             <div class="brand-signal-strip py-8 overflow-hidden">
                 <div class="brand-signal-heading">
                     <span class="signal-pulse"></span>
-                    <span data-vector-page data-en="Brands available through our global supply network" data-fa="برندهای قابل تأمین از شبکه جهانی">برندهای قابل تأمین از شبکه جهانی</span>
+                    <span data-en="Brands available through our global supply network" data-fa="برندهای قابل تأمین از شبکه جهانی">برندهای قابل تأمین از شبکه جهانی</span>
                 </div>
                 <div class="marquee" role="group" aria-label="برندهای قابل تأمین">
                     <div class="marquee-track brand-signal-track items-center">
@@ -487,15 +485,15 @@
             <!-- Featured Categories -->
             <div class="py-20 bg-white">
                 <div class="max-w-7xl mx-auto px-4">
-                    <h3 class="text-3xl font-bold text-center text-gray-800 mb-4" data-vector-page data-en="Product Categories" data-fa="دسته‌بندی محصولات">دسته‌بندی محصولات</h3>
+                    <h3 class="text-3xl font-bold text-center text-gray-800 mb-4" data-en="Product Categories" data-fa="دسته‌بندی محصولات">دسته‌بندی محصولات</h3>
                     <div class="heading-line mx-auto mb-4"></div>
-                    <p class="text-center text-gray-500 mb-12 max-w-2xl mx-auto" data-vector-page data-en="Browse our comprehensive catalog of industrial mechanical parts" data-fa="مرور کاتالوگ جامع قطعات مکانیکی صنعتی ما">مرور کاتالوگ جامع قطعات مکانیکی صنعتی ما</p>
+                    <p class="text-center text-gray-500 mb-12 max-w-2xl mx-auto" data-en="Browse our comprehensive catalog of industrial mechanical parts" data-fa="مرور کاتالوگ جامع قطعات مکانیکی صنعتی ما">مرور کاتالوگ جامع قطعات مکانیکی صنعتی ما</p>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 stagger reveal">
                         <!-- Industrial Bearings -->
                         <a href="#/search?category=industrial-bearing" class="card-hover tilt-card bg-gray-50 rounded-2xl p-8 text-center cursor-pointer block no-underline">
                             <img src="assets/img/products/skf-6205.jpg" alt="SKF 6205" class="w-full h-36 object-cover rounded-xl shadow-lg mb-6" loading="lazy">
-                            <h4 data-vector-page class="text-xl font-bold text-gray-800 mb-2" data-en="Industrial Bearings" data-fa="برینگ‌های صنعتی / Industrial Bearings">برینگ‌های صنعتی / Industrial Bearings</h4>
+                            <h4 class="text-xl font-bold text-gray-800 mb-2" data-en="Industrial Bearings" data-fa="برینگ‌های صنعتی / Industrial Bearings">برینگ‌های صنعتی / Industrial Bearings</h4>
                             <p class="category-card-sub text-gray-500 text-sm" data-en="Ball, roller, spherical" data-fa="بلبرینگ، رولبرینگ، بشکه‌ای / Ball, Roller, Spherical">بلبرینگ، رولبرینگ، بشکه‌ای / Ball, Roller, Spherical</p>
                             <span class="category-count-badge" data-category-count="industrial-bearing"></span>
                         </a>
@@ -505,7 +503,7 @@
                             <div class="w-full h-36 mx-auto mb-6 rounded-xl flex items-center justify-center shadow-lg" style="background:linear-gradient(135deg,#0a2358,#1348c8);">
                                 <i class="fas fa-car-side text-4xl text-white"></i>
                             </div>
-                            <h4 data-vector-page class="text-xl font-bold text-gray-800 mb-2" data-en="Automotive Bearings" data-fa="برینگ‌های خودرویی / Automotive Bearings">برینگ‌های خودرویی / Automotive Bearings</h4>
+                            <h4 class="text-xl font-bold text-gray-800 mb-2" data-en="Automotive Bearings" data-fa="برینگ‌های خودرویی / Automotive Bearings">برینگ‌های خودرویی / Automotive Bearings</h4>
                             <p class="category-card-sub text-gray-500 text-sm" data-en="Wheel, clutch, engine" data-fa="چرخ، کلاچ، موتور / Wheel, Clutch, Engine">چرخ، کلاچ، موتور / Wheel, Clutch, Engine</p>
                             <span class="category-count-badge" data-category-count="automotive-bearing"></span>
                         </a>
@@ -515,7 +513,7 @@
                             <div class="w-full h-36 mx-auto mb-6 rounded-xl flex items-center justify-center shadow-lg" style="background:linear-gradient(135deg,#1348c8,#e8a81d);">
                                 <i class="fas fa-ring text-4xl text-white"></i>
                             </div>
-                            <h4 data-vector-page class="text-xl font-bold text-gray-800 mb-2" data-en="Housings & Bushings" data-fa="یاتاقان و بوش / Housings & Bushings">یاتاقان و بوش / Housings & Bushings</h4>
+                            <h4 class="text-xl font-bold text-gray-800 mb-2" data-en="Housings & Bushings" data-fa="یاتاقان و بوش / Housings & Bushings">یاتاقان و بوش / Housings & Bushings</h4>
                             <p class="category-card-sub text-gray-500 text-sm" data-en="UCP, sleeves, bushings" data-fa="UCP، بوش، غلاف / UCP, Sleeves, Bushings">UCP، بوش، غلاف / UCP, Sleeves, Bushings</p>
                             <span class="category-count-badge" data-category-count="housing-bushing"></span>
                         </a>
@@ -523,7 +521,7 @@
                         <!-- Grease -->
                         <a href="#/search?category=grease" class="card-hover tilt-card bg-gray-50 rounded-2xl p-8 text-center cursor-pointer block no-underline">
                             <img src="assets/img/products/skf-lgmt3-04.jpg" alt="SKF LGMT 3" class="w-full h-36 object-cover object-center rounded-xl shadow-lg mb-6" loading="lazy">
-                            <h4 data-vector-page class="text-xl font-bold text-gray-800 mb-2" data-en="Grease" data-fa="گریس / Grease">گریس / Grease</h4>
+                            <h4 class="text-xl font-bold text-gray-800 mb-2" data-en="Grease" data-fa="گریس / Grease">گریس / Grease</h4>
                             <p class="category-card-sub text-gray-500 text-sm" data-en="Industrial bearing lubrication" data-fa="روانکاری برینگ صنعتی / Industrial Lubrication">روانکاری برینگ صنعتی / Industrial Lubrication</p>
                             <span class="category-count-badge" data-category-count="grease"></span>
                         </a>
@@ -533,7 +531,7 @@
                             <div class="w-full h-36 mx-auto mb-6 rounded-xl flex items-center justify-center shadow-lg" style="background:linear-gradient(135deg,#0f766e,#1348c8);">
                                 <i class="fas fa-arrows-left-right text-4xl text-white"></i>
                             </div>
-                            <h4 data-vector-page class="text-xl font-bold text-gray-800 mb-2" data-en="Linear Guides" data-fa="گایدهای خطی / Linear Guides">گایدهای خطی / Linear Guides</h4>
+                            <h4 class="text-xl font-bold text-gray-800 mb-2" data-en="Linear Guides" data-fa="گایدهای خطی / Linear Guides">گایدهای خطی / Linear Guides</h4>
                             <p class="category-card-sub text-gray-500 text-sm" data-en="HIWIN, THK, LM bushings" data-fa="هایوین، THK، بوش LM / HIWIN, THK, LM Bushings">هایوین، THK، بوش LM / HIWIN, THK, LM Bushings</p>
                             <span class="category-count-badge" data-category-count="linear"></span>
                         </a>
@@ -543,7 +541,7 @@
                             <div class="w-full h-36 mx-auto mb-6 rounded-xl flex items-center justify-center shadow-lg" style="background:linear-gradient(135deg,#b45309,#dc2626);">
                                 <i class="fas fa-link text-4xl text-white"></i>
                             </div>
-                            <h4 data-vector-page class="text-xl font-bold text-gray-800 mb-2" data-en="Couplings" data-fa="کوپلینگ‌ها / Couplings">کوپلینگ‌ها / Couplings</h4>
+                            <h4 class="text-xl font-bold text-gray-800 mb-2" data-en="Couplings" data-fa="کوپلینگ‌ها / Couplings">کوپلینگ‌ها / Couplings</h4>
                             <p class="category-card-sub text-gray-500 text-sm" data-en="Jaw, Oldham, bellows, freewheel" data-fa="فکی، اولدهام، آکاردئونی، فری‌ویل / Jaw, Oldham, Bellows, Freewheel">فکی، اولدهام، آکاردئونی، فری‌ویل / Jaw, Oldham, Bellows, Freewheel</p>
                             <span class="category-count-badge" data-category-count="coupling"></span>
                         </a>
@@ -553,7 +551,7 @@
                             <div class="w-full h-36 mx-auto mb-6 rounded-xl flex items-center justify-center shadow-lg" style="background:linear-gradient(135deg,#3730a3,#7c3aed);">
                                 <i class="fas fa-cogs text-4xl text-white"></i>
                             </div>
-                            <h4 data-vector-page class="text-xl font-bold text-gray-800 mb-2" data-en="Gearboxes" data-fa="گیربکس‌ها / Gearboxes">گیربکس‌ها / Gearboxes</h4>
+                            <h4 class="text-xl font-bold text-gray-800 mb-2" data-en="Gearboxes" data-fa="گیربکس‌ها / Gearboxes">گیربکس‌ها / Gearboxes</h4>
                             <p class="category-card-sub text-gray-500 text-sm" data-en="Planetary, worm, bevel" data-fa="خورشیدی، حلزونی، کرانویل / Planetary, Worm, Bevel">خورشیدی، حلزونی، کرانویل / Planetary, Worm, Bevel</p>
                             <span class="category-count-badge" data-category-count="gearbox"></span>
                         </a>
@@ -563,7 +561,7 @@
                             <div class="w-full h-36 mx-auto mb-6 rounded-xl flex items-center justify-center shadow-lg" style="background:linear-gradient(135deg,#1e3a8a,#3b82f6);">
                                 <i class="fas fa-circle text-4xl text-white"></i>
                             </div>
-                            <h4 data-vector-page class="text-xl font-bold text-gray-800 mb-2" data-en="Deep Groove Ball Bearings" data-fa="بلبرینگ‌های شیار عمیق / Deep Groove Ball">بلبرینگ‌های شیار عمیق / Deep Groove Ball</h4>
+                            <h4 class="text-xl font-bold text-gray-800 mb-2" data-en="Deep Groove Ball Bearings" data-fa="بلبرینگ‌های شیار عمیق / Deep Groove Ball">بلبرینگ‌های شیار عمیق / Deep Groove Ball</h4>
                             <p class="category-card-sub text-gray-500 text-sm" data-en="6000, 6200, 6300 series" data-fa="سری ۶۰۰۰، ۶۲۰۰، ۶۳۰۰ / 6000, 6200, 6300 Series">سری ۶۰۰۰، ۶۲۰۰، ۶۳۰۰ / 6000, 6200, 6300 Series</p>
                             <span class="category-count-badge" data-category-count="deep-groove"></span>
                         </a>
@@ -575,8 +573,8 @@
             <!-- Featured Brands -->
             <div class="py-20 bg-gray-50">
                 <div class="max-w-7xl mx-auto px-4">
-                    <h3 class="text-3xl font-bold text-center text-gray-800 mb-4" data-vector-page data-en="Trusted Brands" data-fa="برندهای معتبر">Trusted Brands</h3>
-                    <p class="text-center text-gray-500 mb-10" data-vector-page data-en="Drag the ring or use the arrows to browse — tap the front brand to see its products" data-fa="برای دیدن برندها رینگ را بکشید یا از فلش‌ها استفاده کنید — روی برند جلو بزنید تا محصولاتش را ببینید">برای دیدن برندها رینگ را بکشید یا از فلش‌ها استفاده کنید — روی برند جلو بزنید تا محصولاتش را ببینید</p>
+                    <h3 class="text-3xl font-bold text-center text-gray-800 mb-4" data-en="Trusted Brands" data-fa="برندهای معتبر">Trusted Brands</h3>
+                    <p class="text-center text-gray-500 mb-10" data-en="Drag the ring or use the arrows to browse — tap the front brand to see its products" data-fa="برای دیدن برندها رینگ را بکشید یا از فلش‌ها استفاده کنید — روی برند جلو بزنید تا محصولاتش را ببینید">برای دیدن برندها رینگ را بکشید یا از فلش‌ها استفاده کنید — روی برند جلو بزنید تا محصولاتش را ببینید</p>
 
                     <div class="grid gap-10 lg:grid-cols-2 items-center">
                         <!-- Rotating menu (left on desktop, top on mobile) -->
@@ -1534,7 +1532,7 @@
                                 <use href="#boLogoLockup"></use>
                             </svg>
                             <div class="vector-wordmark" data-vector-wordmark data-text-fa="برینگ آنلاین" data-text-en="BEARING ONLINE">
-                                <span class="vector-wordmark-fallback">برینگ آنلاین</span>
+                                <span class="vector-wordmark-fallback" data-fa="برینگ آنلاین" data-en="BEARING ONLINE">برینگ آنلاین</span>
                             </div>
                         </div>
                         <h3 class="sr-only" data-en="Bearing Online" data-fa="برینگ آنلاین">برینگ آنلاین</h3>

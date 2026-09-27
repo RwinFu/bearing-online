@@ -26,7 +26,7 @@ bearing-online/
 │   │   ├── 03-about.css            صفحه «درباره ما»
 │   │   ├── 04-motion.css           افکت‌های حرکتی (reveal، shimmer، cursor، marquee)
 │   │   ├── 05-brand-carousel.css   رینگ سه‌بعدی برندها + کامپوننت‌های عمومی
-│   │   ├── 06-hero-3d.css          حرکت سه‌بعدی متن هیرو
+│   │   ├── 06-hero-3d.css          متن ثابت هیرو و چیدمان برند
 │   │   └── 07-mobile.css           ریسپانسیو موبایل
 │   ├── js/                     ← اسکریپت‌ها به ترتیب لود (گلوبال مشترک، بدون ماژول)
 │   │   ├── 01-state-data.js        AppState، ProductDatabase، BrandInfo، hydrateProductDatabase

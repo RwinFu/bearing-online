@@ -1,77 +1,15 @@
-/* ===== 06-hero-3d.css — حرکت سه‌بعدی متن هیرو ===== */
-/* ===== HERO 3D MOTION (homepage copy) ===== */
-#page-home .hero-bright .text-center { perspective: 1000px; }
-.hero-3d {
-    transform-style: preserve-3d;
-    will-change: transform;
-    animation: heroFloat3d 7s ease-in-out infinite;
-    text-shadow:
-        0 1px 0 rgba(255,255,255,.9),
-        0 2px 0 rgba(11,37,96,.06),
-        0 14px 34px rgba(11,37,96,.16);
-}
-.hero-3d-sub {
-    transform-style: preserve-3d;
-    will-change: transform;
-    animation: heroFloat3d 9s ease-in-out infinite reverse;
-}
-.hero-chip-3d {
-    transform-style: preserve-3d;
-    will-change: transform;
-    transition: transform .25s ease;
-}
-.hero-chip-3d:hover { transform: translateZ(26px) scale(1.06) !important; }
-@keyframes heroFloat3d {
-    0%, 100% { transform: rotateX(0deg) rotateY(0deg) translateZ(0); }
-    30% { transform: rotateX(5deg) rotateY(-6deg) translateZ(30px); }
-    60% { transform: rotateX(-4deg) rotateY(5deg) translateZ(16px); }
-}
-@media (prefers-reduced-motion: reduce) {
-    .hero-3d, .hero-3d-sub { animation: none; }
-}
-
-/* ===== INTERACTIVE VECTOR WORDMARK =====
-   Canvas enhancement inspired by Originkit's Vector Wordmark. The real text
-   remains in the DOM, so the heading and brand still work without JavaScript. */
+/* Static, selectable hero and brand text; no canvas replacement or 3D layers. */
 .vector-hero-title {
     position: relative;
     width: min(100%, 980px);
     min-height: 1.5em;
     margin-inline: auto;
     isolation: isolate;
-    cursor: crosshair;
 }
 .vector-hero-title h2 {
     margin: 0;
     line-height: 1.45;
-    transition: opacity .2s ease;
 }
-.vector-hero-title > canvas,
-.vector-wordmark > canvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
-    pointer-events: none;
-}
-.vector-hero-title.vector-ready h2 { opacity: 0; }
-.vector-hero-title::after {
-    content: "VECTOR / BEARING FINDER";
-    position: absolute;
-    inset-inline-end: 2px;
-    bottom: -8px;
-    color: rgba(19,72,200,.58);
-    font: 700 9px/1 Inter, sans-serif;
-    letter-spacing: .17em;
-    direction: ltr;
-    opacity: 0;
-    transition: opacity .25s ease;
-}
-.vector-hero-title.vector-ready::after { opacity: 1; }
-
-/* The new lockup keeps the bearing symbol and turns the name into a live,
-   technical wordmark. */
 .vector-brand {
     width: 226px;
     height: 62px;
@@ -92,7 +30,6 @@
     min-width: 0;
     height: 52px;
     direction: rtl;
-    cursor: crosshair;
 }
 .vector-wordmark-fallback {
     position: absolute;
@@ -106,7 +43,6 @@
     font-weight: 900;
     white-space: nowrap;
 }
-.vector-wordmark.vector-ready .vector-wordmark-fallback { opacity: 0; }
 footer .vector-brand { width: 190px; height: 58px; }
 footer .vector-brand-mark { width: 52px; height: 51px; flex-basis: 52px; }
 footer .vector-wordmark { height: 48px; }
@@ -124,13 +60,7 @@ footer .vector-wordmark-fallback { font-size: 18px; }
     .vector-wordmark { height: 41px; }
     .vector-wordmark-fallback { font-size: 16px; }
     .vector-hero-title { min-height: 5.6rem; }
-    .vector-hero-title::after { bottom: -3px; font-size: 7px; }
 }
-@media (prefers-reduced-motion: reduce) {
-    .vector-hero-title { cursor: default; }
-    .vector-hero-title::after { display: none; }
-}
-
 /* Engineering dashboard below the search: same vector language as the title. */
 .vector-engineering-panel {
     --vx: 50%;
@@ -282,27 +212,9 @@ html[dir="ltr"] .stat-vector-card:last-child { border-inline-end: 0; }
     .vector-engineering-panel::before, .stats-panel-live i, .signal-pulse { animation: none; }
 }
 
-/* ===== FULL-PAGE VECTOR MOTION (first page) =====
-   Extends the hero wordmark motion to every [data-vector-page] text block.
-   A viewport-sized canvas pinned to the top of the page re-draws each block
-   in the same blueprint language: soft body, gold dotted contour, a radial
-   glow that follows the pointer (or an ambient sweep when idle) and drifting
-   vector handles on the active block. The DOM text stays in the tree (works
-   without JS); it is only faded out while the layer is live. */
-#page-vector-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 30;
-    pointer-events: none;
-    display: block;
-}
-/* Only hide the DOM copy where the canvas layer actually runs (desktop pointer). */
-@media (hover: hover) and (pointer: fine) and (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
-    #page-home.vector-page-live [data-vector-page] { color: transparent !important; }
-}
-@media (prefers-reduced-motion: reduce), (hover: none), (pointer: coarse), (max-width: 1023px) {
-    #page-vector-canvas { display: none; }
+
+/* Fit the longer English name inside the same responsive brand lockup. */
+html[lang="en"] .vector-wordmark-fallback { font-size: 12px; letter-spacing: -.02em; }
+@media (max-width: 639px) {
+    html[lang="en"] .vector-wordmark-fallback { font-size: 10px; }
 }

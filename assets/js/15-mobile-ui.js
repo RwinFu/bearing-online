@@ -1,4 +1,4 @@
-/* ===== 15-mobile-ui.js — منوی موبایل، فیلترها و حرکت سه‌بعدی هیرو ===== */
+/* ===== 15-mobile-ui.js — منوی موبایل و فیلترها ===== */
 // =============================================
 // MOBILE NAV & FILTERS
 // =============================================
@@ -44,45 +44,4 @@ function closeMobileFiltersAndScroll() {
         const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
     }
-}
-
-// Hero 3D motion: mouse-driven depth tilt + layered float on homepage copy
-function initHero3D() {
-    const hero = document.querySelector('#page-home .hero-bright');
-    if (!hero || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const title = hero.querySelector('h2');
-    const subtitle = hero.querySelector('.hero-subtitle-clear');
-    const chips = [...hero.querySelectorAll('.hero-proof-chip')];
-    const kicker = hero.querySelector('.hero-kicker');
-    if (title && !title.classList.contains('hero-3d')) title.classList.add('hero-3d');
-    if (subtitle && !subtitle.classList.contains('hero-3d-sub')) subtitle.classList.add('hero-3d-sub');
-    chips.forEach(c => { if (!c.classList.contains('hero-chip-3d')) c.classList.add('hero-chip-3d'); });
-    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-    let tx = 0, ty = 0, cx = 0, cy = 0, raf = null;
-    function loop() {
-        cx += (tx - cx) * 0.08;
-        cy += (ty - cy) * 0.08;
-        if (title) title.style.transform = `rotateY(${cx * 10}deg) rotateX(${-cy * 8}deg) translateZ(26px)`;
-        if (subtitle) subtitle.style.transform = `rotateY(${cx * 6}deg) rotateX(${-cy * 5}deg) translateZ(14px)`;
-        if (kicker) kicker.style.transform = `rotateY(${cx * 8}deg) rotateX(${-cy * 6}deg) translateZ(20px)`;
-        chips.forEach((c, i) => {
-            const depth = 18 + i * 8;
-            c.style.transform = `rotateY(${cx * 7}deg) rotateX(${-cy * 6}deg) translateZ(${depth}px)`;
-        });
-        if (Math.abs(tx - cx) > 0.001 || Math.abs(ty - cy) > 0.001) raf = requestAnimationFrame(loop);
-        else raf = null;
-    }
-    function kick() { if (!raf) raf = requestAnimationFrame(loop); }
-    hero.addEventListener('mousemove', (e) => {
-        const r = hero.getBoundingClientRect();
-        tx = ((e.clientX - r.left) / r.width - 0.5) * 2;
-        ty = ((e.clientY - r.top) / r.height - 0.5) * 2;
-        kick();
-    });
-    hero.addEventListener('mouseleave', () => {
-        // Ease back to neutral through the running loop instead of snapping
-        // the transforms to '' (which flickered against the next frame).
-        tx = 0; ty = 0;
-        kick();
-    });
 }

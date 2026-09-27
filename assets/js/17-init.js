@@ -30,10 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initParallax();
     initSpotlight();
     initHeadingLine();
-    initVectorWordmarks();
-    initPageVectorLayer();
     initEngineeringPanels();
-    initHero3D();
     animateCounters();
 
     // Apply spotlight + shine to all cards
