@@ -1,11 +1,12 @@
 /* ===== 07-brand-carousel.js — رینگ سه‌بعدی برندها ===== */
 /* ===== Round 3D Brand Carousel engine (Originkit-style, vanilla JS) ===== */
 const BrandCarousel = {
-    rotY: 0, vel: 0, last: 0, raf: 0,
-    dragging: false, dragX: 0, moved: 0,
-    // Medium auto-rotate (~18°/s); forced to 0 for reduced motion (see init).
-    speed: 3, direction: 1, paused: false, target: null,
-    angle: 0, radius: 400, count: 0, built: false, onScreen: true
+    // Manual-only ring: it NEVER rotates on its own. It moves only when the
+    // user drags it, presses an arrow / dot / keyboard key, or clicks a side card,
+    // and it always comes to rest with exactly one brand centred in front.
+    rotY: 0, target: 0, vel: 0, raf: 0, tween: null,
+    dragging: false, pointerId: null, startX: 0, dragX: 0, lastMoveT: 0, moved: 0,
+    angle: 0, radius: 400, count: 0, built: false, width: 0
 };
 
 /* Official brand logos (exact user-provided artwork, text fallback if any fails) */
@@ -69,9 +70,9 @@ function renderHomeBrands() {
             ? `<img src="${BRAND_LOGOS[it.brand]}" alt="${it.brand}" loading="lazy" draggable="false" onerror="this.parentNode.innerHTML='<span class=rc-brand>${it.brand}</span>'">`
             : `<span class="rc-brand">${it.brand}</span>`;
         return `
-        <div class="rc-slot" data-brand="${it.brand}" data-i="${i}" style="transform: rotateY(${(i * BrandCarousel.angle).toFixed(2)}deg) translateZ(${BrandCarousel.radius.toFixed(1)}px)">
+        <div class="rc-slot" data-brand="${it.brand}" data-i="${i}" aria-hidden="true" style="transform: rotateY(${(i * BrandCarousel.angle).toFixed(2)}deg) translateZ(${BrandCarousel.radius.toFixed(1)}px)">
             <div class="rc-face">
-                    <div class="rc-logo"><a href="#" onclick="event.stopPropagation();filterByBrand('${it.brand}')">${logo}</a></div>
+                    <div class="rc-logo">${logo}</div>
                 <div class="rc-sub">${it.origin || 'Industrial'}</div>
                 <div class="rc-count">${it.count} ${AppState.language === 'fa' ? 'محصول' : 'items'}</div>
             </div>
@@ -84,16 +85,17 @@ function renderHomeBrands() {
     }).join('');
     const dots = document.getElementById('rcDots');
     if (dots) {
-        dots.innerHTML = items.map((it, i) => `<button class="rc-dot" data-i="${i}" type="button" aria-label="${it.brand}" title="${it.brand}"></button>`).join('');
+        dots.innerHTML = items.map((it, i) => `<button class="rc-dot" data-i="${i}" type="button" aria-label="${it.brand}" title="${it.brand}"><span></span></button>`).join('');
         dots.onclick = (e) => {
             const b = e.target && e.target.closest ? e.target.closest('.rc-dot') : null;
-            if (b) rotateToBrand(parseInt(b.dataset.i, 10));
+            if (b) { e.stopPropagation(); rotateToBrand(parseInt(b.dataset.i, 10)); }
         };
     }
     if (!BrandCarousel.built) {
         BrandCarousel.built = true;
         initBrandCarousel();
     }
+    brandCarouselApply();
     updateBrandCarouselCaption();
 }
 
@@ -156,22 +158,59 @@ function typeBrandStory(el, lines) {
     tick();
 }
 
-function updateBrandCarouselCaption() {
+/* Index of the brand that is (or is closest to being) centred in front. */
+function brandCarouselFrontIndex(rot) {
+    const n = BrandCarousel.count;
+    if (!n || !BrandCarousel.angle) return 0;
+    const idx = Math.round(-(rot === undefined ? BrandCarousel.rotY : rot) / BrandCarousel.angle);
+    return ((idx % n) + n) % n;
+}
+
+/* Nearest resting angle (one brand exactly in front). */
+function brandCarouselSnap(rot) {
+    return Math.round(rot / BrandCarousel.angle) * BrandCarousel.angle;
+}
+
+/* `settled` = the ring has come to rest. While it is still moving only the cheap
+   visual state (front highlight, dots) follows along; the side story panel is
+   re-typed once, when the ring stops, instead of restarting on every card that
+   passes by. */
+function updateBrandCarouselCaption(settled = true) {
     const ring = document.getElementById('brandRing');
-    const label = document.getElementById('rcActiveName');
     if (!ring || !BrandCarousel.count) return;
-    let best = 0, bestDist = 999;
-    for (let i = 0; i < BrandCarousel.count; i++) {
-        const rel = ((i * BrandCarousel.angle + BrandCarousel.rotY) % 360 + 360) % 360;
-        const dist = Math.min(rel, 360 - rel);
-        if (dist < bestDist) { bestDist = dist; best = i; }
-    }
+    const best = brandCarouselFrontIndex();
     const slot = ring.children[best];
     if (!slot) return;
     const brand = slot.dataset.brand || '';
+    const fa = AppState.language === 'fa';
+
+    [...ring.children].forEach((el, i) => {
+        const rel = ((i * BrandCarousel.angle + BrandCarousel.rotY) % 360 + 360) % 360;
+        const dist = Math.min(rel, 360 - rel);
+        el.classList.toggle('rc-front', i === best);
+        const front = el.firstElementChild;
+        if (front) front.style.filter = `brightness(${(1 - dist / 360 * 0.55).toFixed(3)})`;
+    });
+    const dots = document.getElementById('rcDots');
+    if (dots) [...dots.children].forEach((d, i) => {
+        d.classList.toggle('on', i === best);
+        if (i === best) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current');
+    });
+    const counter = document.getElementById('rcCounter');
+    if (counter) {
+        const num = n => (fa && typeof formatNumber === 'function') ? formatNumber(n) : String(n);
+        // LRM marks keep "3 / 9" in reading order even with Persian digits (bidi would flip it)
+        counter.textContent = `${num(best + 1)}\u200E / \u200E${num(BrandCarousel.count)}`;
+    }
+
+    if (!settled) return;
     const items = brandCarouselItems();
     const info = items.find(x => x.brand === brand);
-    if (label) label.innerHTML = `${brand}<small>${info && info.origin ? info.origin + ' • ' : ''}${info ? info.count : ''} ${AppState.language === 'fa' ? 'محصول — کلیک کنید' : 'products — click to shop'}</small>`;
+    const stage = document.getElementById('brandRoundStage');
+    if (stage) stage.setAttribute('aria-label', (fa ? 'برندهای معتبر — برند فعلی: ' : 'Trusted brands — current brand: ') + brand);
+    const label = document.getElementById('rcActiveName');
+    if (label) label.innerHTML = `${brand}<small>${info && info.origin ? info.origin + ' • ' : ''}${info ? info.count : ''} ${fa ? 'محصول — کلیک کنید' : 'products — click to shop'}</small>`;
+
     const prevBrand = updateBrandCarouselCaption._brand;
     updateBrandCarouselCaption._brand = brand;
     if (brand && brand !== prevBrand) {
@@ -182,27 +221,18 @@ function updateBrandCarouselCaption() {
         const cta = document.getElementById('brandTypoCta');
         const story = brandStory(brand);
         if (name) name.textContent = brand;
-        if (origin) origin.textContent = (info && info.origin ? info.origin + ' • ' : '') + (info ? info.count : '') + (AppState.language === 'fa' ? ' محصول در فروشگاه' : ' products in store');
+        if (origin) origin.textContent = (info && info.origin ? info.origin + ' • ' : '') + (info ? info.count : '') + (fa ? ' محصول در فروشگاه' : ' products in store');
         if (lines) typeBrandStory(lines, story);
-        if (count) count.textContent = (info ? info.count : '') + (AppState.language === 'fa' ? ' محصول' : ' items');
+        if (count) count.textContent = (info ? info.count : '') + (fa ? ' محصول' : ' items');
         if (cta) cta.onclick = () => filterByBrand(brand);
         const catalog = document.getElementById('brandTypoCatalog');
         if (catalog) {
             const url = (typeof BRAND_CATALOGS !== 'undefined' && BRAND_CATALOGS[brand]) || '';
             catalog.href = url || '#';
             catalog.style.display = url ? '' : 'none';
-            catalog.setAttribute('aria-label', brand + (AppState.language === 'fa' ? ' — کاتالوگ شرکت' : ' — company catalog'));
+            catalog.setAttribute('aria-label', brand + (fa ? ' — کاتالوگ شرکت' : ' — company catalog'));
         }
     }
-    [...ring.children].forEach((el, i) => {
-        const rel = ((i * BrandCarousel.angle + BrandCarousel.rotY) % 360 + 360) % 360;
-        const dist = Math.min(rel, 360 - rel);
-        el.classList.toggle('rc-front', i === best);
-        const front = el.firstElementChild;
-        if (front) front.style.filter = `brightness(${(1 - dist / 360 * 0.55).toFixed(3)})`;
-    });
-    const dots = document.getElementById('rcDots');
-    if (dots) [...dots.children].forEach((d, i) => d.classList.toggle('on', i === best));
 }
 
 function brandCarouselApply() {
@@ -211,115 +241,190 @@ function brandCarouselApply() {
     ring.style.transform = `translateZ(${-BrandCarousel.radius.toFixed(1)}px) rotateY(${BrandCarousel.rotY.toFixed(2)}deg)`;
 }
 
+function brandCarouselReducedMotion() {
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+}
+
+/* Time-based tween from the current angle to `target` (ease-out), then the loop
+   stops completely. There is no idle/auto-rotate branch: with no user input
+   nothing ever moves. */
 function brandCarouselLoop(now) {
     BrandCarousel.raf = 0;
-    // Park the loop while the ring is offscreen or the tab is hidden; the
-    // IntersectionObserver in initBrandCarousel wakes it back up.
-    if (!BrandCarousel.onScreen || document.hidden) return;
-    const dt = BrandCarousel.last ? (now - BrandCarousel.last) / 1000 : 0;
-    BrandCarousel.last = now;
-    const f = Math.min(dt, 0.1);
-    const before = BrandCarousel.rotY;
-    if (!BrandCarousel.dragging && !BrandCarousel.paused) {
-        const degPerSec = BrandCarousel.speed * 6 * BrandCarousel.direction;
-        if (BrandCarousel.target !== null && BrandCarousel.target !== undefined) {
-            const diff = BrandCarousel.target - BrandCarousel.rotY;
-            BrandCarousel.rotY += diff * Math.min(1, f * 5);
-            BrandCarousel.vel = 0;
-            if (Math.abs(diff) < 0.15) { BrandCarousel.rotY = BrandCarousel.target; BrandCarousel.target = null; }
-        } else if (Math.abs(BrandCarousel.vel) > 0.5) {
-            BrandCarousel.rotY += BrandCarousel.vel * f;
-            BrandCarousel.vel *= 0.94;
-        } else {
-            BrandCarousel.rotY += degPerSec * f;
-        }
+    if (BrandCarousel.dragging) return;
+    const tw = BrandCarousel.tween;
+    if (!tw || tw.to !== BrandCarousel.target) {
+        // new or changed destination: restart the tween from where the ring is now
+        const dist = Math.abs(BrandCarousel.target - BrandCarousel.rotY);
+        BrandCarousel.tween = { from: BrandCarousel.rotY, to: BrandCarousel.target, start: now, dur: Math.min(750, 320 + dist * 2.2) };
     }
-    // Skip the DOM write when nothing moved (static ring, paused tab, ...).
-    if (BrandCarousel.rotY !== before) {
+    const t = BrandCarousel.tween;
+    const k = Math.min(1, (now - t.start) / t.dur);
+    const ease = 1 - Math.pow(1 - k, 3);
+    BrandCarousel.rotY = t.from + (t.to - t.from) * ease;
+    brandCarouselApply();
+    if (k >= 1 || document.hidden) {
+        BrandCarousel.rotY = BrandCarousel.target;
+        BrandCarousel.tween = null;
         brandCarouselApply();
-        if (!window.__rcCaptionTick) window.__rcCaptionTick = 0;
-        if (now - window.__rcCaptionTick > 180) { window.__rcCaptionTick = now; updateBrandCarouselCaption(); }
+        updateBrandCarouselCaption(true);
+        return;
     }
-    // A settled, non-rotating ring parks its loop entirely (reduced motion,
-    // paused, fully dragged to rest); any interaction wakes it via
-    // wakeBrandCarousel(). Auto-rotate keeps a live ring ticking by design.
-    const live = BrandCarousel.dragging || Math.abs(BrandCarousel.vel) > 0.5 ||
-        (BrandCarousel.target !== null && BrandCarousel.target !== undefined) ||
-        (BrandCarousel.speed !== 0 && !BrandCarousel.paused);
-    if (live) BrandCarousel.raf = requestAnimationFrame(brandCarouselLoop);
+    updateBrandCarouselCaption(false);
+    BrandCarousel.raf = requestAnimationFrame(brandCarouselLoop);
 }
 
-function wakeBrandCarousel() {
-    if (!BrandCarousel.raf && BrandCarousel.onScreen && !document.hidden && BrandCarousel.built) {
-        BrandCarousel.last = 0;
-        BrandCarousel.raf = requestAnimationFrame(brandCarouselLoop);
+/* Move the ring to BrandCarousel.target (animated, or instantly for reduced motion). */
+function brandCarouselAnimate() {
+    if (!BrandCarousel.built) return;
+    if (brandCarouselReducedMotion() || document.hidden) {
+        cancelAnimationFrame(BrandCarousel.raf);
+        BrandCarousel.raf = 0;
+        BrandCarousel.tween = null;
+        BrandCarousel.rotY = BrandCarousel.target;
+        brandCarouselApply();
+        updateBrandCarouselCaption(true);
+        return;
     }
+    if (!BrandCarousel.raf) BrandCarousel.raf = requestAnimationFrame(brandCarouselLoop);
 }
+
+/* Kept for backwards compatibility with older callers. */
+function wakeBrandCarousel() { brandCarouselAnimate(); }
 
 function rotateToBrand(i) {
-    if (!BrandCarousel.count || !BrandCarousel.angle) return;
-    wakeBrandCarousel();
+    if (!BrandCarousel.count || !BrandCarousel.angle || isNaN(i)) return;
     const base = -i * BrandCarousel.angle;
-    const cur = BrandCarousel.rotY;
-    const turns = Math.round((cur - base) / 360);
+    const turns = Math.round((BrandCarousel.target - base) / 360);
     BrandCarousel.target = base + turns * 360;
-    BrandCarousel.vel = 0;
+    brandCarouselAnimate();
+}
+
+/* dir = +1 brings the card on the RIGHT to the front, -1 the card on the LEFT.
+   Steps from the pending target, so quick repeated clicks add up exactly. */
+function stepBrandCarousel(dir) {
+    if (!BrandCarousel.count || !BrandCarousel.angle) return;
+    BrandCarousel.target = brandCarouselSnap(BrandCarousel.target) - dir * BrandCarousel.angle;
+    brandCarouselAnimate();
 }
 
 function initBrandCarousel() {
     const stage = document.getElementById('brandRoundStage');
     const ring = document.getElementById('brandRing');
     if (!stage || !ring) return;
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) BrandCarousel.speed = 0;
     cancelAnimationFrame(BrandCarousel.raf);
-    BrandCarousel.last = 0;
+    BrandCarousel.raf = 0;
+    BrandCarousel.rotY = BrandCarousel.target = 0;
+    BrandCarousel.width = window.innerWidth;
     brandCarouselApply();
-    BrandCarousel.raf = requestAnimationFrame(brandCarouselLoop);
-    // Pause the loop while the home page / ring is offscreen.
-    if ('IntersectionObserver' in window && !BrandCarousel.ioBound) {
-        BrandCarousel.ioBound = true;
-        new IntersectionObserver(entries => {
-            BrandCarousel.onScreen = entries[0].isIntersecting;
-            if (BrandCarousel.onScreen) wakeBrandCarousel();
-        }, { rootMargin: '60px' }).observe(stage);
-        document.addEventListener('visibilitychange', () => { if (!document.hidden) wakeBrandCarousel(); });
-    }
-    stage.onpointerdown = (e) => {
-        wakeBrandCarousel();
-        BrandCarousel.dragging = true;
-        BrandCarousel.dragX = e.clientX;
+
+    const DRAG_THRESHOLD = 6;   // px before a press becomes a drag (so taps stay taps)
+    const DEG_PER_PX = 0.3;
+    let suppressClick = false;
+
+    const isControl = (el) => !!(el && el.closest && el.closest('.rc-nav, .rc-dots'));
+
+    stage.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        // Arrows / dots handle their own clicks; never capture the pointer for them
+        // (capturing used to retarget their click to the stage and swallow it).
+        if (isControl(e.target)) return;
+        suppressClick = false;
+        BrandCarousel.pointerId = e.pointerId;
+        BrandCarousel.startX = BrandCarousel.dragX = e.clientX;
+        BrandCarousel.lastMoveT = performance.now();
         BrandCarousel.moved = 0;
         BrandCarousel.vel = 0;
-        BrandCarousel.target = null;
-        try { stage.setPointerCapture && stage.setPointerCapture(e.pointerId); } catch (err) {}
-    };
-    stage.onpointermove = (e) => {
-        if (!BrandCarousel.dragging) return;
+    });
+
+    stage.addEventListener('pointermove', (e) => {
+        if (BrandCarousel.pointerId !== e.pointerId) return;
+        if (!BrandCarousel.dragging) {
+            if (Math.abs(e.clientX - BrandCarousel.startX) < DRAG_THRESHOLD) return;
+            BrandCarousel.dragging = true;
+            cancelAnimationFrame(BrandCarousel.raf);
+            BrandCarousel.raf = 0;
+            BrandCarousel.tween = null;
+            BrandCarousel.dragX = e.clientX;
+            stage.classList.add('is-dragging');
+            try { stage.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+        }
+        const now = performance.now();
         const dx = e.clientX - BrandCarousel.dragX;
         BrandCarousel.dragX = e.clientX;
         BrandCarousel.moved += Math.abs(dx);
-        const k = 0.28;
-        BrandCarousel.rotY += dx * k;
-        BrandCarousel.vel = Math.max(-650, Math.min(650, dx * k * 60));
-    };
-    const endDrag = () => { BrandCarousel.dragging = false; };
-    stage.onpointerup = endDrag;
-    stage.onpointercancel = endDrag;
-    stage.onclick = (e) => {
-        if (BrandCarousel.moved > 8) return;
-        const slot = e.target && e.target.closest ? e.target.closest('.rc-slot') : null;
-        if (slot && slot.dataset.brand && typeof filterByBrand === 'function') filterByBrand(slot.dataset.brand);
-    };
+        BrandCarousel.rotY += dx * DEG_PER_PX;
+        BrandCarousel.target = BrandCarousel.rotY;
+        const dts = Math.max((now - BrandCarousel.lastMoveT) / 1000, 0.001);
+        BrandCarousel.vel = BrandCarousel.vel * 0.6 + (dx * DEG_PER_PX / dts) * 0.4; // deg/s, smoothed
+        BrandCarousel.lastMoveT = now;
+        brandCarouselApply();
+        updateBrandCarouselCaption(false);
+    });
 
+    const endPointer = (e) => {
+        if (BrandCarousel.pointerId !== e.pointerId) return;
+        BrandCarousel.pointerId = null;
+        if (!BrandCarousel.dragging) return;
+        BrandCarousel.dragging = false;
+        suppressClick = true;
+        stage.classList.remove('is-dragging');
+        try { stage.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+        // A short flick carries on a little (max 2 brands); either way the ring
+        // always lands with one brand exactly centred.
+        const idle = performance.now() - BrandCarousel.lastMoveT > 90;
+        const fling = idle ? 0 : Math.max(-2, Math.min(2, BrandCarousel.vel * 0.12 / BrandCarousel.angle)) * BrandCarousel.angle;
+        BrandCarousel.target = brandCarouselSnap(BrandCarousel.rotY + fling);
+        BrandCarousel.vel = 0;
+        brandCarouselAnimate();
+    };
+    stage.addEventListener('pointerup', endPointer);
+    stage.addEventListener('pointercancel', endPointer);
+    // Only the stage's own capture counts: touch pointers are implicitly captured by the
+    // card under the finger, and that implicit capture is released (bubbling up here)
+    // the moment the stage takes over — it must not end the drag.
+    stage.addEventListener('lostpointercapture', (e) => { if (e.target === stage) endPointer(e); });
+
+    // Click on the front card → open its products. Click on any other card → bring it to the front.
+    stage.addEventListener('click', (e) => {
+        if (suppressClick) { suppressClick = false; return; }
+        if (isControl(e.target)) return;
+        const slot = e.target && e.target.closest ? e.target.closest('.rc-slot') : null;
+        if (!slot) return;
+        const i = parseInt(slot.dataset.i, 10);
+        if (i === brandCarouselFrontIndex(BrandCarousel.target)) {
+            if (slot.dataset.brand && typeof filterByBrand === 'function') filterByBrand(slot.dataset.brand);
+        } else {
+            rotateToBrand(i);
+        }
+    });
+
+    stage.addEventListener('keydown', (e) => {
+        if (e.target !== stage) return;
+        if (e.key === 'ArrowRight') { e.preventDefault(); stepBrandCarousel(1); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); stepBrandCarousel(-1); }
+        else if (e.key === 'Home') { e.preventDefault(); rotateToBrand(0); }
+        else if (e.key === 'End') { e.preventDefault(); rotateToBrand(BrandCarousel.count - 1); }
+        else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            const slot = ring.children[brandCarouselFrontIndex(BrandCarousel.target)];
+            if (slot && slot.dataset.brand && typeof filterByBrand === 'function') filterByBrand(slot.dataset.brand);
+        }
+    });
+
+    // Arrows are spatial (independent of RTL/LTR): → shows the card on the right, ← the one on the left.
     const prev = document.getElementById('rcPrev');
     const next = document.getElementById('rcNext');
-    if (prev) prev.onclick = (e) => { e.stopPropagation(); wakeBrandCarousel(); BrandCarousel.vel = -260; };
-    if (next) next.onclick = (e) => { e.stopPropagation(); wakeBrandCarousel(); BrandCarousel.vel = 260; };
-    /* fixed medium auto-rotate — no manual controls */
+    if (prev) prev.onclick = (e) => { e.stopPropagation(); stepBrandCarousel(-1); };
+    if (next) next.onclick = (e) => { e.stopPropagation(); stepBrandCarousel(1); };
 
+    // Rebuild only when the width really changes (mobile URL-bar show/hide only changes height).
     let rsz;
     window.addEventListener('resize', () => {
         clearTimeout(rsz);
-        rsz = setTimeout(() => { BrandCarousel.built = true; renderHomeBrands(); }, 250);
+        rsz = setTimeout(() => {
+            if (window.innerWidth === BrandCarousel.width) return;
+            BrandCarousel.width = window.innerWidth;
+            renderHomeBrands();
+        }, 200);
     });
 }
