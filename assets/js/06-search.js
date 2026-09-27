@@ -620,7 +620,7 @@ function renderActiveFilters() {
 
     const fa = AppState.language === 'fa';
     const chips = [];
-    if (AppState.categoryFilter) chips.push({ kind: 'category', value: '', label: getCategoryLabel(AppState.categoryFilter) });
+    if (AppState.categoryFilter) chips.push({ kind: 'category', value: '', label: getCategoryLabelText(AppState.categoryFilter) });
     if (AppState.dimensionSearch) chips.push({ kind: 'hero-dimension', value: '', label: getDimensionLabel(AppState.dimensionSearch) });
     document.querySelectorAll('.brand-filter:checked').forEach(input => chips.push({ kind: 'brand', value: input.value, label: input.value }));
     document.querySelectorAll('.type-filter:checked').forEach(input => chips.push({ kind: 'type', value: input.value, label: input.parentElement?.querySelector('span')?.textContent.trim() || input.value }));
@@ -750,7 +750,7 @@ function updateFilterCounts() {
 
 // Small "N products" badges on the category cards/tabs keep browsing honest.
 function updateCategoryCounts() {
-    const categories = ['industrial-bearing', 'automotive-bearing', 'housing-bushing', 'grease'];
+    const categories = ['industrial-bearing', 'automotive-bearing', 'housing-bushing', 'grease', 'linear', 'coupling', 'gearbox', 'deep-groove'];
     const counts = Object.fromEntries(categories.map(cat => [cat, ProductDatabase.filter(p => productMatchesCategory(p, cat)).length]));
     document.querySelectorAll('[data-category-count]').forEach(el => {
         const count = counts[el.dataset.categoryCount];
@@ -942,7 +942,7 @@ function renderSearchResults() {
             <div class="lead-card rounded-2xl p-4 sm:p-5 text-white animate-slide-up">
                 <div class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/10 text-white/70 text-xs mb-2 w-fit max-w-full">
                     <i class="fas fa-magnifying-glass-chart shrink-0"></i>
-                    <span class="truncate">${queryLabel}: ${escapeHTML(AppState.textQuery || (AppState.dimensionSearch ? getDimensionLabel(AppState.dimensionSearch) : '') || getCategoryLabel(AppState.categoryFilter) || AppState.lastSearch || '-')}</span>
+                    <span class="truncate">${queryLabel}: ${escapeHTML(AppState.textQuery || (AppState.dimensionSearch ? getDimensionLabel(AppState.dimensionSearch) : '') || getCategoryLabelText(AppState.categoryFilter) || AppState.lastSearch || '-')}</span>
                 </div>
                 <h3 class="text-lg sm:text-xl font-extrabold mb-1">${title}</h3>
                 <p class="text-white/70 text-xs sm:text-sm mb-3 max-w-2xl leading-5">${desc}</p>
@@ -1111,13 +1111,28 @@ function restoreSearchRoute(params) {
 }
 
 function getCategoryLabel(category) {
+    if (typeof categoryLabelFull === 'function') {
+        const full = categoryLabelFull(category);
+        if (full) return full;
+    }
     const labels = {
-        'industrial-bearing': ['برینگ صنعتی', 'Industrial bearings'],
-        'automotive-bearing': ['برینگ خودرویی', 'Automotive bearings'],
-        'housing-bushing': ['یاتاقان و بوش', 'Housings & bushings'],
-        grease: ['گریس', 'Grease']
+        'industrial-bearing': ['برینگ‌های صنعتی', 'Industrial Bearings'],
+        'automotive-bearing': ['برینگ‌های خودرویی', 'Automotive Bearings'],
+        'housing-bushing': ['یاتاقان و بوش', 'Housings & Bushings'],
+        bearing: ['بلبرینگ', 'Ball Bearing'],
+        grease: ['گریس', 'Grease'],
+        linear: ['گاید خطی', 'Linear Guide'],
+        coupling: ['کوپلینگ', 'Coupling'],
+        gearbox: ['گیربکس', 'Gearbox']
     };
-    return labels[category]?.[AppState.language === 'fa' ? 0 : 1] || faType(category);
+    const pair = labels[category];
+    if (!pair) return faType(category);
+    return `<span class="bilingual-fa">${pair[0]}</span><span class="bilingual-sep">/</span><span class="bilingual-en">${pair[1]}</span>`;
+}
+
+// Plain-text variant for aria-labels and escapeHTML() contexts (chips, badges).
+function getCategoryLabelText(category) {
+    return getCategoryLabel(category).replace(/<[^>]*>/g, '');
 }
 
 function getDimensionLabel(dim) {

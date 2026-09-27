@@ -150,3 +150,11 @@ html[dir="rtl"] body {
 #results-table-container thead th {
     text-align: start;
 }
+
+/* Bilingual (Persian + English) labels */
+.bilingual-fa { font-weight: 700; color: inherit; }
+.bilingual-sep { display: inline-block; margin: 0 0.35rem; color: #94a3b8; font-weight: 400; }
+.bilingual-en { font-weight: 500; color: #64748b; font-size: 0.85em; }
+h1 .bilingual-en, h2 .bilingual-en, h3 .bilingual-en, h4 .bilingual-en { font-size: 0.7em; vertical-align: middle; margin-inline-start: 0.15rem; }
+.product-type-bilingual .bilingual-fa { font-weight: 600; }
+.category-card-sub .bilingual-en { font-size: 0.78em; }
