@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="assets/css/02-bearing-3d.css?v=20260926">
     <link rel="stylesheet" href="assets/css/03-about.css?v=20260926">
     <link rel="stylesheet" href="assets/css/04-motion.css?v=20260926">
-    <link rel="stylesheet" href="assets/css/05-brand-carousel.css?v=20260926">
+    <link rel="stylesheet" href="assets/css/05-brand-carousel.css?v=20260927">
     <link rel="stylesheet" href="assets/css/06-hero-3d.css?v=20260926">
     <link rel="stylesheet" href="assets/css/07-mobile.css?v=20260926">
     <link rel="stylesheet" href="assets/css/08-account.css?v=20260926">
@@ -576,14 +576,14 @@
             <div class="py-20 bg-gray-50">
                 <div class="max-w-7xl mx-auto px-4">
                     <h3 class="text-3xl font-bold text-center text-gray-800 mb-4" data-vector-page data-en="Trusted Brands" data-fa="برندهای معتبر">Trusted Brands</h3>
-                    <p class="text-center text-gray-500 mb-10" data-vector-page data-en="Drag the 3D ring — tap any brand to filter products" data-fa="رینگ سه‌بعدی را بکشید — روی هر برند بزنید تا محصولاتش فیلتر شود">رینگ سه‌بعدی را بکشید — روی هر برند بزنید تا محصولاتش فیلتر شود</p>
+                    <p class="text-center text-gray-500 mb-10" data-vector-page data-en="Drag the ring or use the arrows to browse — tap the front brand to see its products" data-fa="برای دیدن برندها رینگ را بکشید یا از فلش‌ها استفاده کنید — روی برند جلو بزنید تا محصولاتش را ببینید">برای دیدن برندها رینگ را بکشید یا از فلش‌ها استفاده کنید — روی برند جلو بزنید تا محصولاتش را ببینید</p>
 
                     <div class="grid gap-10 lg:grid-cols-2 items-center">
                         <!-- Rotating menu (left on desktop, top on mobile) -->
                         <div class="order-1 lg:order-2">
-                            <div class="round-stage" id="brandRoundStage">
-                                <button class="rc-nav rc-prev" id="rcPrev" type="button" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
-                                <button class="rc-nav rc-next" id="rcNext" type="button" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+                            <div class="round-stage" id="brandRoundStage" tabindex="0" role="group" aria-roledescription="carousel" aria-label="برندهای معتبر">
+                                <button class="rc-nav rc-prev" id="rcPrev" type="button" aria-label="برند سمت چپ" data-aria-en="Brand on the left" data-aria-fa="برند سمت چپ"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+                                <button class="rc-nav rc-next" id="rcNext" type="button" aria-label="برند سمت راست" data-aria-en="Brand on the right" data-aria-fa="برند سمت راست"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
                                 <div class="round-viewport" id="brandViewport">
                                     <div class="round-tilt" id="brandTilt">
                                         <div class="round-ring" id="brandRing"></div>
@@ -592,6 +592,7 @@
                                 <div class="round-floor"></div>
                                 <div class="round-caption">
                                     <div class="rc-dots" id="rcDots"></div>
+                                    <div class="rc-counter" id="rcCounter" aria-hidden="true"></div>
                                 </div>
                             </div>
                         </div>
@@ -1895,7 +1896,7 @@
     <script src="assets/js/04-navigation.js?v=20260926"></script>
     <script src="assets/js/05-bearing-3d.js?v=20260926"></script>
     <script src="assets/js/06-search.js?v=20260926"></script>
-    <script src="assets/js/07-brand-carousel.js?v=20260926"></script>
+    <script src="assets/js/07-brand-carousel.js?v=20260927"></script>
     <script src="assets/js/08-product.js?v=20260926"></script>
     <script src="assets/js/09-cart.js?v=20260926"></script>
     <script src="assets/js/10-checkout-mock.js?v=20260926"></script>

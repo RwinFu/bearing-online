@@ -13,7 +13,9 @@
     user-select: none;
     -webkit-user-select: none;
 }
-.round-stage:active { cursor: grabbing; }
+.round-stage.is-dragging, .round-stage.is-dragging .rc-slot { cursor: grabbing; }
+.round-stage:focus { outline: none; }
+.round-stage:focus-visible { outline: 3px solid rgba(74,130,255,.55); outline-offset: 6px; border-radius: 24px; }
 .round-viewport {
     position: absolute;
     inset: 0;
@@ -22,6 +24,9 @@
     justify-content: center;
     overflow: hidden;
     perspective: 1700px;
+    /* soft fade at the edges instead of a hard crop of the side cards */
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12%, #000 88%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 12%, #000 88%, transparent 100%);
 }
 .round-tilt {
     transform-style: preserve-3d;
@@ -41,10 +46,9 @@
     will-change: transform;
     cursor: pointer;
 }
-/* Hover ring must not swallow clicks on logo images */
+/* The whole slot is the click/drag target (faces are purely visual) */
 .rc-slot .rc-face { pointer-events: none; }
-.rc-slot .rc-logo, .rc-slot .rc-logo a, .rc-slot .rc-logo img { pointer-events: auto; }
-.rc-slot .rc-logo a { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+.rc-slot img { -webkit-user-drag: none; user-select: none; }
 .rc-slot:hover .rc-face {
     border-color: #e8a81d;
     box-shadow: 0 22px 54px rgba(11,37,96,0.28), 0 0 0 2px rgba(232,168,29,0.55), inset 0 1px 0 #ffffff;
@@ -57,26 +61,48 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
+    gap: 0;
     margin-top: 10px;
     flex-wrap: wrap;
+    /* dot order follows the ring's spatial order (next brand = to the right) in both languages */
+    direction: ltr;
 }
+/* 24px tap target around a small visual dot */
 .rc-dot {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 999px;
+}
+.rc-dot span {
+    display: block;
     width: 9px;
     height: 9px;
     border-radius: 999px;
     border: 1px solid #b9c4d8;
     background: #dbe4f5;
-    padding: 0;
-    cursor: pointer;
     transition: all 0.25s;
 }
-.rc-dot:hover { transform: scale(1.35); border-color: #e8a81d; }
-.rc-dot.on {
+.rc-dot:hover span { transform: scale(1.35); border-color: #e8a81d; }
+.rc-dot:focus-visible { outline: 2px solid #4a82ff; outline-offset: 0; }
+.rc-dot.on span {
     width: 26px;
     background: linear-gradient(90deg, #ffd166, #e8a81d);
     border-color: transparent;
     box-shadow: 0 3px 10px rgba(232,168,29,0.5);
+}
+.rc-dot.on:hover span { transform: none; }
+.rc-counter {
+    color: #8a97ad;
+    font: 800 11px/1 Inter, Vazirmatn, sans-serif;
+    letter-spacing: .08em;
+    direction: ltr;
 }
 .rc-face {
     position: absolute;
@@ -102,9 +128,10 @@
     inset: 0;
     background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.65) 45%, transparent 60%);
     transform: translateX(-120%);
-    animation: rcSheen 5s ease-in-out infinite;
     pointer-events: none;
 }
+/* only the front card gets the sheen, so the ring stays calm */
+.rc-slot.rc-front .rc-face::after { animation: rcSheen 5s ease-in-out infinite; }
 @keyframes rcSheen {
     0%, 60% { transform: translateX(-120%); }
     100% { transform: translateX(120%); }
@@ -410,6 +437,10 @@
     transition: all 0.2s;
 }
 .rc-nav:hover { background: #1348c8; border-color: #1348c8; color: #fff; transform: translateY(-50%) scale(1.06); }
+.rc-nav:active { transform: translateY(-50%) scale(0.95); }
+.rc-nav:focus-visible { outline: 3px solid rgba(74,130,255,.55); outline-offset: 2px; }
+/* arrows are spatial (left / right), so the global RTL chevron flip must not apply here */
+html[dir="rtl"] .rc-nav i { transform: none; }
 .rc-prev { left: 14px; }
 .rc-next { right: 14px; }
 .rc-pill {
