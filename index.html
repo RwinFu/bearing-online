@@ -15,13 +15,13 @@
     <script src="assets/vendor/three/three.min.js"></script>
     <link rel="stylesheet" href="assets/css/01-base.css?v=20260926">
     <link rel="stylesheet" href="assets/css/02-bearing-3d.css?v=20260926">
-    <link rel="stylesheet" href="assets/css/03-about.css?v=20260926">
+    <link rel="stylesheet" href="assets/css/03-about.css?v=20261001">
     <link rel="stylesheet" href="assets/css/04-motion.css?v=20260926">
     <link rel="stylesheet" href="assets/css/05-brand-carousel.css?v=20260927">
     <link rel="stylesheet" href="assets/css/06-hero-3d.css?v=20260926">
     <link rel="stylesheet" href="assets/css/07-mobile.css?v=20260926">
     <link rel="stylesheet" href="assets/css/08-account.css?v=20260926">
-    <link rel="stylesheet" href="assets/css/09-editorial.css?v=20260926">
+    <link rel="stylesheet" href="assets/css/09-editorial.css?v=20261002">
 </head>
 <body class="min-h-screen">
 
@@ -1103,80 +1103,46 @@
                 </div>
             </div>
 
-            <!-- Interactive 3D bearing viewer (05-bearing-3d.js drives #bearingStage) -->
-            <div class="max-w-5xl mx-auto px-4 pt-12 pb-4">
-                <div class="text-center mb-8">
-                    <span class="editorial-eyebrow" data-fa="نمای تعاملی" data-en="INTERACTIVE VIEW">نمای تعاملی</span>
-                    <h3 class="text-2xl md:text-3xl font-bold text-gray-800 mt-2" data-fa="بلبرینگ 6205 را از نزدیک ببینید" data-en="See the 6205 bearing up close">بلبرینگ 6205 را از نزدیک ببینید</h3>
-                    <p class="text-gray-500 mt-3 max-w-2xl mx-auto leading-7" data-fa="مدل سه‌بعدی بلبرینگ شیار عمیق SKF 6205: با ماوس یا انگشت بچرخانید، بزرگ‌نمایی کنید و با نوار «پاره‌سازی» لایه‌های داخلی — ریل، کیج، ساچمه‌ها و آب‌بندها — را جدا ببینید." data-en="A 3D model of the SKF 6205 deep-groove ball bearing: rotate it with your mouse or a finger, zoom in, and use the explode bar to separate the layers — raceways, cage, balls and seals.">مدل سه‌بعدی بلبرینگ شیار عمیق SKF 6205: با ماوس یا انگشت بچرخانید، بزرگ‌نمایی کنید و با نوار «پاره‌سازی» لایه‌های داخلی — ریل، کیج، ساچمه‌ها و آب‌بندها — را جدا ببینید.</p>
-                </div>
 
-                <div id="bearingStage" class="bearing-stage" tabindex="0" aria-label="Interactive 3D bearing viewer">
+            <!-- Visual-only bearing model; all unapproved copy has been removed. -->
+            <div class="max-w-5xl mx-auto px-4 pt-12 pb-4">
+                <div class="text-center mb-8" aria-hidden="true"></div>
+                <div id="bearingStage" class="bearing-stage" tabindex="0" aria-label="نمای سه‌بعدی بلبرینگ">
                     <div id="bearingViewport"></div>
                     <div class="bearing-vignette"></div>
-
-                    <!-- HUD: live controls (left) + view presets (right) -->
                     <div class="bearing-hud">
                         <div class="bearing-pill bearing-controls">
                             <span class="live-dot" aria-hidden="true"></span>
-                            <span data-fa="نمای زنده" data-en="LIVE VIEW">نمای زنده</span>
-                            <!-- Icon-only buttons: no data-fa/data-en — applyLanguage would replace the icon with text. -->
-                            <button id="bearingDirBtn" type="button" aria-label="Reverse rotation direction" title="عکس کردن جهت چرخش"><i class="fas fa-exchange-alt"></i></button>
-                            <button id="bearingPauseBtn" type="button" aria-label="Pause or resume rotation" aria-pressed="false" title="توقف / ادامه"><i class="fas fa-pause"></i></button>
-                            <button id="bearingExplodeBtn" type="button" aria-label="Exploded view" aria-pressed="false" title="نمای پاره‌شده"><i class="fas fa-expand-alt"></i></button>
-                            <button id="bearingZoomIn" type="button" aria-label="Zoom in" title="بزرگ‌نمایی"><i class="fas fa-plus"></i></button>
-                            <button id="bearingZoomOut" type="button" aria-label="Zoom out" title="کوچک‌نمایی"><i class="fas fa-minus"></i></button>
-                            <button id="bearingResetBtn" type="button" aria-label="Reset view" title="بازنشانی نما"><i class="fas fa-crosshairs"></i></button>
+                            <button id="bearingDirBtn" type="button" aria-label="تغییر جهت چرخش"><i class="fas fa-exchange-alt" aria-hidden="true"></i></button>
+                            <button id="bearingPauseBtn" type="button" aria-label="توقف یا ادامه چرخش" aria-pressed="false"><i class="fas fa-pause" aria-hidden="true"></i></button>
+                            <button id="bearingExplodeBtn" type="button" aria-label="نمای بازشده" aria-pressed="false"><i class="fas fa-expand-alt" aria-hidden="true"></i></button>
+                            <button id="bearingZoomIn" type="button" aria-label="بزرگ‌نمایی"><i class="fas fa-plus" aria-hidden="true"></i></button>
+                            <button id="bearingZoomOut" type="button" aria-label="کوچک‌نمایی"><i class="fas fa-minus" aria-hidden="true"></i></button>
+                            <button id="bearingResetBtn" type="button" aria-label="بازنشانی نما"><i class="fas fa-crosshairs" aria-hidden="true"></i></button>
                         </div>
                         <div class="bearing-pill bearing-presets">
-                            <button type="button" data-bearing-view="open" onclick="setBearingView('open')" data-fa="باز" data-en="Open" aria-pressed="true">باز</button>
-                            <button type="button" data-bearing-view="exploded" onclick="setBearingView('exploded')" data-fa="پاره‌شده" data-en="Exploded" aria-pressed="false">پاره‌شده</button>
+                            <button type="button" data-bearing-view="open" onclick="setBearingView('open')" aria-label="نمای باز" aria-pressed="true"><i class="fas fa-eye" aria-hidden="true"></i></button>
+                            <button type="button" data-bearing-view="exploded" onclick="setBearingView('exploded')" aria-label="نمای پاره‌شده" aria-pressed="false"><i class="fas fa-layer-group" aria-hidden="true"></i></button>
                         </div>
                     </div>
-
-                    <!-- Explode slider -->
                     <div class="bearing-explodebar">
                         <i class="fas fa-layer-group" aria-hidden="true"></i>
-                        <span data-fa="پاره‌سازی" data-en="EXPLODE">پاره‌سازی</span>
-                        <input type="range" id="bearingExplodeRange" min="0" max="100" value="0" step="1" aria-label="Explode the bearing">
-                        <span id="bearingExplodeValue" dir="ltr">0%</span>
+                        <input type="range" id="bearingExplodeRange" min="0" max="100" value="0" step="1" aria-label="میزان بازشدن نمایش">
                     </div>
-
-                    <!-- Model caption -->
-                    <div class="bearing-caption">
-                        <div class="bearing-model-tag" dir="ltr">6205 · DEEP GROOVE</div>
-                        <div class="bearing-model-name">
-                            <span data-fa="بلبرینگ شیار عمیق SKF 6205" data-en="SKF 6205 Deep Groove Ball Bearing">بلبرینگ شیار عمیق SKF 6205</span>
-                            <small dir="ltr">25 × 52 × 15 mm</small>
-                        </div>
-                        <div class="bearing-hint" data-fa="کشیدن برای چرخش · دابل‌کلیک برای بازنشانی" data-en="Drag to rotate · double-click to reset">کشیدن برای چرخش · دابل‌کلیک برای بازنشانی</div>
-                    </div>
-
-                    <!-- Shown when WebGL is unavailable -->
-                    <div id="bearingFallback" class="bearing-fallback">
+                    <div id="bearingFallback" class="bearing-fallback" aria-hidden="true">
                         <i class="fas fa-cube text-4xl mb-1" aria-hidden="true"></i>
-                        <p data-fa="مرورگر شما از نمایش سه‌بعدی (WebGL) پشتیبانی نمی‌کند یا آن را غیرفعال کرده است." data-en="Your browser does not support 3D display (WebGL), or it is disabled.">مرورگر شما از نمایش سه‌بعدی (WebGL) پشتیبانی نمی‌کند یا آن را غیرفعال کرده است.</p>
-                        <p class="text-sm font-normal opacity-80" data-fa="مدل بلبرینگ 6205: قطر داخل ۲۵، قطر خارج ۵۲، عرض ۱۵ میلی‌متر — سرعت مجاز ۱۳٬۰۰۰ دور در دقیقه." data-en="Bearing 6205: 25 mm bore, 52 mm outer diameter, 15 mm wide — 13,000 rpm speed rating.">مدل بلبرینگ 6205: قطر داخل ۲۵، قطر خارج ۵۲، عرض ۱۵ میلی‌متر — سرعت مجاز ۱۳٬۰۰۰ دور در دقیقه.</p>
                     </div>
                 </div>
-
-                <!-- Material legend -->
-                <div class="bearing-legend">
-                    <span><i style="background:#d6dce6"></i><span data-fa="استیل کروم — ریل و ساچمه‌ها" data-en="Chrome steel — raceways &amp; balls">استیل کروم — ریل و ساچمه‌ها</span></span>
-                    <span><i style="background:#cba453"></i><span data-fa="برنج کیج" data-en="Brass cage">برنج کیج</span></span>
-                    <span><i style="background:#1e2126"></i><span data-fa="آب‌بند لاستیکی NBR" data-en="NBR rubber seals">آب‌بند لاستیکی NBR</span></span>
-                    <span><i style="background:#00f7ff"></i><span data-fa="علامت‌های ریل" data-en="Raceway markers">علامت‌های ریل</span></span>
+                <div class="bearing-legend" aria-hidden="true">
+                    <span><i style="background:#d6dce6"></i></span>
+                    <span><i style="background:#cba453"></i></span>
+                    <span><i style="background:#1e2126"></i></span>
+                    <span><i style="background:#00f7ff"></i></span>
                 </div>
             </div>
 
             <div class="about-editorial">
                 <div class="max-w-4xl mx-auto px-4 py-12 lg:py-16">
-                    <div class="about-lead-block">
-                        <span class="about-ornament" aria-hidden="true"><i></i><i class="fas fa-gear"></i><i></i></span>
-                        <h1 class="about-main-title">درباره برینگ آنلاین</h1>
-                        <p class="about-main-subtitle">تجربه صنعتی، در دسترس‌تر از همیشه</p>
-                    </div>
-
                     <div class="about-prose">
                         <p class="about-lead-text">برینگ آنلاین مرجع تخصصی تأمین انواع برینگ، رولبرینگ و یاتاقان است؛ مجموعه‌ای که با هدف ساده‌تر، سریع‌تر و مطمئن‌تر کردن فرایند خرید برینگ‌ها شکل گرفته است.</p>
 
@@ -1185,15 +1151,6 @@
                         <h2><span class="about-h-mark" aria-hidden="true"></span>از پرشیا رباط ماشین تا برینگ آنلاین</h2>
 
                         <p>فعالیت ما با تأمین تجهیزات و قطعات موردنیاز صنایع سنگین آغاز شد. همکاری با مجموعه‌های صنعتی و تولیدی در حوزه‌های معدن، سیمان، فولاد، نفت، گاز و پتروشیمی، شناخت عمیقی از نیازهای واقعی واحدهای فنی، تعمیرات و نگهداری، و تدارکات در اختیار ما قرار داد.</p>
-
-                        <ul class="about-chips" aria-label="صنایع همکار">
-                            <li>معدن</li>
-                            <li>سیمان</li>
-                            <li>فولاد</li>
-                            <li>نفت</li>
-                            <li>گاز</li>
-                            <li>پتروشیمی</li>
-                        </ul>
 
                         <p>تجربه سال‌ها فعالیت در بازار داخلی و بازرگانی بین‌المللی نشان داد که تأمین یک برینگ مناسب، تنها به پیدا کردن یک کد فنی محدود نمی‌شود. اصالت کالا، مشخصات دقیق محصول، شرایط عملکردی برینگ، زمان تحویل و قابلیت اعتماد به تأمین‌کننده، همگی در یک انتخاب صحیح نقش دارند.</p>
 
@@ -1220,46 +1177,41 @@
 
                         <div class="about-principles">
                             <div class="about-principle">
-                                <span class="about-principle-num" aria-hidden="true">۱</span>
                                 <h3>اصالت و کیفیت کالا</h3>
                                 <p>در برینگ‌ها، کیفیت ساخت مستقیماً بر عملکرد و طول عمر آن‌ها اثرگذار است. به همین دلیل، اصالت و سلامت برینگ یکی از مهم‌ترین معیارهای خرید می‌باشد.</p>
                             </div>
                             <div class="about-principle">
-                                <span class="about-principle-num" aria-hidden="true">۲</span>
                                 <h3>دقت در مشخصات فنی</h3>
                                 <p>تفاوت در یک پسوند، میزان لقی، نوع آب‌بند یا کلاس دقت می‌تواند کاربرد یک برینگ را تغییر دهد. کارشناسان ما تلاش می‌کنند سفارش‌ها با کد و مشخصات فنی موردنیاز مشتری تطبیق داده شوند.</p>
                             </div>
                             <div class="about-principle">
-                                <span class="about-principle-num" aria-hidden="true">۳</span>
                                 <h3>پاسخ‌گویی تخصصی</h3>
                                 <p>هدف ما ارائه پاسخ روشن و کاربردی در کوتاه‌ترین زمان ممکن است. اگر درباره انتخاب برند، معادل فنی، ابعاد یا کاربرد یک محصول مطمئن نیستید، می‌توانید پیش از خرید از راهنمایی کارشناسان برینگ آنلاین استفاده کنید.</p>
                             </div>
                             <div class="about-principle">
-                                <span class="about-principle-num" aria-hidden="true">۴</span>
                                 <h3>تأمین سریع و قابل پیگیری</h3>
-                                <p>با استفاده از ظرفیت بازار داخلی و شبکه تأمین بین‌المللی مجموعه، تلاش می‌کنیم محصولات موجود و سفارش‌های تخصصی را با زمان و هزینه مناسب تأمین کنیم و مشتری را در جریان مراحل سفارش قرار دهیم.</p>
+                                <p>با استفاده از ظرفیت بازار داخلی و شبکه تأمین بین‌المللی مجموعه، تلاش می‌کنیم محصولات موجود و سفارش‌های تخصصی را با زمان و هزینه مناسب در دسترس مشتریان قرار دهیم.</p>
                             </div>
                         </div>
 
-                        <h2>همراه صنایع و متخصصان</h2>
+                        <h2><span class="about-h-mark" aria-hidden="true"></span>همراه صنایع و متخصصان</h2>
 
-                        <p>خدمات برینگ آنلاین برای طیف گسترده‌ای از مشتریان طراحی شده است؛ از کارخانه‌ها، واحدهای تولیدی و شرکت‌های پیمانکاری گرفته تا مسئولان خرید، کارشناسان تعمیرات و نگهداری، فروشندگان قطعات صنعتی و مصرف‌کنندگان فنی.</p>
+                        <p>خدمات برینگ آنلاین برای طیف گسترده‌ای از مشتریان طراحی شده است؛ از کارخانه‌ها، واحدهای تولیدی و شرکت‌های پیمانکار گرفته تا مدیران خرید، کارشناسان تعمیرات و نگهداری، فروشندگان تجهیزات صنعتی و مصرف‌کنندگان نهایی.</p>
 
-                        <p>ما می‌دانیم که توقف یک دستگاه یا خط تولید می‌تواند هزینه‌های قابل‌توجهی ایجاد کند. به همین دلیل، سرعت در پاسخ‌گویی، دقت در شناسایی قطعه و تعهد به زمان تأمین برای ما اهمیت ویژه‌ای دارد.</p>
+                        <p>ما می‌دانیم که توقف یک دستگاه یا خط تولید می‌تواند هزینه‌های قابل‌توجهی ایجاد کند. به همین دلیل، سرعت در پاسخ‌گویی، دقت در شناسایی قطعه و تعهد به زمان تأمین، برای ما اهمیت ویژه‌ای دارد.</p>
 
-                        <h2>مأموریت برینگ آنلاین</h2>
+                        <h2><span class="about-h-mark" aria-hidden="true"></span>مأموریت برینگ آنلاین</h2>
 
                         <p>مأموریت ما تبدیل شدن به مرجعی قابل‌اعتماد برای جست‌وجو، انتخاب و تأمین برینگ و قطعات صنعتی در ایران است؛ مرجعی که تجربه بازرگانی سنتی را با شفافیت، سرعت و دسترسی آسان در فضای آنلاین همراه می‌کند.</p>
 
-                        <p>می‌خواهیم مشتریان برینگ آنلاین هنگام خرید یک قطعه صنعتی، تنها یک محصول دریافت نکنند؛ بلکه از انتخاب درست، اصالت کالا و همراهی یک تیم باتجربه اطمینان داشته باشند.</p>
+                        <p>می‌خواهیم مشتریان برینگ آنلاین هنگام خرید یک برینگ، تنها یک محصول دریافت نکنند؛ بلکه از انتخاب درست، اصالت کالا و همراهی یک تیم باتجربه اطمینان داشته باشند.</p>
 
                         <div class="about-closing">
                             <h2>برینگ آنلاین؛ همراه مطمئن حرکت صنعت</h2>
-                            <p>هر چرخش مطمئن از یک انتخاب دقیق آغاز می‌شود. برینگ آنلاین با پشتوانه بیش از دو دهه تجربه صنعتی، دانش فنی و شبکه تأمین داخلی و بین‌المللی، در کنار شماست تا قطعه مناسب را با اطمینان بیشتر تهیه کنید.</p>
                             <p class="about-cta-text">برای استعلام موجودی، دریافت مشاوره فنی یا تأمین محصولات خاص، با کارشناسان برینگ آنلاین در ارتباط باشید.</p>
                             <div class="about-cta-buttons">
-                                <a href="tel:+982188709158" class="about-btn about-btn-primary"><i class="fas fa-phone ml-2"></i>تماس با کارشناسان</a>
-                                <a href="https://wa.me/989123224260" class="about-btn about-btn-whatsapp" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp ml-2"></i>پشتیبانی واتس‌اپ</a>
+                                <a href="tel:+982188709158" class="about-btn about-btn-primary" aria-label="تماس با کارشناسان"><i class="fas fa-phone" aria-hidden="true"></i></a>
+                                <a href="https://wa.me/989123224260" class="about-btn about-btn-whatsapp" target="_blank" rel="noopener noreferrer" aria-label="پشتیبانی واتس‌اپ"><i class="fab fa-whatsapp" aria-hidden="true"></i></a>
                             </div>
                         </div>
                     </div>
@@ -1369,175 +1321,145 @@
         </section>
 
 <section id="page-shipping" class="page-section hidden" aria-labelledby="shipping-title">
-                <div class="policy-shell">
-                <a class="policy-back" href="#/home">
-                <span data-fa="خانه / راهنمای خرید" data-en="Home / Buying guide">خانه / راهنمای خرید</span>
-                </a>
-                <header class="policy-header">
-                <span class="editorial-eyebrow" data-fa="راهنمای خرید مطمئن" data-en="BUY WITH CONFIDENCE">راهنمای خرید مطمئن</span>
-                <h1 id="shipping-title" data-fa="ارسال و مرجوعی کالا" data-en="Shipping &amp; returns">ارسال و مرجوعی کالا</h1>
-                <p data-fa="در برینگ آنلاین، دقت در تأمین و سلامت تحویل، بخشی از تعهد ما به شماست. سفارش‌ها با بسته‌بندی متناسب و در کوتاه‌ترین زمان ممکن آماده ارسال می‌شوند. برای تجربه‌ای مطمئن، پیش از خرید و نصب، کد و مشخصات فنی قطعه را با نیاز دستگاه خود تطبیق دهید." data-en="At Bearing Online, accurate sourcing and safe delivery are part of our commitment. Orders are prepared promptly with suitable packaging. For a confident purchase, match the product code and specifications to your equipment before ordering and installing.">در برینگ آنلاین، دقت در تأمین و سلامت تحویل، بخشی از تعهد ما به شماست. سفارش‌ها با بسته‌بندی متناسب و در کوتاه‌ترین زمان ممکن آماده ارسال می‌شوند. برای تجربه‌ای مطمئن، پیش از خرید و نصب، کد و مشخصات فنی قطعه را با نیاز دستگاه خود تطبیق دهید.</p>
-                </header>
-                <div class="policy-facts">
-                <div>
-                <strong data-fa="۷ روز" data-en="7 days">۷ روز</strong>
-                <span data-fa="مهلت ثبت درخواست مرجوعی پس از تحویل" data-en="To request a return after delivery">مهلت ثبت درخواست مرجوعی پس از تحویل</span>
-                </div>
-                <div>
-                <strong data-fa="۳ تا ۷ روز کاری" data-en="3–7 business days">۳ تا ۷ روز کاری</strong>
-                <span data-fa="زمان بازگشت وجه پس از تأیید مرجوعی" data-en="Refund processing after approval">زمان بازگشت وجه پس از تأیید مرجوعی</span>
-                </div>
-                <div>
-                <strong data-fa="پیش از نصب" data-en="Before installation">پیش از نصب</strong>
-                <span data-fa="تطبیق کد و مشخصات فنی کالا" data-en="Verify the code and specifications">تطبیق کد و مشخصات فنی کالا</span>
-                </div>
-                </div>
-                <div class="policy-layout">
-                <aside class="policy-help" aria-label="راهنمای سیاست‌ها">
-                <h2 data-fa="برای انتخاب قطعه مطمئن نیستید؟" data-en="Unsure which part to choose?">برای انتخاب قطعه مطمئن نیستید؟</h2>
-                <p data-fa="پیش از ثبت سفارش با کارشناسان ما مشورت کنید. انتخاب صحیح قطعه از هزینه تعویض، توقف تجهیزات و آسیب‌های احتمالی جلوگیری می‌کند." data-en="Consult our specialists before ordering. Selecting the right part helps avoid replacement costs, downtime and potential damage.">پیش از ثبت سفارش با کارشناسان ما مشورت کنید. انتخاب صحیح قطعه از هزینه تعویض، توقف تجهیزات و آسیب‌های احتمالی جلوگیری می‌کند.</p>
-                <a class="editorial-link" href="#/contact">
-                <span data-fa="ارتباط با کارشناسان" data-en="Contact our specialists">ارتباط با کارشناسان</span>
-                </a>
-                </aside>
-                <div class="policy-sections">
+    <div class="policy-shell">
+        <a class="policy-back" href="#/home">
+            <span data-fa="خانه / راهنمای خرید" data-en="Home / Buying guide">خانه / راهنمای خرید</span>
+        </a>
+        <header class="policy-header">
+            <span class="editorial-eyebrow" aria-hidden="true"></span>
+            <h1 id="shipping-title" data-fa="ارسال و مرجوعی کالا" data-en="Shipping &amp; returns">ارسال و مرجوعی کالا</h1>
+            <p data-fa="در برینگ آنلاین تلاش می‌کنیم سفارش‌های شما با دقت، بسته‌بندی مناسب و در کوتاه‌ترین زمان ممکن ارسال شوند. از آنجا که بلبرینگ‌ها و قطعات صنعتی ممکن است از نظر کد فنی، ابعاد و مشخصات ظاهری بسیار شبیه باشند، لطفاً پیش از ثبت سفارش و نصب کالا، مشخصات فنی محصول را با نیاز فنی خود تطبیق دهید." data-en="At Bearing Online, we strive to ship your orders carefully, with suitable packaging and as quickly as possible. Since bearings and industrial parts can look very similar in technical code, dimensions and appearance, please check the product specifications against your requirements before ordering and installing.">در برینگ آنلاین تلاش می‌کنیم سفارش‌های شما با دقت، بسته‌بندی مناسب و در کوتاه‌ترین زمان ممکن ارسال شوند. از آنجا که بلبرینگ‌ها و قطعات صنعتی ممکن است از نظر کد فنی، ابعاد و مشخصات ظاهری بسیار شبیه باشند، لطفاً پیش از ثبت سفارش و نصب کالا، مشخصات فنی محصول را با نیاز فنی خود تطبیق دهید.</p>
+        </header>
+        <div class="policy-facts" aria-hidden="true">
+            <div><strong></strong><span></span></div>
+            <div><strong></strong><span></span></div>
+            <div><strong></strong><span></span></div>
+        </div>
+        <div class="policy-layout">
+            <div class="policy-sections">
                 <details class="policy-detail" open>
-                <summary>
-                <span class="policy-number">01</span>
-                <span data-fa="پردازش و ارسال سفارش‌ها" data-en="Order processing &amp; shipping">پردازش و ارسال سفارش‌ها</span>
-                <i class="fas fa-plus" aria-hidden="true">
-                </i>
-                </summary>
-                <div class="policy-body">
-                <p data-fa="پس از ثبت سفارش و تأیید پرداخت، موجودی و مشخصات کالا بررسی می‌شود. با تأیید نهایی، سفارش بر اساس مقصد، وزن، ابعاد و ارزش محموله، با روش حمل مناسب به شرکت حمل‌ونقل تحویل خواهد شد." data-en="After order placement and payment confirmation, availability and specifications are checked. Once approved, the order is handed to a carrier using a method suited to its destination, weight, dimensions and value.">پس از ثبت سفارش و تأیید پرداخت، موجودی و مشخصات کالا بررسی می‌شود. با تأیید نهایی، سفارش بر اساس مقصد، وزن، ابعاد و ارزش محموله، با روش حمل مناسب به شرکت حمل‌ونقل تحویل خواهد شد.</p>
-                <p data-fa="هزینه و زمان تقریبی ارسال هنگام ثبت سفارش یا هماهنگی با واحد فروش اعلام می‌شود. کالاهای سنگین، حجیم، گران‌قیمت یا حساس ممکن است به بسته‌بندی و روش حمل اختصاصی نیاز داشته باشند." data-en="Shipping costs and estimated times are provided at checkout or by the sales team. Heavy, bulky, high-value or sensitive items may require dedicated packaging and transport.">هزینه و زمان تقریبی ارسال هنگام ثبت سفارش یا هماهنگی با واحد فروش اعلام می‌شود. کالاهای سنگین، حجیم، گران‌قیمت یا حساس ممکن است به بسته‌بندی و روش حمل اختصاصی نیاز داشته باشند.</p>
-                <p data-fa="پس از تحویل مرسوله به شرکت حمل‌ونقل، اطلاعات یا کد رهگیری برای شما ارسال می‌شود. شرایط جوی، تعطیلات، محدودیت‌های حمل‌ونقل و رویدادهای خارج از کنترل فروشگاه ممکن است زمان تحویل را تغییر دهند." data-en="Tracking details are shared after carrier handover. Weather, holidays, transport restrictions and events outside our control may affect delivery times.">پس از تحویل مرسوله به شرکت حمل‌ونقل، اطلاعات یا کد رهگیری برای شما ارسال می‌شود. شرایط جوی، تعطیلات، محدودیت‌های حمل‌ونقل و رویدادهای خارج از کنترل فروشگاه ممکن است زمان تحویل را تغییر دهند.</p>
-                </div>
+                    <summary>
+                        <span data-fa="پردازش و ارسال سفارش‌ها" data-en="Order processing &amp; shipping">پردازش و ارسال سفارش‌ها</span>
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                    </summary>
+                    <div class="policy-body">
+                        <p data-fa="پس از ثبت سفارش و تأیید پرداخت، حمل داخلی متناسب با مقصد، وزن، حجم و ارزش محموله کارسازی می‌گردد." data-en="After the order is placed and payment is confirmed, domestic shipping is arranged according to the destination, weight, volume and value of the shipment.">پس از ثبت سفارش و تأیید پرداخت، حمل داخلی متناسب با مقصد، وزن، حجم و ارزش محموله کارسازی می‌گردد.</p>
+                        <p data-fa="هزینه و زمان تقریبی ارسال با توجه به مقصد، نوع کالا و روش حمل تعیین شده و در زمان ثبت سفارش یا هماهنگی با واحد فروش به اطلاع مشتری می‌رسد." data-en="The estimated shipping cost and time depend on the destination, product type and shipping method, and are provided when the order is placed or coordinated with sales.">هزینه و زمان تقریبی ارسال با توجه به مقصد، نوع کالا و روش حمل تعیین شده و در زمان ثبت سفارش یا هماهنگی با واحد فروش به اطلاع مشتری می‌رسد.</p>
+                        <p data-fa="پس از تحویل مرسوله به شرکت حمل، اطلاعات یا کد رهگیری برای مشتری ارسال خواهد شد. تأخیرهای احتمالی ناشی از شرایط جوی، تعطیلات، محدودیت‌های حمل‌ونقل یا حوادث خارج از اراده، ممکن است زمان تحویل را تغییر دهد." data-en="After the parcel is handed to the carrier, tracking information or a code will be sent to the customer. Weather, holidays, transport restrictions or events beyond our control may affect delivery times.">پس از تحویل مرسوله به شرکت حمل، اطلاعات یا کد رهگیری برای مشتری ارسال خواهد شد. تأخیرهای احتمالی ناشی از شرایط جوی، تعطیلات، محدودیت‌های حمل‌ونقل یا حوادث خارج از اراده، ممکن است زمان تحویل را تغییر دهد.</p>
+                        <p data-fa="کالاهای سنگین، حجیم، گران‌قیمت یا حساس ممکن است با بسته‌بندی و روش حمل اختصاصی ارسال شوند." data-en="Heavy, bulky, high-value or sensitive items may be shipped with dedicated packaging and transport.">کالاهای سنگین، حجیم، گران‌قیمت یا حساس ممکن است با بسته‌بندی و روش حمل اختصاصی ارسال شوند.</p>
+                    </div>
                 </details>
                 <details class="policy-detail">
-                <summary>
-                <span class="policy-number">02</span>
-                <span data-fa="بررسی مرسوله هنگام تحویل" data-en="Inspecting your delivery">بررسی مرسوله هنگام تحویل</span>
-                <i class="fas fa-plus" aria-hidden="true">
-                </i>
-                </summary>
-                <div class="policy-body">
-                <p data-fa="هنگام دریافت سفارش، سلامت بسته‌بندی را بررسی کنید. در صورت مشاهده پارگی، له‌شدگی، بازشدگی یا آثار ضربه، اقدامات زیر را انجام دهید:" data-en="Check the packaging on arrival. If it is torn, crushed, open or shows impact damage:">هنگام دریافت سفارش، سلامت بسته‌بندی را بررسی کنید. در صورت مشاهده پارگی، له‌شدگی، بازشدگی یا آثار ضربه، اقدامات زیر را انجام دهید:</p>
-                <ul>
-                <li data-fa="موضوع را در حضور مأمور تحویل ثبت کنید." data-en="Document the issue in the delivery agent’s presence.">موضوع را در حضور مأمور تحویل ثبت کنید.</li>
-                <li data-fa="پیش از باز کردن بسته، از وضعیت مرسوله عکس و فیلم تهیه کنید." data-en="Photograph and film the parcel before opening it.">پیش از باز کردن بسته، از وضعیت مرسوله عکس و فیلم تهیه کنید.</li>
-                <li data-fa="در سریع‌ترین زمان ممکن با پشتیبانی برینگ آنلاین تماس بگیرید." data-en="Contact Bearing Online support as soon as possible.">در سریع‌ترین زمان ممکن با پشتیبانی برینگ آنلاین تماس بگیرید.</li>
-                </ul>
-                <p data-fa="بسته‌بندی و متعلقات کالا را تا اطمینان از صحت سفارش نگه دارید." data-en="Keep the packaging and accessories until you have verified the order.">بسته‌بندی و متعلقات کالا را تا اطمینان از صحت سفارش نگه دارید.</p>
-                </div>
+                    <summary>
+                        <span data-fa="بررسی مرسوله هنگام تحویل" data-en="Inspecting the parcel on delivery">بررسی مرسوله هنگام تحویل</span>
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                    </summary>
+                    <div class="policy-body">
+                        <p data-fa="لطفاً هنگام دریافت سفارش، سلامت ظاهری بسته‌بندی را بررسی کنید. در صورت مشاهده پارگی، له‌شدگی، بازشدگی یا آثار ضربه:" data-en="Please inspect the outer packaging when receiving your order. If it is torn, crushed, open or shows impact marks:">لطفاً هنگام دریافت سفارش، سلامت ظاهری بسته‌بندی را بررسی کنید. در صورت مشاهده پارگی، له‌شدگی، بازشدگی یا آثار ضربه:</p>
+                        <ul>
+                            <li data-fa="موضوع را در حضور مأمور تحویل ثبت کنید." data-en="Record the issue in the presence of the delivery agent.">موضوع را در حضور مأمور تحویل ثبت کنید.</li>
+                            <li data-fa="پیش از باز کردن بسته، از وضعیت مرسوله عکس و فیلم تهیه کنید." data-en="Take photos and video of the parcel before opening it.">پیش از باز کردن بسته، از وضعیت مرسوله عکس و فیلم تهیه کنید.</li>
+                            <li data-fa="در سریع‌ترین زمان ممکن با پشتیبانی برینگ آنلاین تماس بگیرید." data-en="Contact Bearing Online support as soon as possible.">در سریع‌ترین زمان ممکن با پشتیبانی برینگ آنلاین تماس بگیرید.</li>
+                        </ul>
+                        <p data-fa="بسته‌بندی و متعلقات کالا را تا اطمینان از صحت سفارش نزد خود نگه دارید." data-en="Keep the packaging and accessories until you are sure the order is correct.">بسته‌بندی و متعلقات کالا را تا اطمینان از صحت سفارش نزد خود نگه دارید.</p>
+                    </div>
                 </details>
                 <details class="policy-detail">
-                <summary>
-                <span class="policy-number">03</span>
-                <span data-fa="تطبیق مشخصات فنی پیش از نصب" data-en="Verify specifications before installation">تطبیق مشخصات فنی پیش از نصب</span>
-                <i class="fas fa-plus" aria-hidden="true">
-                </i>
-                </summary>
-                <div class="policy-body">
-                <p data-fa="پیش از باز کردن بسته‌بندی اصلی یا نصب قطعه، موارد زیر را با سفارش و نیاز فنی دستگاه تطبیق دهید:" data-en="Before opening the original packaging or installing the part, verify the following against your order and equipment requirements:">پیش از باز کردن بسته‌بندی اصلی یا نصب قطعه، موارد زیر را با سفارش و نیاز فنی دستگاه تطبیق دهید:</p>
-                <ul>
-                                <li data-fa="کد کامل فنی محصول، همراه با تمام پیشوندها و پسوندها" data-en="The full product code, including all prefixes and suffixes">کد کامل فنی محصول، همراه با تمام پیشوندها و پسوندها</li>
-                                <li data-fa="برند" data-en="Brand">برند</li>
-                                <li data-fa="قطر داخلی، قطر خارجی و عرض قطعه" data-en="Bore, outside diameter and width">قطر داخلی، قطر خارجی و عرض قطعه</li>
-                <li data-fa="نوع آب‌بند، لقی، کلاس دقت و سایر مشخصات فنی" data-en="Seal type, clearance, precision class and other specifications">نوع آب‌بند، لقی، کلاس دقت و سایر مشخصات فنی</li>
-                <li data-fa="تعداد کالا و اقلام همراه" data-en="Quantity and included accessories">تعداد کالا و اقلام همراه</li>
-                </ul>
-                <p data-fa="نصب یا استفاده از قطعه به‌منزله تأیید مشخصات ظاهری و فنی آن تلقی می‌شود. در صورت هرگونه تردید، پیش از نصب با کارشناسان فروش مشورت کنید. این موضوع، حقوق قانونی شما در خصوص عیوب پنهان را محدود نمی‌کند." data-en="Installation or use is treated as acceptance of visible and technical specifications. If unsure, consult sales before installation. This does not limit your statutory rights regarding hidden defects.">نصب یا استفاده از قطعه به‌منزله تأیید مشخصات ظاهری و فنی آن تلقی می‌شود. در صورت هرگونه تردید، پیش از نصب با کارشناسان فروش مشورت کنید. این موضوع، حقوق قانونی شما در خصوص عیوب پنهان را محدود نمی‌کند.</p>
-                </div>
+                    <summary>
+                        <span data-fa="تطبیق مشخصات فنی پیش از نصب" data-en="Check specifications before installation">تطبیق مشخصات فنی پیش از نصب</span>
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                    </summary>
+                    <div class="policy-body">
+                        <p data-fa="پیش از باز کردن بسته‌بندی اصلی یا نصب کالا، موارد زیر را با سفارش و نیاز فنی خود تطبیق دهید:" data-en="Before opening the original packaging or installing the item, compare the following with your order and technical requirements:">پیش از باز کردن بسته‌بندی اصلی یا نصب کالا، موارد زیر را با سفارش و نیاز فنی خود تطبیق دهید:</p>
+                        <ul>
+                            <li data-fa="کد کامل فنی محصول همراه با پیشوندها و پسوندها" data-en="The complete product code, including prefixes and suffixes">کد کامل فنی محصول همراه با پیشوندها و پسوندها</li>
+                            <li data-fa="نشان تجاری محصول و کشور سازنده" data-en="The product brand and country of manufacture">نشان تجاری محصول و کشور سازنده</li>
+                            <li data-fa="مطابقت تعداد کالا با سفارش" data-en="The quantity matches the order">مطابقت تعداد کالا با سفارش</li>
+                        </ul>
+                        <p data-fa="نصب یا استفاده از قطعه، به‌منزله تأیید مشخصات ظاهری و فنی آن تلقی می‌شود. در صورت تردید، پیش از نصب با کارشناسان فروش تماس بگیرید." data-en="Installing or using a part means its visible and technical specifications are accepted. If in doubt, contact sales specialists before installation.">نصب یا استفاده از قطعه، به‌منزله تأیید مشخصات ظاهری و فنی آن تلقی می‌شود. در صورت تردید، پیش از نصب با کارشناسان فروش تماس بگیرید.</p>
+                    </div>
                 </details>
                 <details class="policy-detail">
-                <summary>
-                <span class="policy-number">04</span>
-                <span data-fa="شرایط پذیرش مرجوعی" data-en="Return eligibility">شرایط پذیرش مرجوعی</span>
-                <i class="fas fa-plus" aria-hidden="true">
-                </i>
-                </summary>
-                <div class="policy-body">
-                <p data-fa="درخواست مرجوعی حداکثر تا ۷ روز پس از تحویل سفارش قابل ثبت است. کالا در موارد زیر برای بازگشت بررسی می‌شود:" data-en="Return requests may be submitted within 7 days of delivery. Items can be assessed for return in these cases:">درخواست مرجوعی حداکثر تا ۷ روز پس از تحویل سفارش قابل ثبت است. کالا در موارد زیر برای بازگشت بررسی می‌شود:</p>
-                <ul>
-                <li data-fa="مغایرت کالای ارسال‌شده با سفارش یا فاکتور" data-en="The item differs from the order or invoice">مغایرت کالای ارسال‌شده با سفارش یا فاکتور</li>
-                <li data-fa="آسیب‌دیدگی ظاهری یا نقص قابل مشاهده هنگام تحویل" data-en="Visible damage or defects on delivery">آسیب‌دیدگی ظاهری یا نقص قابل مشاهده هنگام تحویل</li>
-                <li data-fa="عدم تطابق تعداد یا مشخصات کالای دریافتی با سفارش" data-en="Incorrect quantity or specifications">عدم تطابق تعداد یا مشخصات کالای دریافتی با سفارش</li>
-                <li data-fa="انصراف از خرید، مشروط به نو و استفاده‌نشده بودن کالا و سلامت بسته‌بندی کارخانه" data-en="Change of mind, provided the item is new, unused and in intact factory packaging">انصراف از خرید، مشروط به نو و استفاده‌نشده بودن کالا و سلامت بسته‌بندی کارخانه</li>
-                </ul>
-                <p data-fa="پذیرش نهایی مرجوعی، پس از دریافت کالا و بررسی واحد کنترل برینگ آنلاین انجام می‌شود." data-en="Final acceptance follows receipt and inspection by Bearing Online’s quality control team.">پذیرش نهایی مرجوعی، پس از دریافت کالا و بررسی واحد کنترل برینگ آنلاین انجام می‌شود.</p>
-                </div>
+                    <summary>
+                        <span data-fa="شرایط پذیرش مرجوعی" data-en="Return eligibility">شرایط پذیرش مرجوعی</span>
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                    </summary>
+                    <div class="policy-body">
+                        <p data-fa="درخواست مرجوعی حداکثر تا ۳ روز پس از تحویل سفارش قابل ثبت است. کالا در شرایط زیر امکان بررسی برای بازگشت دارد:" data-en="Return requests may be submitted within 3 days of delivery. Items may be assessed for return in the following cases:">درخواست مرجوعی حداکثر تا ۳ روز پس از تحویل سفارش قابل ثبت است. کالا در شرایط زیر امکان بررسی برای بازگشت دارد:</p>
+                        <ul>
+                            <li data-fa="کالای ارسال‌شده از لحاظ شماره فنی و تعداد با سفارش یا فاکتور مغایرت داشته باشد." data-en="The technical code or quantity of the item differs from the order or invoice.">کالای ارسال‌شده از لحاظ شماره فنی و تعداد با سفارش یا فاکتور مغایرت داشته باشد.</li>
+                            <li data-fa="محصول در زمان تحویل دارای آسیب‌دیدگی ظاهری یا نقص قابل‌مشاهده باشد." data-en="The product has visible damage or a noticeable defect on delivery.">محصول در زمان تحویل دارای آسیب‌دیدگی ظاهری یا نقص قابل‌مشاهده باشد.</li>
+                            <li data-fa="مشتری از خرید منصرف شده باشد و کالا کاملاً نو، استفاده‌نشده و در بسته‌بندی سالم کارخانه قرار داشته باشد." data-en="The customer has changed their mind, and the item is completely new, unused and in intact factory packaging.">مشتری از خرید منصرف شده باشد و کالا کاملاً نو، استفاده‌نشده و در بسته‌بندی سالم کارخانه قرار داشته باشد.</li>
+                        </ul>
+                        <p data-fa="پذیرش نهایی مرجوعی پس از عودت کالا و بررسی آن توسط واحد کنترل کیفی برینگ آنلاین انجام شده و وجه پرداختی (در صورت انصراف از سوی مشتری، با کسر هزینه حمل) عودت می‌گردد." data-en="Final acceptance is subject to the returned item being inspected by Bearing Online quality control. The paid amount will be refunded (with return shipping deducted if the customer changed their mind).">پذیرش نهایی مرجوعی پس از عودت کالا و بررسی آن توسط واحد کنترل کیفی برینگ آنلاین انجام شده و وجه پرداختی (در صورت انصراف از سوی مشتری، با کسر هزینه حمل) عودت می‌گردد.</p>
+                    </div>
                 </details>
                 <details class="policy-detail">
-                <summary>
-                <span class="policy-number">05</span>
-                <span data-fa="موارد خارج از شرایط معمول مرجوعی" data-en="Return exclusions">موارد خارج از شرایط معمول مرجوعی</span>
-                <i class="fas fa-plus" aria-hidden="true">
-                </i>
-                </summary>
-                <div class="policy-body">
-                <p data-fa="در موارد زیر امکان بازگشت یا تعویض وجود ندارد، مگر آنکه مغایرت یا ایراد کالا از سوی برینگ آنلاین تأیید شود. این شرایط، نافی حقوق قانونی مصرف‌کننده نیست:" data-en="The following are excluded from normal returns or exchanges unless Bearing Online confirms a discrepancy or defect. These conditions do not override statutory consumer rights:">در موارد زیر امکان بازگشت یا تعویض وجود ندارد، مگر آنکه مغایرت یا ایراد کالا از سوی برینگ آنلاین تأیید شود. این شرایط، نافی حقوق قانونی مصرف‌کننده نیست:</p>
-                <ul>
-                <li data-fa="قطعه نصب، استفاده، گریس‌کاری، شست‌وشو یا آزمایش عملی شده باشد." data-en="Installed, used, greased, washed or operationally tested items.">قطعه نصب، استفاده، گریس‌کاری، شست‌وشو یا آزمایش عملی شده باشد.</li>
-                <li data-fa="بسته‌بندی اصلی، لیبل، هولوگرام، پلمب یا مشخصات کارخانه مخدوش یا جدا شده باشد." data-en="Damaged or removed original packaging, labels, holograms, seals or factory markings.">بسته‌بندی اصلی، لیبل، هولوگرام، پلمب یا مشخصات کارخانه مخدوش یا جدا شده باشد.</li>
-                <li data-fa="کالا بر اثر ضربه، خوردگی، آلودگی، خط‌وخش یا نگهداری نامناسب آسیب دیده باشد." data-en="Impact damage, corrosion, contamination, scratches or improper storage.">کالا بر اثر ضربه، خوردگی، آلودگی، خط‌وخش یا نگهداری نامناسب آسیب دیده باشد.</li>
-                <li data-fa="کد یا مشخصات انتخاب‌شده توسط مشتری با دستگاه سازگار نباشد." data-en="An incompatible code or specification selected by the customer.">کد یا مشخصات انتخاب‌شده توسط مشتری با دستگاه سازگار نباشد.</li>
-                <li data-fa="کالا به‌صورت اختصاصی، سفارشی، وارداتی یا بر اساس درخواست مشتری تأمین شده باشد." data-en="Items sourced specifically, custom-ordered or imported at the customer’s request.">کالا به‌صورت اختصاصی، سفارشی، وارداتی یا بر اساس درخواست مشتری تأمین شده باشد.</li>
-                <li data-fa="آسیب ناشی از نصب نادرست، روان‌کاری نامناسب، ناهم‌راستایی، بارگذاری غیرمجاز یا شرایط کاری نامتناسب باشد." data-en="Damage caused by incorrect installation, lubrication, misalignment, excessive loading or unsuitable operating conditions.">آسیب ناشی از نصب نادرست، روان‌کاری نامناسب، ناهم‌راستایی، بارگذاری غیرمجاز یا شرایط کاری نامتناسب باشد.</li>
-                </ul>
-                </div>
+                    <summary>
+                        <span data-fa="کالاهای غیرقابل مرجوعی" data-en="Non-returnable items">کالاهای غیرقابل مرجوعی</span>
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                    </summary>
+                    <div class="policy-body">
+                        <p data-fa="در موارد زیر امکان بازگشت یا تعویض کالا وجود ندارد، مگر آنکه مغایرت یا ایراد کالا از سوی برینگ آنلاین تأیید شود:" data-en="Items cannot be returned or exchanged in the following cases, unless Bearing Online confirms a discrepancy or defect:">در موارد زیر امکان بازگشت یا تعویض کالا وجود ندارد، مگر آنکه مغایرت یا ایراد کالا از سوی برینگ آنلاین تأیید شود:</p>
+                        <ul>
+                            <li data-fa="کالا نصب یا استفاده شده باشد." data-en="The item has been installed or used.">کالا نصب یا استفاده شده باشد.</li>
+                            <li data-fa="بسته‌بندی اصلی، لیبل، هولوگرام، پلمب یا مشخصات کارخانه مخدوش یا مفقود شده باشد." data-en="The original packaging, label, hologram, seal or factory markings are damaged or missing.">بسته‌بندی اصلی، لیبل، هولوگرام، پلمب یا مشخصات کارخانه مخدوش یا مفقود شده باشد.</li>
+                            <li data-fa="کالا دچار ضربه، خوردگی، آلودگی، خط‌وخش یا نگهداری نامناسب شده باشد." data-en="The item has been damaged by impact, corrosion, contamination, scratches or improper storage.">کالا دچار ضربه، خوردگی، آلودگی، خط‌وخش یا نگهداری نامناسب شده باشد.</li>
+                            <li data-fa="کد فنی یا مشخصات محصول بر اثر انتخاب نادرست مشتری، با نیاز او همخوانی نداشته باشد." data-en="The technical code or product specifications do not match the customer's needs due to an incorrect selection.">کد فنی یا مشخصات محصول بر اثر انتخاب نادرست مشتری، با نیاز او همخوانی نداشته باشد.</li>
+                            <li data-fa="کالا به‌صورت اختصاصی، سفارشی، وارداتی یا بر اساس تأیید فنی مشتری تأمین شده باشد." data-en="The item was specially sourced, custom-ordered, imported or supplied based on the customer's technical approval.">کالا به‌صورت اختصاصی، سفارشی، وارداتی یا بر اساس تأیید فنی مشتری تأمین شده باشد.</li>
+                        </ul>
+                    </div>
                 </details>
                 <details class="policy-detail">
-                <summary>
-                <span class="policy-number">06</span>
-                <span data-fa="روش ثبت درخواست مرجوعی" data-en="How to request a return">روش ثبت درخواست مرجوعی</span>
-                <i class="fas fa-plus" aria-hidden="true">
-                </i>
-                </summary>
-                <div class="policy-body">
-                <p data-fa="پیش از ارسال کالا، درخواست خود را از طریق پشتیبانی ثبت کنید و اطلاعات زیر را در اختیار کارشناسان قرار دهید:" data-en="Contact support before shipping an item back and provide:">پیش از ارسال کالا، درخواست خود را از طریق پشتیبانی ثبت کنید و اطلاعات زیر را در اختیار کارشناسان قرار دهید:</p>
-                <ul>
-                <li data-fa="شماره سفارش یا فاکتور" data-en="Order or invoice number">شماره سفارش یا فاکتور</li>
-                <li data-fa="نام و کد فنی کالا" data-en="Product name and technical code">نام و کد فنی کالا</li>
-                <li data-fa="دلیل درخواست بازگشت" data-en="Reason for return">دلیل درخواست بازگشت</li>
-                <li data-fa="تصاویر واضح از کالا، بسته‌بندی و لیبل‌ها" data-en="Clear photos of the item, packaging and labels">تصاویر واضح از کالا، بسته‌بندی و لیبل‌ها</li>
-                <li data-fa="عکس یا ویدئوی آسیب یا مغایرت احتمالی" data-en="Photos or video of any damage or discrepancy">عکس یا ویدئوی آسیب یا مغایرت احتمالی</li>
-                </ul>
-                <p data-fa="پس از بررسی اولیه، نحوه و نشانی ارسال اعلام می‌شود. از ارسال کالا بدون هماهنگی قبلی خودداری کنید." data-en="Following initial review, we will provide shipping instructions and the return address. Do not send items without prior coordination.">پس از بررسی اولیه، نحوه و نشانی ارسال اعلام می‌شود. از ارسال کالا بدون هماهنگی قبلی خودداری کنید.</p>
-                <p data-fa="کالا را همراه با بسته‌بندی اصلی، تمام متعلقات و فاکتور خرید، به‌صورت ایمن بسته‌بندی کنید تا در مسیر بازگشت آسیب نبیند." data-en="Pack the item securely with its original packaging, all accessories and purchase invoice to prevent damage in transit.">کالا را همراه با بسته‌بندی اصلی، تمام متعلقات و فاکتور خرید، به‌صورت ایمن بسته‌بندی کنید تا در مسیر بازگشت آسیب نبیند.</p>
-                </div>
+                    <summary>
+                        <span data-fa="روش ثبت درخواست مرجوعی" data-en="How to request a return">روش ثبت درخواست مرجوعی</span>
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                    </summary>
+                    <div class="policy-body">
+                        <p data-fa="پیش از ارسال کالا، درخواست خود را از طریق پشتیبانی برینگ آنلاین ثبت کنید و اطلاعات زیر را در اختیار کارشناسان قرار دهید:" data-en="Before returning an item, register your request with Bearing Online support and provide the following information:">پیش از ارسال کالا، درخواست خود را از طریق پشتیبانی برینگ آنلاین ثبت کنید و اطلاعات زیر را در اختیار کارشناسان قرار دهید:</p>
+                        <ul class="policy-numbered-list">
+                            <li data-fa="۱. شماره سفارش یا فاکتور" data-en="1. Order or invoice number">۱. شماره سفارش یا فاکتور</li>
+                            <li data-fa="۲. نام و کد فنی کالا" data-en="2. Product name and technical code">۲. نام و کد فنی کالا</li>
+                            <li data-fa="۳. دلیل درخواست بازگشت" data-en="3. Reason for the return request">۳. دلیل درخواست بازگشت</li>
+                            <li data-fa="۴. تصاویر واضح از کالا، بسته‌بندی و لیبل‌ها" data-en="4. Clear photos of the item, packaging and labels">۴. تصاویر واضح از کالا، بسته‌بندی و لیبل‌ها</li>
+                        </ul>
+                        <p data-fa="پس از بررسی اولیه، نحوه و نشانی ارسال کالا به شما اعلام خواهد شد. لطفاً از ارسال مرسوله بدون هماهنگی قبلی خودداری کنید." data-en="After the initial review, we will provide shipping instructions and the return address. Please do not send a parcel without prior coordination.">پس از بررسی اولیه، نحوه و نشانی ارسال کالا به شما اعلام خواهد شد. لطفاً از ارسال مرسوله بدون هماهنگی قبلی خودداری کنید.</p>
+                        <p data-fa="کالای مرجوعی باید به‌صورت کامل، همراه با بسته‌بندی اصلی، متعلقات و فاکتور خرید بسته‌بندی شود تا هنگام حمل آسیب نبیند." data-en="The returned item must be fully packed with its original packaging, accessories and purchase invoice to prevent damage during shipping.">کالای مرجوعی باید به‌صورت کامل، همراه با بسته‌بندی اصلی، متعلقات و فاکتور خرید بسته‌بندی شود تا هنگام حمل آسیب نبیند.</p>
+                    </div>
                 </details>
                 <details class="policy-detail">
-                <summary>
-                <span class="policy-number">07</span>
-                <span data-fa="هزینه ارسال کالای مرجوعی" data-en="Return shipping costs">هزینه ارسال کالای مرجوعی</span>
-                <i class="fas fa-plus" aria-hidden="true">
-                </i>
-                </summary>
-                <div class="policy-body">
-                <p data-fa="در صورت تأیید مغایرت، نقص یا اشتباه در ارسال از سوی برینگ آنلاین، هزینه متعارف بازگشت بر عهده فروشگاه است." data-en="If Bearing Online confirms a discrepancy, defect or shipping error on our part, we cover reasonable return shipping costs.">در صورت تأیید مغایرت، نقص یا اشتباه در ارسال از سوی برینگ آنلاین، هزینه متعارف بازگشت بر عهده فروشگاه است.</p>
-                <p data-fa="در صورت انصراف از خرید یا انتخاب نادرست کد و مشخصات توسط مشتری، هزینه بازگرداندن کالا بر عهده مشتری خواهد بود؛ پذیرش کالا نیز تابع شرایط مرجوعی است." data-en="For a change of mind or an incorrect customer-selected code or specification, the customer pays return shipping. Acceptance remains subject to the return conditions.">در صورت انصراف از خرید یا انتخاب نادرست کد و مشخصات توسط مشتری، هزینه بازگرداندن کالا بر عهده مشتری خواهد بود؛ پذیرش کالا نیز تابع شرایط مرجوعی است.</p>
-                </div>
+                    <summary>
+                        <span data-fa="هزینه ارسال کالای مرجوعی" data-en="Return shipping costs">هزینه ارسال کالای مرجوعی</span>
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                    </summary>
+                    <div class="policy-body">
+                        <p data-fa="اگر مغایرت، نقص یا اشتباه در ارسال از سوی برینگ آنلاین تأیید شود، هزینه متعارف بازگشت کالا بر عهده فروشگاه خواهد بود." data-en="If Bearing Online confirms a discrepancy, defect or shipping error, the store covers the reasonable return shipping cost.">اگر مغایرت، نقص یا اشتباه در ارسال از سوی برینگ آنلاین تأیید شود، هزینه متعارف بازگشت کالا بر عهده فروشگاه خواهد بود.</p>
+                        <p data-fa="در صورت عودت کالا به دلیل انتخاب نادرست کد و مشخصات فنی توسط مشتری، هزینه بازگرداندن کالا بر عهده مشتری است." data-en="If an item is returned because the customer selected the wrong code or technical specifications, the customer pays the return shipping cost.">در صورت عودت کالا به دلیل انتخاب نادرست کد و مشخصات فنی توسط مشتری، هزینه بازگرداندن کالا بر عهده مشتری است.</p>
+                    </div>
                 </details>
                 <details class="policy-detail">
-                <summary>
-                <span class="policy-number">08</span>
-                <span data-fa="تعویض کالا یا بازگشت وجه" data-en="Exchanges &amp; refunds">تعویض کالا یا بازگشت وجه</span>
-                <i class="fas fa-plus" aria-hidden="true">
-                </i>
-                </summary>
-                <div class="policy-body">
-                <p data-fa="پس از دریافت کالا و تأیید شرایط مرجوعی، می‌توانید با توجه به موجودی، کالای جایگزین دریافت کنید یا درخواست بازگشت وجه داشته باشید." data-en="After receipt and return approval, you may choose a replacement, subject to availability, or request a refund.">پس از دریافت کالا و تأیید شرایط مرجوعی، می‌توانید با توجه به موجودی، کالای جایگزین دریافت کنید یا درخواست بازگشت وجه داشته باشید.</p>
-                <p data-fa="مبلغ قابل استرداد حداکثر طی ۳ تا ۷ روز کاری پس از تأیید مرجوعی، از طریق روش مورد تأیید واحد مالی بازگردانده می‌شود. در مواردی که اشتباه از سوی فروشگاه نباشد، هزینه حمل یا خدمات انجام‌شده ممکن است از مبلغ قابل استرداد کسر شود." data-en="Refundable amounts are returned within 3–7 business days of approval using a method approved by finance. Where the store is not at fault, shipping or completed service costs may be deducted.">مبلغ قابل استرداد حداکثر طی ۳ تا ۷ روز کاری پس از تأیید مرجوعی، از طریق روش مورد تأیید واحد مالی بازگردانده می‌شود. در مواردی که اشتباه از سوی فروشگاه نباشد، هزینه حمل یا خدمات انجام‌شده ممکن است از مبلغ قابل استرداد کسر شود.</p>
-                </div>
+                    <summary>
+                        <span data-fa="تعویض کالا یا بازگشت وجه" data-en="Exchanges or refunds">تعویض کالا یا بازگشت وجه</span>
+                        <i class="fas fa-plus" aria-hidden="true"></i>
+                    </summary>
+                    <div class="policy-body">
+                        <p data-fa="پس از دریافت و تأیید شرایط مرجوعی، مشتری می‌تواند با توجه به موجودی، کالای جایگزین دریافت کند یا درخواست بازگشت وجه داشته باشد." data-en="After the return is received and approved, the customer may choose an available replacement or request a refund.">پس از دریافت و تأیید شرایط مرجوعی، مشتری می‌تواند با توجه به موجودی، کالای جایگزین دریافت کند یا درخواست بازگشت وجه داشته باشد.</p>
+                        <p data-fa="مبلغ قابل استرداد حداکثر طی ۳ تا ۷ روز کاری، از طریق روش مورد تأیید واحد مالی بازگردانده می‌شود. هزینه‌های حمل یا خدمات انجام‌شده، در مواردی که اشتباه از سوی فروشگاه نباشد، ممکن است از مبلغ قابل استرداد کسر شود." data-en="The refundable amount will be returned within 3–7 business days using a method approved by finance. Shipping or completed service costs may be deducted when the store is not at fault.">مبلغ قابل استرداد حداکثر طی ۳ تا ۷ روز کاری، از طریق روش مورد تأیید واحد مالی بازگردانده می‌شود. هزینه‌های حمل یا خدمات انجام‌شده، در مواردی که اشتباه از سوی فروشگاه نباشد، ممکن است از مبلغ قابل استرداد کسر شود.</p>
+                    </div>
                 </details>
-                </div>
-                </div>
-                <div class="policy-legal">
-                <p data-fa="ثبت سفارش در برینگ آنلاین به‌معنای مطالعه و پذیرش شرایط ارسال و مرجوعی این صفحه است. مفاد این صفحه، حقوق قانونی مصرف‌کننده را محدود نمی‌کند." data-en="Placing an order with Bearing Online indicates that you have read and accepted the shipping and return conditions on this page. Nothing in these terms limits statutory consumer rights.">ثبت سفارش در برینگ آنلاین به‌معنای مطالعه و پذیرش شرایط ارسال و مرجوعی این صفحه است. مفاد این صفحه، حقوق قانونی مصرف‌کننده را محدود نمی‌کند.</p>
-                </div>
-                </div>
-                </section>
+            </div>
+            <aside class="policy-help" aria-label="همراه شما هستیم">
+                <h2 data-fa="همراه شما هستیم" data-en="We are here to help">همراه شما هستیم</h2>
+                <p data-fa="هدف برینگ آنلاین، تأمین دقیق و مطمئن برینگ و ملحقات موردنیاز صنایع است." data-en="Bearing Online aims to accurately and reliably supply the bearings and accessories required by industry.">هدف برینگ آنلاین، تأمین دقیق و مطمئن برینگ و ملحقات موردنیاز صنایع است.</p>
+                <p data-fa="اگر درباره کد فنی، برند، ابعاد یا کاربرد محصول نیاز به مشاوره فنی دارید، پیش از ثبت سفارش با کارشناسان ما تماس بگیرید. انتخاب صحیح قطعه، از هزینه‌های تعویض، توقف تجهیزات و آسیب‌های احتمالی جلوگیری می‌کند." data-en="If you need technical advice about a product code, brand, dimensions or application, contact our specialists before ordering. Choosing the right part helps prevent replacement costs, equipment downtime and possible damage.">اگر درباره کد فنی، برند، ابعاد یا کاربرد محصول نیاز به مشاوره فنی دارید، پیش از ثبت سفارش با کارشناسان ما تماس بگیرید. انتخاب صحیح قطعه، از هزینه‌های تعویض، توقف تجهیزات و آسیب‌های احتمالی جلوگیری می‌کند.</p>
+                <a class="editorial-link" href="#/contact" aria-label="ارتباط با کارشناسان"><i class="fas fa-arrow-left" aria-hidden="true"></i></a>
+            </aside>
+        </div>
+        <div class="policy-legal">
+            <p data-fa="ثبت سفارش در برینگ آنلاین به‌معنای مطالعه و پذیرش شرایط ارسال و مرجوعی مندرج در این صفحه است. مفاد این صفحه، حقوق قانونی مصرف‌کننده را محدود نمی‌سازد." data-en="Placing an order with Bearing Online means that you have read and accepted the shipping and returns terms on this page. Nothing here limits statutory consumer rights.">ثبت سفارش در برینگ آنلاین به‌معنای مطالعه و پذیرش شرایط ارسال و مرجوعی مندرج در این صفحه است. مفاد این صفحه، حقوق قانونی مصرف‌کننده را محدود نمی‌سازد.</p>
+        </div>
+    </div>
+</section>
     </main>
 
     <!-- Footer -->
