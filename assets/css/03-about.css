@@ -730,17 +730,6 @@ html[dir="rtl"] .compare-badge {
     font-weight: 700;
     line-height: 2.1;
 }
-#page-about .about-quote::before {
-    content: '«';
-    position: absolute;
-    top: -6px;
-    right: 14px;
-    font-size: 44px;
-    line-height: 1;
-    color: #e8a81d;
-    opacity: .55;
-}
-
 /* product cards */
 #page-about .about-cards {
     list-style: none;

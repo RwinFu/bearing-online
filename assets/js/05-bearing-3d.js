@@ -118,18 +118,6 @@ function initBearing3D() {
         x.strokeStyle = 'rgba(255,255,255,0.10)'; x.lineWidth = 3;
         x.beginPath(); x.arc(256, 256, 200, 0, Math.PI * 2); x.stroke();
         x.beginPath(); x.arc(256, 256, 118, 0, Math.PI * 2); x.stroke();
-        const txt = '6205 · 25×52×15 · BEARING ONLINE · ';
-        x.fillStyle = '#c9d1de'; x.font = 'bold 30px Arial'; x.textAlign = 'center'; x.textBaseline = 'middle';
-        let ang = -Math.PI / 2;
-        const step = (Math.PI * 2) / txt.length;
-        for (let i = 0; i < txt.length; i++) {
-            x.save();
-            x.translate(256 + Math.cos(ang) * 159, 256 + Math.sin(ang) * 159);
-            x.rotate(ang + Math.PI / 2);
-            x.fillText(txt[i], 0, 0);
-            x.restore();
-            ang += step;
-        }
         const t = new THREE.CanvasTexture(c);
         return t;
     }
@@ -430,8 +418,10 @@ function syncBearingButtons() {
 function syncExplodeSlider() {
     const value = Math.round((Bearing3D.explodeTarget || 0) * 100);
     const r = document.getElementById('bearingExplodeRange');
-    if (r) r.value = value;
-    document.getElementById('bearingExplodeValue').textContent = value + '%';
+    if (r) {
+        r.value = value;
+        r.setAttribute('aria-valuetext', value + '%');
+    }
 }
 
 function bearingIsVisible() {

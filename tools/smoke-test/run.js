@@ -6,8 +6,8 @@
  * It serves the repository over HTTP, loads index.html in jsdom with real <script>
  * execution and drives the main user flows (search → product → cart → checkout →
  * proforma → account, leads, compare, ops panel, i18n, hash routing).
- * jsdom has no GPU/CSS engine, so the 3D stage is expected to fall back to the CSS
- * placeholder — that fallback is itself asserted here.
+ * jsdom has no GPU/CSS engine; the About page test checks the approved copy and
+ * asserts that no supplementary copy is rendered there.
  */
 const http = require('http');
 const fs = require('fs');
@@ -72,7 +72,7 @@ function stubBrowserApis(window) {
     window.print = () => {};
     window.URL.createObjectURL = () => 'blob:mock';
     window.URL.revokeObjectURL = () => {};
-    // no WebGL in jsdom → the app must fall back gracefully
+    // jsdom has no WebGL context; no canvas rendering is expected.
     window.HTMLCanvasElement.prototype.getContext = function () { return null; };
     window.console.warn = (...a) => warnings.push(a.map(String).join(' '));
 }
@@ -475,6 +475,72 @@ async function waitFor(fn, ms = 2000) {
         assert(await waitFor(() => visible('#page-shipping')), 'shipping deep link did not open');
         assert($$('#page-shipping details').length === 8, 'expected all eight policy sections');
         assert($('#page-shipping details').open, 'first section should be expanded');
+        const copyValue = el => el && el.getAttribute('data-fa');
+        const shippingSections = $$('#page-shipping details').flatMap(detail => [
+            copyValue(detail.querySelector('summary span[data-fa]')),
+            ...[...detail.querySelectorAll('.policy-body > p, .policy-body li')].map(copyValue)
+        ]);
+        const expectedShippingSections = [
+            'پردازش و ارسال سفارش‌ها',
+            'پس از ثبت سفارش و تأیید پرداخت، حمل داخلی متناسب با مقصد، وزن، حجم و ارزش محموله کارسازی می‌گردد.',
+            'هزینه و زمان تقریبی ارسال با توجه به مقصد، نوع کالا و روش حمل تعیین شده و در زمان ثبت سفارش یا هماهنگی با واحد فروش به اطلاع مشتری می‌رسد.',
+            'پس از تحویل مرسوله به شرکت حمل، اطلاعات یا کد رهگیری برای مشتری ارسال خواهد شد. تأخیرهای احتمالی ناشی از شرایط جوی، تعطیلات، محدودیت‌های حمل‌ونقل یا حوادث خارج از اراده، ممکن است زمان تحویل را تغییر دهد.',
+            'کالاهای سنگین، حجیم، گران‌قیمت یا حساس ممکن است با بسته‌بندی و روش حمل اختصاصی ارسال شوند.',
+            'بررسی مرسوله هنگام تحویل',
+            'لطفاً هنگام دریافت سفارش، سلامت ظاهری بسته‌بندی را بررسی کنید. در صورت مشاهده پارگی، له‌شدگی، بازشدگی یا آثار ضربه:',
+            'موضوع را در حضور مأمور تحویل ثبت کنید.',
+            'پیش از باز کردن بسته، از وضعیت مرسوله عکس و فیلم تهیه کنید.',
+            'در سریع‌ترین زمان ممکن با پشتیبانی برینگ آنلاین تماس بگیرید.',
+            'بسته‌بندی و متعلقات کالا را تا اطمینان از صحت سفارش نزد خود نگه دارید.',
+            'تطبیق مشخصات فنی پیش از نصب',
+            'پیش از باز کردن بسته‌بندی اصلی یا نصب کالا، موارد زیر را با سفارش و نیاز فنی خود تطبیق دهید:',
+            'کد کامل فنی محصول همراه با پیشوندها و پسوندها',
+            'نشان تجاری محصول و کشور سازنده',
+            'مطابقت تعداد کالا با سفارش',
+            'نصب یا استفاده از قطعه، به‌منزله تأیید مشخصات ظاهری و فنی آن تلقی می‌شود. در صورت تردید، پیش از نصب با کارشناسان فروش تماس بگیرید.',
+            'شرایط پذیرش مرجوعی',
+            'درخواست مرجوعی حداکثر تا ۳ روز پس از تحویل سفارش قابل ثبت است. کالا در شرایط زیر امکان بررسی برای بازگشت دارد:',
+            'کالای ارسال‌شده از لحاظ شماره فنی و تعداد با سفارش یا فاکتور مغایرت داشته باشد.',
+            'محصول در زمان تحویل دارای آسیب‌دیدگی ظاهری یا نقص قابل‌مشاهده باشد.',
+            'مشتری از خرید منصرف شده باشد و کالا کاملاً نو، استفاده‌نشده و در بسته‌بندی سالم کارخانه قرار داشته باشد.',
+            'پذیرش نهایی مرجوعی پس از عودت کالا و بررسی آن توسط واحد کنترل کیفی برینگ آنلاین انجام شده و وجه پرداختی (در صورت انصراف از سوی مشتری، با کسر هزینه حمل) عودت می‌گردد.',
+            'کالاهای غیرقابل مرجوعی',
+            'در موارد زیر امکان بازگشت یا تعویض کالا وجود ندارد، مگر آنکه مغایرت یا ایراد کالا از سوی برینگ آنلاین تأیید شود:',
+            'کالا نصب یا استفاده شده باشد.',
+            'بسته‌بندی اصلی، لیبل، هولوگرام، پلمب یا مشخصات کارخانه مخدوش یا مفقود شده باشد.',
+            'کالا دچار ضربه، خوردگی، آلودگی، خط‌وخش یا نگهداری نامناسب شده باشد.',
+            'کد فنی یا مشخصات محصول بر اثر انتخاب نادرست مشتری، با نیاز او همخوانی نداشته باشد.',
+            'کالا به‌صورت اختصاصی، سفارشی، وارداتی یا بر اساس تأیید فنی مشتری تأمین شده باشد.',
+            'روش ثبت درخواست مرجوعی',
+            'پیش از ارسال کالا، درخواست خود را از طریق پشتیبانی برینگ آنلاین ثبت کنید و اطلاعات زیر را در اختیار کارشناسان قرار دهید:',
+            '۱. شماره سفارش یا فاکتور',
+            '۲. نام و کد فنی کالا',
+            '۳. دلیل درخواست بازگشت',
+            '۴. تصاویر واضح از کالا، بسته‌بندی و لیبل‌ها',
+            'پس از بررسی اولیه، نحوه و نشانی ارسال کالا به شما اعلام خواهد شد. لطفاً از ارسال مرسوله بدون هماهنگی قبلی خودداری کنید.',
+            'کالای مرجوعی باید به‌صورت کامل، همراه با بسته‌بندی اصلی، متعلقات و فاکتور خرید بسته‌بندی شود تا هنگام حمل آسیب نبیند.',
+            'هزینه ارسال کالای مرجوعی',
+            'اگر مغایرت، نقص یا اشتباه در ارسال از سوی برینگ آنلاین تأیید شود، هزینه متعارف بازگشت کالا بر عهده فروشگاه خواهد بود.',
+            'در صورت عودت کالا به دلیل انتخاب نادرست کد و مشخصات فنی توسط مشتری، هزینه بازگرداندن کالا بر عهده مشتری است.',
+            'تعویض کالا یا بازگشت وجه',
+            'پس از دریافت و تأیید شرایط مرجوعی، مشتری می‌تواند با توجه به موجودی، کالای جایگزین دریافت کند یا درخواست بازگشت وجه داشته باشد.',
+            'مبلغ قابل استرداد حداکثر طی ۳ تا ۷ روز کاری، از طریق روش مورد تأیید واحد مالی بازگردانده می‌شود. هزینه‌های حمل یا خدمات انجام‌شده، در مواردی که اشتباه از سوی فروشگاه نباشد، ممکن است از مبلغ قابل استرداد کسر شود.'
+        ];
+        assert(JSON.stringify(shippingSections) === JSON.stringify(expectedShippingSections), 'shipping policy text differs from the supplied copy');
+        assert(JSON.stringify($$('#page-shipping .policy-help h2, #page-shipping .policy-help p').map(copyValue)) === JSON.stringify([
+            'همراه شما هستیم',
+            'هدف برینگ آنلاین، تأمین دقیق و مطمئن برینگ و ملحقات موردنیاز صنایع است.',
+            'اگر درباره کد فنی، برند، ابعاد یا کاربرد محصول نیاز به مشاوره فنی دارید، پیش از ثبت سفارش با کارشناسان ما تماس بگیرید. انتخاب صحیح قطعه، از هزینه‌های تعویض، توقف تجهیزات و آسیب‌های احتمالی جلوگیری می‌کند.'
+        ]), 'support copy differs from the supplied text');
+        assert(copyValue($('#page-shipping .policy-header h1')) === 'ارسال و مرجوعی کالا', 'shipping title differs from supplied text');
+        assert(copyValue($('#page-shipping .policy-header p')) === 'در برینگ آنلاین تلاش می‌کنیم سفارش‌های شما با دقت، بسته‌بندی مناسب و در کوتاه‌ترین زمان ممکن ارسال شوند. از آنجا که بلبرینگ‌ها و قطعات صنعتی ممکن است از نظر کد فنی، ابعاد و مشخصات ظاهری بسیار شبیه باشند، لطفاً پیش از ثبت سفارش و نصب کالا، مشخصات فنی محصول را با نیاز فنی خود تطبیق دهید.', 'shipping introduction differs from supplied text');
+        assert($('#page-shipping .policy-facts').getAttribute('aria-hidden') === 'true' && $('#page-shipping .policy-facts').textContent.trim() === '', 'duplicate fact-card copy remains outside the supplied text order');
+        const sectionsNode = $('#page-shipping .policy-sections');
+        const supportNode = $('#page-shipping .policy-help');
+        const legalNode = $('#page-shipping .policy-legal');
+        assert(sectionsNode.compareDocumentPosition(supportNode) & window.Node.DOCUMENT_POSITION_FOLLOWING, 'support copy must follow the eight supplied policy sections');
+        assert(supportNode.compareDocumentPosition(legalNode) & window.Node.DOCUMENT_POSITION_FOLLOWING, 'legal note must follow the support copy');
+        assert(copyValue($('#page-shipping .policy-legal p')) === 'ثبت سفارش در برینگ آنلاین به‌معنای مطالعه و پذیرش شرایط ارسال و مرجوعی مندرج در این صفحه است. مفاد این صفحه، حقوق قانونی مصرف‌کننده را محدود نمی‌سازد.', 'shipping legal text differs from supplied text');
         assert($$('footer a[href="#/shipping"]').length === 1, 'footer policy link missing');
         assert($$('.shipping-banner a[href="#/shipping"]').length === 1, 'home policy link missing');
         assert($$('.why-benefit').length === 4, 'expected four service benefits');
@@ -506,17 +572,33 @@ async function waitFor(fn, ms = 2000) {
         return 'ok';
     });
 
-    // ---------------------------------------------------------------- 3D stage
-    await checkAsync('3D bearing degrades gracefully without WebGL', async () => {
+    // ---------------------------------------------------------------- About page: approved copy only
+    await checkAsync('About page article matches the supplied text exactly', async () => {
         window.location.hash = '#/about';
         window.dispatchEvent(new window.HashChangeEvent('hashchange'));
-        await sleep(500);
+        assert(await waitFor(() => visible('#page-about')), 'About page did not open');
+        const prose = $('#page-about .about-prose');
+        const actual = prose.textContent.replace(/\s+/g, ' ').trim();
+        const expected = `برینگ آنلاین مرجع تخصصی تأمین انواع برینگ، رولبرینگ و یاتاقان است؛ مجموعه‌ای که با هدف ساده‌تر، سریع‌تر و مطمئن‌تر کردن فرایند خرید برینگ‌ها شکل گرفته است. این مجموعه حاصل توسعه و بیش از دو دهه تجربه شرکت «پرشیا رباط ماشین» در ایران، در زمینه مهندسی خرید، بازرگانی خارجی و تأمین تجهیزات صنایع کشور است. امروز این دانش و تجربه در برینگ آنلاین با یک بستر تخصصی و در دسترس ترکیب شده است تا خریداران بتوانند برینگ دلخواه خود را با سهولت، دقت، مشاوره تخصصی و اطمینان بیشتر تهیه کنند. از پرشیا رباط ماشین تا برینگ آنلاین فعالیت ما با تأمین تجهیزات و قطعات موردنیاز صنایع سنگین آغاز شد. همکاری با مجموعه‌های صنعتی و تولیدی در حوزه‌های معدن، سیمان، فولاد، نفت، گاز و پتروشیمی، شناخت عمیقی از نیازهای واقعی واحدهای فنی، تعمیرات و نگهداری، و تدارکات در اختیار ما قرار داد. تجربه سال‌ها فعالیت در بازار داخلی و بازرگانی بین‌المللی نشان داد که تأمین یک برینگ مناسب، تنها به پیدا کردن یک کد فنی محدود نمی‌شود. اصالت کالا، مشخصات دقیق محصول، شرایط عملکردی برینگ، زمان تحویل و قابلیت اعتماد به تأمین‌کننده، همگی در یک انتخاب صحیح نقش دارند. برینگ آنلاین با تکیه بر همین تجربیات و توانمندی‌های داخلی شکل گرفت و امروز سکویی تخصصی و آنلاین در حوزه تأمین برینگ به شمار می‌رود. چه محصولاتی تأمین می‌کنیم؟ حوزه فعالیت برینگ آنلاین: بلبرینگ‌های صنعتی برینگ‌های خودرویی انواع یاتاقان و متعلقات مرتبط محصولات خاص یا کمیاب بر اساس مشخصات فنی برینگ محصولات موردنیاز مشتریان از میان برندهای شناخته‌شده اروپایی و آسیایی و متناسب با مشخصات فنی، کاربرد و بودجه پروژه تأمین می‌شوند. رویکرد ما در تأمین قطعات صنعتی در برینگ آنلاین تلاش ما بر این است که مشتری پیش از خرید، اطلاعات کافی برای یک انتخاب درست در اختیار داشته باشد و پس از ثبت سفارش نیز از پاسخ‌گویی و پیگیری مناسب برخوردار گردد. اصول کاری ما بر چهار محور استوار است: اصالت و کیفیت کالا در برینگ‌ها، کیفیت ساخت مستقیماً بر عملکرد و طول عمر آن‌ها اثرگذار است. به همین دلیل، اصالت و سلامت برینگ یکی از مهم‌ترین معیارهای خرید می‌باشد. دقت در مشخصات فنی تفاوت در یک پسوند، میزان لقی، نوع آب‌بند یا کلاس دقت می‌تواند کاربرد یک برینگ را تغییر دهد. کارشناسان ما تلاش می‌کنند سفارش‌ها با کد و مشخصات فنی موردنیاز مشتری تطبیق داده شوند. پاسخ‌گویی تخصصی هدف ما ارائه پاسخ روشن و کاربردی در کوتاه‌ترین زمان ممکن است. اگر درباره انتخاب برند، معادل فنی، ابعاد یا کاربرد یک محصول مطمئن نیستید، می‌توانید پیش از خرید از راهنمایی کارشناسان برینگ آنلاین استفاده کنید. تأمین سریع و قابل پیگیری با استفاده از ظرفیت بازار داخلی و شبکه تأمین بین‌المللی مجموعه، تلاش می‌کنیم محصولات موجود و سفارش‌های تخصصی را با زمان و هزینه مناسب در دسترس مشتریان قرار دهیم. همراه صنایع و متخصصان خدمات برینگ آنلاین برای طیف گسترده‌ای از مشتریان طراحی شده است؛ از کارخانه‌ها، واحدهای تولیدی و شرکت‌های پیمانکار گرفته تا مدیران خرید، کارشناسان تعمیرات و نگهداری، فروشندگان تجهیزات صنعتی و مصرف‌کنندگان نهایی. ما می‌دانیم که توقف یک دستگاه یا خط تولید می‌تواند هزینه‌های قابل‌توجهی ایجاد کند. به همین دلیل، سرعت در پاسخ‌گویی، دقت در شناسایی قطعه و تعهد به زمان تأمین، برای ما اهمیت ویژه‌ای دارد. مأموریت برینگ آنلاین مأموریت ما تبدیل شدن به مرجعی قابل‌اعتماد برای جست‌وجو، انتخاب و تأمین برینگ و قطعات صنعتی در ایران است؛ مرجعی که تجربه بازرگانی سنتی را با شفافیت، سرعت و دسترسی آسان در فضای آنلاین همراه می‌کند. می‌خواهیم مشتریان برینگ آنلاین هنگام خرید یک برینگ، تنها یک محصول دریافت نکنند؛ بلکه از انتخاب درست، اصالت کالا و همراهی یک تیم باتجربه اطمینان داشته باشند. برینگ آنلاین؛ همراه مطمئن حرکت صنعت برای استعلام موجودی، دریافت مشاوره فنی یا تأمین محصولات خاص، با کارشناسان برینگ آنلاین در ارتباط باشید.`;
+        assert(actual === expected, 'About article differs from the approved copy.\nExpected: ' + expected + '\nActual: ' + actual);
+        assert($('#bearingStage'), 'the existing visual model was removed');
+        assert($('#bearingStage').textContent.trim() === '', 'the visual model contains copy outside the supplied article');
+        assert($$('#bearingStage .bearing-controls button').length === 6, 'bearing controls were changed');
+        assert($$('#bearingStage .bearing-presets button').length === 2, 'bearing view controls were changed');
+        assert($('#bearingExplodeRange'), 'bearing explode slider was removed');
+        assert(!$('#page-about .about-principle-num'), 'extra principle numbers remain in the article');
+        assert(!$('#page-about .about-chips'), 'duplicate industry chips remain in the article');
+        assert($('#page-about .about-cta-buttons').textContent.trim() === '', 'extra CTA words remain in the article');
+        return 'exact article copy; existing visual elements remain text-free';
+    });
+
+    await checkAsync('Visual bearing display falls back without WebGL', async () => {
         window.ensureBearing3D();
         await sleep(200);
         const fb = $('#bearingFallback');
-        assert(fb && fb.style.display === 'flex', 'fallback not shown (display=' + (fb && fb.style.display) + ')');
+        assert(fb && fb.style.display === 'flex', 'visual fallback not shown');
         assert(!$('#bearingStage canvas'), 'canvas created without WebGL');
-        return 'fallback shown';
+        return 'visual fallback shown without added copy';
     });
 
     // ---------------------------------------------------------------- filters
@@ -764,9 +846,9 @@ async function waitFor(fn, ms = 2000) {
         window.closeAutocomplete();
         assert($('#search-input').getAttribute('aria-expanded') === 'false', 'not collapsed');
     });
-    check('Fallback viewer controls are disabled instead of pretending to work', () => {
+    check('Visual-only fallback disables inactive bearing controls', () => {
         assert($('#bearingStage').classList.contains('is-fallback'), 'missing fallback state');
-        assert($('#bearingZoomIn').disabled && $('#bearingExplodeRange').disabled, 'unavailable 3D controls enabled');
+        assert($('#bearingZoomIn').disabled && $('#bearingExplodeRange').disabled, 'unavailable visual controls enabled');
     });
     await checkAsync('Malformed product URLs and missing products do not strand the UI', async () => {
         window.location.hash = '#/product/%E0%A4%A';
