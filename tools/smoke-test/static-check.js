@@ -44,7 +44,7 @@ const jsIds = new Set([...js.matchAll(/getElementById\(\s*['"`]([^'"`$]+)['"`]/g
 const jsCreatedIds = new Set([...js.matchAll(/id="([^"$]+)"/g)].map(m => m[1]));
 for (const m of js.matchAll(/\.id\s*=\s*['"]([^'"]+)['"]/g)) jsCreatedIds.add(m[1]);
 for (const m of js.matchAll(/id="([^"$]+)"/g)) jsIds.add(m[1]);
-const dynamicOk = (id) => /^co-|^lead-|^filter-|^rc|^bearing|^pf-|^order-|^tipax|^courier/.test(id);
+const dynamicOk = (id) => /^co-|^lead-|^filter-|^rc|^pf-|^order-|^tipax|^courier/.test(id);
 const missingIds = [...jsIds].filter(id => !htmlIds.has(id) && !jsCreatedIds.has(id) && !dynamicOk(id));
 if (missingIds.length) note('JS looks up ids that the markup does not define: ' + missingIds.join(', '));
 
@@ -65,7 +65,7 @@ for (const m of js.matchAll(/['"](assets\/img\/[^'"]+)['"]/g)) {
 
 // --- 4. load-order sanity ------------------------------------------------------------
 const order = [...html.matchAll(/assets\/js\/(\d\d)-[a-z0-9-]+\.js/g)].map(m => m[1]);
-const expected = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19'];
+const expected = jsFiles.map(f => f.split('-')[0]);
 if (order.join(',') !== expected.join(',')) note('unexpected module load order: ' + order.join(','));
 
 const dupHead = (html.match(/<\/head>/g) || []).length;
