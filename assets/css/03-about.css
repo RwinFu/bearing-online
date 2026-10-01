@@ -657,3 +657,165 @@ html[dir="rtl"] .compare-badge {
     #page-about .about-lead { font-size: 15px !important; }
     #page-about .bearing-fallback { top: 135px; height: 260px; }
 }
+
+/* ===== ABOUT — elegant content components ===== */
+#page-about .about-ornament {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+    color: #c8921a;
+}
+#page-about .about-ornament i:not(.fas) {
+    display: block;
+    width: 56px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e8c36a);
+}
+#page-about .about-ornament i:last-child { transform: scaleX(-1); }
+#page-about .about-ornament .fas { font-size: 16px; }
+
+#page-about .about-prose .about-lead-text {
+    font-size: 18.5px;
+    line-height: 2.2;
+    font-weight: 600;
+    color: #0b2560;
+    padding: 4px 22px 4px 0;
+    border-right: 3px solid #e8a81d;
+    margin-bottom: 22px;
+}
+#page-about .about-prose h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+#page-about .about-prose h2 .about-h-mark {
+    flex: none;
+    width: 6px;
+    height: 24px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #ffd166, #e8a81d);
+}
+#page-about .about-closing h2 { display: block; }
+
+/* industries chips */
+#page-about .about-chips {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0;
+    margin: 4px 0 20px;
+}
+#page-about .about-chips li {
+    padding: 4px 16px;
+    border-radius: 999px;
+    background: #f5f8ff;
+    border: 1px solid #d8e2f8;
+    color: #1348c8;
+    font-size: 13.5px;
+    font-weight: 700;
+    line-height: 1.9;
+}
+
+/* pull quote */
+#page-about .about-quote {
+    position: relative;
+    margin: 26px 0;
+    padding: 22px 28px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #fffaf0, #fff4d6);
+    border: 1px solid #f0e4bf;
+    color: #5c4710;
+    font-weight: 700;
+    line-height: 2.1;
+}
+#page-about .about-quote::before {
+    content: '«';
+    position: absolute;
+    top: -6px;
+    right: 14px;
+    font-size: 44px;
+    line-height: 1;
+    color: #e8a81d;
+    opacity: .55;
+}
+
+/* product cards */
+#page-about .about-cards {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    padding: 0;
+    margin: 16px 0 22px;
+}
+#page-about .about-cards li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    background: #fff;
+    border: 1px solid #e3e8f3;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(11,37,96,.05);
+    font-weight: 700;
+    line-height: 1.9;
+    color: #0b2560;
+    transition: transform .2s, box-shadow .2s, border-color .2s;
+}
+#page-about .about-cards li:hover {
+    transform: translateY(-2px);
+    border-color: #e8c36a;
+    box-shadow: 0 12px 28px rgba(11,37,96,.1);
+}
+#page-about .about-cards li i {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0b2560, #1348c8);
+    color: #ffd166;
+    font-size: 18px;
+}
+
+/* working principles */
+#page-about .about-principles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin: 18px 0 8px;
+}
+#page-about .about-principle {
+    position: relative;
+    padding: 24px 22px 14px;
+    background: linear-gradient(180deg, #fff, #f8faff);
+    border: 1px solid #e3e8f3;
+    border-top: 3px solid #e8a81d;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(11,37,96,.05);
+    overflow: hidden;
+}
+#page-about .about-principle-num {
+    position: absolute;
+    top: 6px;
+    left: 16px;
+    font-size: 54px;
+    font-weight: 900;
+    line-height: 1;
+    color: #0b2560;
+    opacity: .06;
+    pointer-events: none;
+}
+#page-about .about-principle h3 { margin-top: 0; }
+#page-about .about-principle p { font-size: 14.5px; line-height: 2.1; margin-bottom: 8px; }
+
+@media (max-width: 640px) {
+    #page-about .about-prose .about-lead-text { font-size: 16px; padding-right: 14px; }
+    #page-about .about-cards,
+    #page-about .about-principles { grid-template-columns: 1fr; }
+    #page-about .about-quote { padding: 20px 18px; }
+}
