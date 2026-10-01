@@ -6,7 +6,6 @@
 | مسیر | کتابخانه | نسخه | نسخهٔ CDN قبلی | لایسنس |
 |---|---|---|---|---|
 | `tailwindcss/browser.js` | `@tailwindcss/browser` (Tailwind v4 JIT در مرورگر) | 4.3.3 | `cdn.jsdelivr.net/npm/@tailwindcss/browser@4` | MIT |
-| `three/three.min.js` | Three.js | 0.128.0 (= r128) | `cdnjs …/three.js/r128/three.min.js` | MIT |
 | `fontawesome/css/all.min.css` + `webfonts/*.woff2` | Font Awesome Free | 6.4.0 | `cdnjs …/font-awesome/6.4.0/css/all.min.css` | CC BY 4.0 (icons) / MIT (code) |
 | `fonts/vazirmatn.css` + `fonts/vazirmatn/*.woff2` | Vazirmatn Variable (فونت اصلی فارسی) | از `@fontsource-variable/vazirmatn` | `fonts.googleapis.com` Vazirmatn 300–800 | OFL-1.1 |
 | `fonts/inter.css` + `fonts/inter/*.woff2` | Inter Variable (فونت انگلیسی) | از `@fontsource-variable/inter` | `fonts.googleapis.com` Inter 300–800 | OFL-1.1 |
@@ -23,7 +22,6 @@
 
 ```
 a60c785630a06196  tailwindcss/browser.js
-9274bbcec8d96168  three/three.min.js
 b8eb6937afd97038  fontawesome/css/all.min.css
 748332090c4b8e20  fontawesome/webfonts/fa-brands-400.woff2
 8e7e5ea1b15f62ab  fontawesome/webfonts/fa-regular-400.woff2

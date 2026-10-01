@@ -128,7 +128,7 @@ const fs = require('node:fs');
                 }
             }
         });
-        await check('About page copy is exact while retaining its visual controls', async () => {
+        await check('About page keeps the exact article, header slogan and no 3D viewer', async () => {
             await navigate('about');
             const about = page.locator('#page-about');
             const prose = about.locator('.about-prose');
@@ -136,13 +136,11 @@ const fs = require('node:fs');
             const expectedVisible = [await about.locator('.gradient-hero').innerText(), await prose.innerText()]
                 .join(' ').replace(/\s+/g, ' ').trim();
             assert.equal(actual, expectedVisible, 'About page contains visible copy outside the retained heading and approved article');
-            assert(actual.startsWith('درباره برینگ آنلاین تجربه صنعتی، در دسترس‌تر از همیشه'));
+            assert(actual.startsWith('درباره برینگ آنلاین خرید برینگ، آسان‌تر از همیشه'));
             assert(actual.endsWith('برای استعلام موجودی، دریافت مشاوره فنی یا تأمین محصولات خاص، با کارشناسان برینگ آنلاین در ارتباط باشید.'));
-            assert.equal(await about.locator('#bearingStage').count(), 1);
-            assert.equal(await about.locator('.bearing-controls button').count(), 6);
-            assert.equal(await about.locator('.bearing-presets button').count(), 2);
-            assert.equal(await about.locator('#bearingExplodeRange').count(), 1);
-            assert.equal((await about.locator('#bearingStage').innerText()).trim(), '', 'visual model must not add text to the supplied copy');
+            assert.equal(await about.locator('#bearingStage, .bearing-stage, .bearing-legend').count(), 0);
+            assert.equal(await about.locator('canvas').count(), 0);
+            assert.equal(await page.evaluate(() => typeof THREE), 'undefined');
             assert.equal((await prose.locator('.about-cta-buttons').innerText()).trim(), '');
             assert.equal(await prose.locator('.about-principle-num').count(), 0);
             assert.equal(await prose.locator('.about-chips').count(), 0);
@@ -150,50 +148,6 @@ const fs = require('node:fs');
             assert(!actual.includes('تماس با کارشناسان'));
             assert(!actual.includes('پشتیبانی واتس‌اپ'));
         });
-        // Headless CI images and sandboxes may have no usable WebGL context.
-        // Treat that as an environment limitation; fallback behavior is covered by jsdom.
-        const webglAvailable = await page.evaluate(() => {
-            try {
-                const canvas = document.createElement('canvas');
-                return !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
-            } catch (error) { return false; }
-        });
-        if (!webglAvailable) {
-            console.log('SKIP 3D interaction checks (no WebGL in this environment)');
-        } else {
-            await check('WebGL model and both visual presets work with reduced motion', async () => {
-                await navigate('about');
-                await page.locator('#bearingStage').scrollIntoViewIfNeeded();
-                await page.waitForFunction(() => Bearing3D.inited || Bearing3D.failed);
-                assert(await page.evaluate(() => Bearing3D.inited && !Bearing3D.failed), 'real WebGL renderer failed');
-                assert(await page.evaluate(() => Bearing3D.paused), 'reduced-motion preference should pause animation');
-                await page.locator('[data-bearing-view="exploded"]').click();
-                await page.waitForFunction(() => Bearing3D.explode > 0.95);
-                assert.equal(await page.locator('#bearingExplodeRange').getAttribute('aria-valuetext'), '100%');
-                await page.locator('#bearingStage').screenshot({ path: path.join(output, 'desktop-exploded.png') });
-                await page.locator('[data-bearing-view="open"]').click();
-                assert(await page.evaluate(() => Bearing3D.seals.every(seal => !seal.visible)));
-                const before = await page.evaluate(() => Bearing3D.targetRY);
-                await page.locator('#bearingStage').focus();
-                await page.keyboard.press('ArrowRight');
-                assert(await page.evaluate(before => Bearing3D.targetRY > before, before));
-                await page.locator('#bearingZoomIn').click();
-                assert(await page.evaluate(() => Bearing3D.zoomTarget < 10));
-                await page.locator('#bearingResetBtn').click();
-                assert.equal(await page.evaluate(() => Bearing3D.zoomTarget), 10);
-            });
-            await check('Mobile 3D controls fit and the hidden viewer stops rendering', async () => {
-                await page.setViewportSize({ width: 390, height: 844 });
-                await page.locator('#bearingStage').scrollIntoViewIfNeeded();
-                await page.waitForTimeout(800);
-                assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
-                const box = await page.locator('#bearingViewport').boundingBox();
-                assert(box.width <= 390 && box.height >= 300);
-                await page.locator('#bearingStage').screenshot({ path: path.join(output, 'mobile-viewer.png') });
-                await navigate('home');
-                await page.waitForFunction(() => Bearing3D.raf === 0);
-            });
-        }
         await check('No uncaught browser errors', async () => assert.deepEqual(errors, []));
         console.log(`\n${checks} browser checks passed. Screenshots: .arena/browser-audit/`);
     } finally { await browser.close(); }

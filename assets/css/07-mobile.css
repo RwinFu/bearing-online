@@ -150,13 +150,11 @@ header .nav-logo { flex-shrink: 0; }
 .filter-group:not(.collapsed) .filter-content:has(.brand-filter) { max-height: 290px; overflow-y: auto; overscroll-behavior: contain; }
 input[aria-invalid="true"] { border-color: #dc2626; background: #fff7f7; }
 .filter-group:has(#filter-dim-exact:checked) input[id$="-max"] { opacity: .45; pointer-events: none; }
-#bearingExplodeRange { appearance: auto; height: 24px; background: transparent; box-shadow: none; border: 0; padding: 0; accent-color: #e8a81d; }
 @media (max-width: 1023px) {
-    /* Product CTAs and the interactive viewer take priority over floating shortcuts. */
+    /* Product CTAs take priority over floating shortcuts. */
     body:not(:has(#page-home:not(.hidden))) .quick-action-panel,
     body:has(input:focus, textarea:focus, select:focus) .quick-action-panel,
-    body:has(#autocomplete-dropdown:not(.hidden)) .quick-action-panel,
-    body.bearing-viewer-active #back-to-top { display: none; }
+    body:has(#autocomplete-dropdown:not(.hidden)) .quick-action-panel { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
     .stagger > * { opacity: 1 !important; transform: none !important; }

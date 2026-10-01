@@ -58,8 +58,7 @@ const FEATURES = [
     { id: 'reveal', css: '.reveal, .stagger { opacity: 1 !important; transform: none !important; }', js: 'initRevealObserver' },
     { id: 'typingPlaceholder', css: '', js: 'initTypingPlaceholder' },
     { id: 'marquee', css: '.marquee-track, .marquee, .brand-marquee { animation: none !important; }', js: null },
-    { id: 'shimmer', css: '.shimmer, .shine, .skeleton { animation: none !important; }', js: null },
-    { id: 'three3d', css: '', js: 'initBearing3D' }
+    { id: 'shimmer', css: '.shimmer, .shine, .skeleton { animation: none !important; }', js: null }
 ];
 
 (async () => {

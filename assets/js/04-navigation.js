@@ -34,11 +34,7 @@ function showPage(pageId) {
         initRevealObserver();
         if (pageId === 'home') animateCounters();
         if (pageId === 'search') recomputeResults();
-        if (typeof updateBearingVisibility === 'function') updateBearingVisibility();
         if (pageId === 'brands') renderBrandsPage();
-        if (pageId === 'about' && typeof ensureBearing3D === 'function') {
-            setTimeout(() => ensureBearing3D(), 60);
-        }
     };
     // Reduced-motion users get an instant page swap: no overlay flash, no
     // artificial 250ms wait on every navigation.

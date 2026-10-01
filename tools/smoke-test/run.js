@@ -133,7 +133,7 @@ async function waitFor(fn, ms = 2000) {
     // ---------------------------------------------------------------- boot state
     check('17 JS modules loaded in order', () => {
         const expected = ['AppState', 'ProductDatabase', 'BrandInfo', 'formatPrice', 'showNotification',
-            'applyLanguage', 'toggleLanguage', 'showPage', 'routeFromHash', 'Bearing3D', 'searchProducts',
+            'applyLanguage', 'toggleLanguage', 'showPage', 'routeFromHash', 'searchProducts',
             'BrandCarousel', 'renderHomeBrands', 'showProductDetail', 'addToCart', 'renderCart', 'MockDB',
             'openLeadModal', 'toggleCompare', 'renderBrandsPage', 'STAFF_ROLES', 'toggleMobileMenu',
             'initRevealObserver', 'hydrateProductDatabase'];
@@ -581,24 +581,28 @@ async function waitFor(fn, ms = 2000) {
         const actual = prose.textContent.replace(/\s+/g, ' ').trim();
         const expected = `برینگ آنلاین مرجع تخصصی تأمین انواع برینگ، رولبرینگ و یاتاقان است؛ مجموعه‌ای که با هدف ساده‌تر، سریع‌تر و مطمئن‌تر کردن فرایند خرید برینگ‌ها شکل گرفته است. این مجموعه حاصل توسعه و بیش از دو دهه تجربه شرکت «پرشیا رباط ماشین» در ایران، در زمینه مهندسی خرید، بازرگانی خارجی و تأمین تجهیزات صنایع کشور است. امروز این دانش و تجربه در برینگ آنلاین با یک بستر تخصصی و در دسترس ترکیب شده است تا خریداران بتوانند برینگ دلخواه خود را با سهولت، دقت، مشاوره تخصصی و اطمینان بیشتر تهیه کنند. از پرشیا رباط ماشین تا برینگ آنلاین فعالیت ما با تأمین تجهیزات و قطعات موردنیاز صنایع سنگین آغاز شد. همکاری با مجموعه‌های صنعتی و تولیدی در حوزه‌های معدن، سیمان، فولاد، نفت، گاز و پتروشیمی، شناخت عمیقی از نیازهای واقعی واحدهای فنی، تعمیرات و نگهداری، و تدارکات در اختیار ما قرار داد. تجربه سال‌ها فعالیت در بازار داخلی و بازرگانی بین‌المللی نشان داد که تأمین یک برینگ مناسب، تنها به پیدا کردن یک کد فنی محدود نمی‌شود. اصالت کالا، مشخصات دقیق محصول، شرایط عملکردی برینگ، زمان تحویل و قابلیت اعتماد به تأمین‌کننده، همگی در یک انتخاب صحیح نقش دارند. برینگ آنلاین با تکیه بر همین تجربیات و توانمندی‌های داخلی شکل گرفت و امروز سکویی تخصصی و آنلاین در حوزه تأمین برینگ به شمار می‌رود. چه محصولاتی تأمین می‌کنیم؟ حوزه فعالیت برینگ آنلاین: بلبرینگ‌های صنعتی برینگ‌های خودرویی انواع یاتاقان و متعلقات مرتبط محصولات خاص یا کمیاب بر اساس مشخصات فنی برینگ محصولات موردنیاز مشتریان از میان برندهای شناخته‌شده اروپایی و آسیایی و متناسب با مشخصات فنی، کاربرد و بودجه پروژه تأمین می‌شوند. رویکرد ما در تأمین قطعات صنعتی در برینگ آنلاین تلاش ما بر این است که مشتری پیش از خرید، اطلاعات کافی برای یک انتخاب درست در اختیار داشته باشد و پس از ثبت سفارش نیز از پاسخ‌گویی و پیگیری مناسب برخوردار گردد. اصول کاری ما بر چهار محور استوار است: اصالت و کیفیت کالا در برینگ‌ها، کیفیت ساخت مستقیماً بر عملکرد و طول عمر آن‌ها اثرگذار است. به همین دلیل، اصالت و سلامت برینگ یکی از مهم‌ترین معیارهای خرید می‌باشد. دقت در مشخصات فنی تفاوت در یک پسوند، میزان لقی، نوع آب‌بند یا کلاس دقت می‌تواند کاربرد یک برینگ را تغییر دهد. کارشناسان ما تلاش می‌کنند سفارش‌ها با کد و مشخصات فنی موردنیاز مشتری تطبیق داده شوند. پاسخ‌گویی تخصصی هدف ما ارائه پاسخ روشن و کاربردی در کوتاه‌ترین زمان ممکن است. اگر درباره انتخاب برند، معادل فنی، ابعاد یا کاربرد یک محصول مطمئن نیستید، می‌توانید پیش از خرید از راهنمایی کارشناسان برینگ آنلاین استفاده کنید. تأمین سریع و قابل پیگیری با استفاده از ظرفیت بازار داخلی و شبکه تأمین بین‌المللی مجموعه، تلاش می‌کنیم محصولات موجود و سفارش‌های تخصصی را با زمان و هزینه مناسب در دسترس مشتریان قرار دهیم. همراه صنایع و متخصصان خدمات برینگ آنلاین برای طیف گسترده‌ای از مشتریان طراحی شده است؛ از کارخانه‌ها، واحدهای تولیدی و شرکت‌های پیمانکار گرفته تا مدیران خرید، کارشناسان تعمیرات و نگهداری، فروشندگان تجهیزات صنعتی و مصرف‌کنندگان نهایی. ما می‌دانیم که توقف یک دستگاه یا خط تولید می‌تواند هزینه‌های قابل‌توجهی ایجاد کند. به همین دلیل، سرعت در پاسخ‌گویی، دقت در شناسایی قطعه و تعهد به زمان تأمین، برای ما اهمیت ویژه‌ای دارد. مأموریت برینگ آنلاین مأموریت ما تبدیل شدن به مرجعی قابل‌اعتماد برای جست‌وجو، انتخاب و تأمین برینگ و قطعات صنعتی در ایران است؛ مرجعی که تجربه بازرگانی سنتی را با شفافیت، سرعت و دسترسی آسان در فضای آنلاین همراه می‌کند. می‌خواهیم مشتریان برینگ آنلاین هنگام خرید یک برینگ، تنها یک محصول دریافت نکنند؛ بلکه از انتخاب درست، اصالت کالا و همراهی یک تیم باتجربه اطمینان داشته باشند. برینگ آنلاین؛ همراه مطمئن حرکت صنعت برای استعلام موجودی، دریافت مشاوره فنی یا تأمین محصولات خاص، با کارشناسان برینگ آنلاین در ارتباط باشید.`;
         assert(actual === expected, 'About article differs from the approved copy.\nExpected: ' + expected + '\nActual: ' + actual);
-        assert($('#bearingStage'), 'the existing visual model was removed');
-        assert($('#bearingStage').textContent.trim() === '', 'the visual model contains copy outside the supplied article');
-        assert($$('#bearingStage .bearing-controls button').length === 6, 'bearing controls were changed');
-        assert($$('#bearingStage .bearing-presets button').length === 2, 'bearing view controls were changed');
-        assert($('#bearingExplodeRange'), 'bearing explode slider was removed');
         assert(!$('#page-about .about-principle-num'), 'extra principle numbers remain in the article');
         assert(!$('#page-about .about-chips'), 'duplicate industry chips remain in the article');
         assert($('#page-about .about-cta-buttons').textContent.trim() === '', 'extra CTA words remain in the article');
-        return 'exact article copy; existing visual elements remain text-free';
+        const hero = $('#page-about .gradient-hero');
+        assert(hero.querySelector('h2').textContent.trim() === 'درباره برینگ آنلاین', 'About heading changed');
+        assert(txt('#page-about .gradient-hero p') === 'خرید برینگ، آسان‌تر از همیشه', 'About slogan is not in the header');
+        const heroText = hero.textContent.replace(/\s+/g, ' ').trim();
+        assert(heroText === 'درباره برینگ آنلاین خرید برینگ، آسان‌تر از همیشه', 'extra copy in the About header: ' + heroText);
+        return 'exact article copy + header slogan; no extra copy';
     });
 
-    await checkAsync('Visual bearing display falls back without WebGL', async () => {
-        window.ensureBearing3D();
-        await sleep(200);
-        const fb = $('#bearingFallback');
-        assert(fb && fb.style.display === 'flex', 'visual fallback not shown');
-        assert(!$('#bearingStage canvas'), 'canvas created without WebGL');
-        return 'visual fallback shown without added copy';
+    await checkAsync('3D bearing viewer is removed from the About page', async () => {
+        window.showPage('about');
+        await sleep(150);
+        const viewerIds = ['bearingStage', 'bearingViewport', 'bearingFallback', 'bearingExplodeRange',
+            'bearingZoomIn', 'bearingZoomOut', 'bearingDirBtn', 'bearingPauseBtn', 'bearingExplodeBtn', 'bearingResetBtn'];
+        const leftovers = viewerIds.filter(id => doc.getElementById(id));
+        assert(!leftovers.length, '3D viewer markup still present: ' + leftovers.join(', '));
+        assert(!$('#page-about .bearing-stage, #page-about .bearing-legend'), '3D viewer markup still present');
+        assert(typeof window.THREE === 'undefined', 'Three.js is still loaded');
+        assert(window.eval('typeof Bearing3D') === 'undefined', 'Bearing3D module is still loaded');
+        return 'viewer markup, module and library removed';
     });
 
     // ---------------------------------------------------------------- filters
@@ -845,10 +849,6 @@ async function waitFor(fn, ms = 2000) {
         assert($('#search-input').getAttribute('aria-activedescendant') === 'search-option-0', 'no active suggestion');
         window.closeAutocomplete();
         assert($('#search-input').getAttribute('aria-expanded') === 'false', 'not collapsed');
-    });
-    check('Visual-only fallback disables inactive bearing controls', () => {
-        assert($('#bearingStage').classList.contains('is-fallback'), 'missing fallback state');
-        assert($('#bearingZoomIn').disabled && $('#bearingExplodeRange').disabled, 'unavailable visual controls enabled');
     });
     await checkAsync('Malformed product URLs and missing products do not strand the UI', async () => {
         window.location.hash = '#/product/%E0%A4%A';
